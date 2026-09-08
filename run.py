@@ -139,6 +139,12 @@ def diagnose():
                                  'has_hanerix': 'hanerix' in t}
     except Exception as e:
         out['modiplay_proxy'] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
+    try:
+        r = _rq.get('https://vibuxer.com/e/q7cx9vgs8lv8', headers={'User-Agent': UA}, timeout=25, verify=False)
+        t = r.text or ''
+        out['vibuxer_e_page'] = {'status': r.status_code, 'len': len(t), 'has_packer': 'eval(function' in t}
+    except Exception as e:
+        out['vibuxer_e_page'] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
     return out
 
 
