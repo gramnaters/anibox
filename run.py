@@ -118,6 +118,27 @@ def diagnose():
         out['iqsmart_embedhelper2_POST'] = {'status': r.status_code, 'body': (r.text or '')[:120]}
     except Exception as e:
         out['iqsmart_embedhelper2_POST'] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
+
+    # modiplay embed chain (self-contained, non-blocked path)
+    try:
+        r = _rq.get('https://rozgarlelo.modiplay.xyz/embed/imdb/movie?id=tt34339725',
+                    headers={'User-Agent': UA}, timeout=25, verify=False)
+        t = r.text or ''
+        out['modiplay_embed'] = {'status': r.status_code, 'len': len(t),
+                                 'has_iframe': '<iframe' in t,
+                                 'has_proxy': '/proxy.php' in t}
+    except Exception as e:
+        out['modiplay_embed'] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
+    try:
+        r = _rq.get('https://rozgarlelo.modiplay.xyz/proxy.php?p=streamhg&c=q7cx9vgs8lv8&title=x&noredirect=1',
+                    headers={'User-Agent': UA}, timeout=25, verify=False)
+        t = r.text or ''
+        out['modiplay_proxy'] = {'status': r.status_code, 'len': len(t),
+                                 'has_e_path': '/e/' in t,
+                                 'has_directSrc': 'directSrc' in t,
+                                 'has_hanerix': 'hanerix' in t}
+    except Exception as e:
+        out['modiplay_proxy'] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
     return out
 
 
