@@ -78,6 +78,14 @@ def diagnose():
         'nxsha_home': 'https://nxsha.space/',
         'iqsmart_home': 'https://pro.iqsmartgames.com/',
     }
+    # Stream-level servers (the ones actually serving m3u8/segments)
+    stream_probes = {
+        'streamhg_hanerix': 'https://hanerix.com/',
+        'rpmshare_rpmhub': 'https://multimovies.rpmhub.site/',
+        'streamhg_smoothpre': 'https://smoothpre.com/',
+        'nxsha_hls_cdn': 'https://img1.klcxm.com/',
+        'animeworld_zephyrix': 'https://play.zephyrix.org/',
+    }
     for name, url in probes.items():
         try:
             r = _rq.get(url, headers={'User-Agent': UA}, timeout=20, verify=False)
@@ -95,6 +103,21 @@ def diagnose():
             }
         except Exception as e:
             out[name] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
+    for name, url in stream_probes.items():
+        try:
+            r = _rq.get(url, headers={'User-Agent': UA}, timeout=20, verify=False)
+            out[name] = {'status': r.status_code, 'len': len(r.text or ''), 'server': r.headers.get('server', '')}
+        except Exception as e:
+            out[name] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
+    # POST endpoints (resolvers)
+    try:
+        r = _rq.post('https://pro.iqsmartgames.com/embedhelper2.php',
+                     data={'sid': 'abt92w4', 'UserFavSite': '', 'currentDomain': '[]'},
+                     headers={'User-Agent': UA, 'Content-Type': 'application/x-www-form-urlencoded'},
+                     timeout=20, verify=False)
+        out['iqsmart_embedhelper2_POST'] = {'status': r.status_code, 'body': (r.text or '')[:120]}
+    except Exception as e:
+        out['iqsmart_embedhelper2_POST'] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
     return out
 
 
