@@ -2,7 +2,7 @@ import requests, re, os, json
 from cachetools import TTLCache, cached
 from urllib.parse import quote
 
-TRAWL_URL = os.getenv('TRAWL_URL', 'http://localhost:8191')
+TRAWL_URL = os.getenv('TRAWL_URL', 'https://trawl.fly.dev')
 BASE_URL = 'https://aniflix.us'
 TIMEOUT = 90
 
@@ -15,16 +15,22 @@ streams_cache = TTLCache(maxsize=2048, ttl=600)
 
 def _trawl(url):
     """Fetch URL through TRAWL CF bypass"""
+    import time
+    time.sleep(0.5)  # Rate limit
     try:
         r = requests.post(f'{TRAWL_URL}/v1',
             json={'cmd': 'request.get', 'url': url, 'maxTimeout': 60000},
             timeout=TIMEOUT)
+        if r.status_code == 429:
+            time.sleep(2)
+            r = requests.post(f'{TRAWL_URL}/v1',
+                json={'cmd': 'request.get', 'url': url, 'maxTimeout': 60000},
+                timeout=TIMEOUT)
         if r.status_code == 200:
             data = r.json()
             sol = data.get('solution', {})
             if sol.get('status') == 200:
                 raw = sol.get('response', '')
-                # TRAWL may wrap JSON in HTML <pre> tags
                 pre_match = re.search(r'<pre>(.*?)</pre>', raw, re.DOTALL)
                 if pre_match:
                     return pre_match.group(1)

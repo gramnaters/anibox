@@ -1,4 +1,4 @@
-import requests, re, os, base64, json, cloudscraper
+import requests, re, os, base64, json
 from cachetools import TTLCache, cached
 from urllib.parse import quote
 from app.players.all_players import extract_hsastream
@@ -14,13 +14,9 @@ search_cache = TTLCache(maxsize=512, ttl=3600)
 details_cache = TTLCache(maxsize=1024, ttl=3600)
 episode_streams_cache = TTLCache(maxsize=2048, ttl=3600)
 
-_cf_scraper = None
 
-def _get_cf_scraper():
-    global _cf_scraper
-    if _cf_scraper is None:
-        _cf_scraper = cloudscraper.create_scraper()
-    return _cf_scraper
+def _proxy_url(target):
+    return f"{SCRAPER_PROXY}/proxy/stream?d={quote(target, safe='')}&api_password={SCRAPER_PROXY_PW}&h_user-agent={quote(UA, safe='')}"
 
 
 class AnimeVillaProvider:
@@ -29,13 +25,9 @@ class AnimeVillaProvider:
         self.session.headers.update({'User-Agent': UA, 'Accept': 'application/json'})
 
     def _get(self, url, **kwargs):
-        """Regular request for APIs"""
+        target = _proxy_url(url) if SCRAPER_PROXY else url
         kwargs.setdefault('timeout', TIMEOUT)
-        return self.session.get(url, **kwargs)
-
-    def _get_cf(self, url):
-        """Cloudscraper request for CF-protected pages"""
-        return _get_cf_scraper().get(url, headers={'User-Agent': UA, 'Accept': 'text/html'}, timeout=TIMEOUT)
+        return self.session.get(target, **kwargs)
 
     @cached(search_cache)
     def search_anime(self, query: str) -> list:
@@ -89,41 +81,31 @@ class AnimeVillaProvider:
             return None
 
     def _discover_episodes_from_watch_page(self, anime_slug, anime_title):
-        """Try to discover episodes by probing watch pages with cloudscraper"""
+        """Try to discover episodes by trying common watch page URL patterns"""
         episodes = []
-        
-        pattern_tpl = f'{anime_slug}-episode-{{n}}'
-        probe = pattern_tpl.replace('{{n}}', '1')
-        try:
-            r = self._get_cf(f'{BASE_URL}/watch/{probe}/')
-            if r.status_code == 200 and 'hsastream' in r.text:
-                for n in range(1, 300):
-                    ep_slug = pattern_tpl.replace('{{n}}', str(n))
-                    episodes.append({
-                        'season': 1, 'episode': n,
-                        'title': f'Episode {n}',
-                        'slug': ep_slug,
-                        'ep_page_url': f'{BASE_URL}/watch/{ep_slug}/',
-                    })
-                return episodes
-        except: pass
-        
-        for pattern_tpl in [f'{anime_slug}-ep-{{n}}', f'{anime_slug}-{{n}}']:
-            probe = pattern_tpl.replace('{{n}}', '1')
+        tried = set()
+
+        patterns_to_try = [
+            f'{anime_slug}-episode-1',
+            f'{anime_slug}-ep-1',
+            f'{anime_slug}-1',
+            f'{anime_slug}-hindi-dubbed-episode-1',
+        ]
+
+        for pattern in patterns_to_try:
+            if pattern in tried:
+                continue
+            tried.add(pattern)
+            watch_url = f'{BASE_URL}/watch/{pattern}/'
             try:
-                r = self._get_cf(f'{BASE_URL}/watch/{probe}/')
-                if r.status_code == 200 and 'hsastream' in r.text:
-                    for n in range(1, 300):
-                        ep_slug = pattern_tpl.replace('{{n}}', str(n))
-                        episodes.append({
-                            'season': 1, 'episode': n,
-                            'title': f'Episode {n}',
-                            'slug': ep_slug,
-                            'ep_page_url': f'{BASE_URL}/watch/{ep_slug}/',
-                        })
-                    return episodes
-            except: pass
-        
+                r = self._get(watch_url, headers={'Accept': 'text/html'})
+                if r.status_code == 200 and 'episode-list' in r.text:
+                    episodes = self._parse_episode_list(r.text)
+                    if episodes:
+                        break
+            except:
+                continue
+
         return episodes
 
     def _parse_episode_list(self, html):
@@ -170,7 +152,7 @@ class AnimeVillaProvider:
     def _get_episode_streams(self, ep_page_url: str) -> list:
         streams = []
         try:
-            resp = self._get_cf(ep_page_url)
+            resp = self._get(ep_page_url, headers={'Accept': 'text/html'})
             if resp.status_code != 200:
                 return []
             html = resp.text

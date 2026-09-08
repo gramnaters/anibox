@@ -207,8 +207,8 @@ class AnimeLokAPI:
                         'name': f'{name} (Abyss)',
                         'languages': langs,
                     })
-                # ZephyrFlick / as-cdn multi
-                elif isinstance(url, str) and ('zephyr' in url.lower() or 'as-cdn' in url.lower() or 'play.zephyrix' in url.lower()):
+                # ZephyrFlick multi
+                elif isinstance(url, str) and 'zephyr' in url.lower():
                     streams.append({
                         'player': 'zephyrflick',
                         'url': url,

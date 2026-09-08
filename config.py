@@ -12,5 +12,7 @@ class Config:
     STREAM_MODE = os.getenv('STREAM_MODE', 'direct').lower()
     ENABLE_PROXY_ROUTES = os.getenv('ENABLE_PROXY_ROUTES', '1') in ('1', 'true', 'True', 'yes')
     DB_TYPE = os.getenv('DB_TYPE', 'sqlite')
-    DB_PATH = os.getenv('DB_PATH', 'mappings.db')
+    # Use a writable, ephemeral path by default so deployments on platforms
+    # with a read-only filesystem (Render free tier) don't crash on import.
+    DB_PATH = os.getenv('DB_PATH', '/tmp/mappings.db')
     DATABASE_URL = os.getenv('DATABASE_URL', '')

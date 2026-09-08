@@ -13,6 +13,7 @@ from app.routes.manifest import manifest_bp, MANIFEST
 from app.routes.catalog import catalog_bp
 from app.routes.meta import meta_bp
 from app.routes.stream import stream_bp
+from app.routes.proxy import proxy_bp
 
 app = Flask(__name__, template_folder='./templates', static_folder='./static')
 app.config.from_object('config.Config')
@@ -20,6 +21,7 @@ app.register_blueprint(manifest_bp)
 app.register_blueprint(catalog_bp)
 app.register_blueprint(meta_bp)
 app.register_blueprint(stream_bp)
+app.register_blueprint(proxy_bp)
 
 Compress(app)
 logging.basicConfig(format='%(asctime)s %(message)s')
@@ -36,7 +38,7 @@ def configure(lang=None):
 
 @app.route('/favicon.ico')
 def favicon():
-    return app.send_static_file('favicon.ico')
+    return app.send_static_file('favicon.png')
 
 @app.route('/.well-known/ai-plugin.json')
 @app.route('/health')
@@ -65,6 +67,6 @@ def debug():
 
 if __name__ == '__main__':
     port = int(Config.FLASK_PORT) if Config.FLASK_PORT.isdigit() else 5000
-    print(f'Hindi Dub Anime Hub | http://localhost:{port}')
+    print(f'AniBox | http://localhost:{port}')
     print(f'Configure: http://localhost:{port}/configure')
     app.run(host='0.0.0.0', port=port, debug=Config.DEBUG == 'True')

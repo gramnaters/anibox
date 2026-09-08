@@ -1,199 +1,157 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#101114">
-<title>Multianima - Configure</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/static/favicon.png">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<title>AniBox — Configure</title>
+<script>
+  // Dark mode is the default; respect a stored preference.
+  (function(){
+    try {
+      if (localStorage.getItem('anibox-theme') === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      }
+    } catch(e){}
+  })();
+</script>
 <style>
-:root{color-scheme:dark;--bg:#0d1117;--surface:#161b22;--surface-2:#1c2333;--surface-3:#252d3d;--text:#f0f3f6;--muted:#8b949e;--subtle:#6e7681;--line:#30363d;--line-strong:#484f58;--accent:#58a6ff;--accent-2:#79c0ff;--danger:#f85149;--green:#3fb950;--shadow:0 8px 24px rgba(0,0,0,0.3);--radius:10px}
-*{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg)}
-button,input{font:inherit}button{color:inherit}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-.app{width:min(1100px,calc(100% - 32px));margin:0 auto;padding:24px 0}
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --border: #d7dbdf;
+    --ink: #1a2029;
+    --ink-muted: #5b6470;
+    --ink-faint: #8a93a0;
+    --accent: #2563eb;
+    --accent-soft: #eff4ff;
+    --green: #16a34a;
+    --toggle-off: #d7dbdf;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html.dark {
+    --bg: #0f1115;
+    --surface: #171a20;
+    --border: #2a2f39;
+    --ink: #e7ebf0;
+    --ink-muted: #9aa3b0;
+    --ink-faint: #6b7280;
+    --accent: #3b82f6;
+    --accent-soft: #1b2740;
+    --green: #22c55e;
+    --toggle-off: #3a404b;
+  }
 
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
-.brand{display:inline-flex;align-items:center;gap:12px;color:inherit;text-decoration:none}
-.brand-icon{width:36px;height:36px;border-radius:var(--radius);background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px}
-.brand-name{font-size:1rem;font-weight:700}
-.brand-sub{color:var(--muted);font-size:.78rem;font-weight:500}
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; background: var(--bg); color: var(--ink); }
+  body { font-family: var(--font); line-height: 1.5; transition: background 0.2s, color 0.2s; }
 
-.workspace{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
-.main{display:grid;gap:16px;min-width:0}
-.side{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+  .shell { max-width: 40rem; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
 
-.section{padding:16px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
-.section-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.section-title{font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
-.section-meta{color:var(--subtle);font-size:.76rem;font-weight:500;margin-left:auto}
+  header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+  header img { width: 2.25rem; height: 2.25rem; object-fit: contain; }
+  header h1 { font-size: 1.25rem; font-weight: 700; }
 
-/* Provider cards */
-.provider-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
-.provider-card{position:relative;border:1px solid var(--line);border-left:2px solid transparent;border-radius:9px;background:var(--surface-2);cursor:pointer;padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:4px;transition:border-color .15s,box-shadow .15s,transform .15s}
-.provider-card.is-selected{border-left-color:var(--accent);background:rgba(88,166,255,.06)}
-.provider-card:hover{border-color:var(--line-strong);box-shadow:var(--shadow);transform:translateY(-1px)}
-.pc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.pc-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.check-dot{width:18px;height:18px;border:1px solid var(--line-strong);border-radius:99px;display:inline-flex;align-items:center;justify-content:center;color:transparent;flex-shrink:0;transition:background .12s,border-color .12s,color .12s}
-.is-selected .check-dot{border-color:var(--accent);color:#111827;background:var(--accent)}
-.pc-tags{color:var(--subtle);font-size:.72rem;line-height:1.4;word-break:break-word}
-.pc-tag-lead{color:var(--accent);font-weight:600}
+  .mode-toggle {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.8125rem; color: var(--ink-muted); cursor: pointer; user-select: none;
+  }
+  .mode-toggle .switch {
+    position: relative; width: 2.5rem; height: 1.5rem; flex-shrink: 0; cursor: pointer;
+  }
+  .mode-toggle .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .mode-toggle .track { position: absolute; inset: 0; background: var(--toggle-off); border-radius: 999px; transition: background 0.15s; }
+  .mode-toggle input:checked + .track { background: var(--accent); }
+  .mode-toggle .knob { position: absolute; top: 0.125rem; left: 0.125rem; width: 1.25rem; height: 1.25rem; background: #fff; border-radius: 50%; transition: transform 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+  .mode-toggle input:checked ~ .knob { transform: translateX(1rem); }
 
-/* Quality pills */
-.quality-grid{display:flex;flex-wrap:wrap;gap:6px}
-.q-pill{min-width:0;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);cursor:pointer;padding:8px 14px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:border-color .15s,background .15s,transform .15s}
-.q-pill.is-selected{border-color:rgba(88,166,255,.5);background:rgba(88,166,255,.08)}
-.q-pill:hover{border-color:var(--line-strong);transform:translateY(-1px)}
-.q-pill .label{font-weight:600;font-size:.86rem}
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+  .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+  .card .hint { font-size: 0.8125rem; color: var(--ink-muted); margin-bottom: 1rem; }
 
-/* Language grid */
-.lang-grid{display:flex;flex-wrap:wrap;gap:8px}
-.lang-pill{border:1px solid var(--line);border-radius:8px;background:var(--surface-2);cursor:pointer;padding:7px 14px;font-size:.84rem;font-weight:600;color:var(--muted);transition:all .15s}
-.lang-pill.is-selected{color:var(--green);border-color:rgba(63,185,80,.4);background:rgba(63,185,80,.08)}
-.lang-pill:hover{border-color:var(--line-strong)}
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 0; }
+  .row + .row { border-top: 1px solid var(--border); }
+  .row-label { flex: 1; min-width: 0; }
+  .row-label h3 { font-size: 0.9375rem; font-weight: 600; }
+  .row-label p { font-size: 0.8125rem; color: var(--ink-muted); }
 
-/* Options */
-.opt-row{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:8px;background:var(--surface-2)}
-.opt-label{font-size:.86rem;font-weight:600}
-.switch{flex:none;width:38px;height:22px;padding:0;border:none;border-radius:99px;background:rgba(139,148,158,.4);cursor:pointer;position:relative;transition:background .16s}
-.switch.is-on{background:var(--accent)}
-.switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .16s}
-.switch.is-on::after{transform:translateX(16px)}
+  .toggle { position: relative; width: 2.5rem; height: 1.5rem; flex-shrink: 0; cursor: pointer; }
+  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track { position: absolute; inset: 0; background: var(--toggle-off); border-radius: 999px; transition: background 0.15s; }
+  .toggle input:checked + .toggle-track { background: var(--accent); }
+  .toggle-knob { position: absolute; top: 0.125rem; left: 0.125rem; width: 1.25rem; height: 1.25rem; background: #fff; border-radius: 50%; transition: transform 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+  .toggle input:checked ~ .toggle-knob { transform: translateX(1rem); }
 
-/* Summary panel */
-.summary-panel{padding:16px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
-.sp-title{font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:12px}
-.sp-meta{color:var(--subtle);font-size:.84rem;margin-bottom:12px}
-.sp-meta strong{color:var(--text);font-weight:700}
-.install-btn{width:100%;min-height:44px;border:none;border-radius:9px;background:var(--accent);color:#111827;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .2s}
-.install-btn:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
-.install-btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 0.4rem; padding: 0.6rem 1rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+  .btn:hover { border-color: var(--ink-faint); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.75rem; }
 
-.url-box{margin-top:12px;padding:10px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);word-break:break-all;font-size:.78rem;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;display:none}
-.url-box code{color:var(--accent)}
-.copy-btn{margin-top:8px;padding:6px 14px;background:var(--surface-3);color:var(--text);border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:600;transition:all .15s}
-.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
-
-.footer{margin-top:16px;color:var(--subtle);font-size:.76rem;font-weight:500}
-
-@media(max-width:768px){.workspace{grid-template-columns:1fr}.side{position:static;order:2}.provider-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+  .url-box { margin-top: 0.75rem; padding: 0.7rem 0.85rem; background: var(--accent-soft); border: 1px solid var(--border); border-radius: 0.4rem; word-break: break-all; font-size: 0.78rem; color: var(--ink-muted); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .actions { display: flex; gap: 0.625rem; flex-wrap: wrap; margin-top: 1rem; }
+  .stats { display: flex; gap: 1.5rem; margin-bottom: 1.25rem; }
+  .stat { font-size: 0.8125rem; color: var(--ink-muted); }
+  .stat b { font-size: 1rem; color: var(--ink); font-weight: 700; }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="topbar">
-    <a class="brand" href="/">
-      <div class="brand-icon">&#127912;</div>
-      <div>
-        <div class="brand-name">Multianima</div>
-        <div class="brand-sub">Hindi Dub Anime Streamer</div>
-      </div>
-    </a>
+
+<div class="shell">
+
+  <header>
+    <img src="/static/anibox-icon-512.png" alt="AniBox" onerror="this.src='/static/anibox-mark.png'">
+    <h1>AniBox</h1>
+    <label class="mode-toggle">
+      <span id="mode-label">Dark</span>
+      <span class="switch"><input type="checkbox" id="mode-toggle"><span class="track"></span><span class="knob"></span></span>
+    </label>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><b id="stat-prov">0/3</b> Providers</div>
   </div>
 
-  <div class="workspace">
-    <div class="main">
-      <!-- Providers -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">Streaming Providers</span>
-          <span class="section-meta" id="prov-count"></span>
-        </div>
-        <div class="provider-grid" id="provider-grid"></div>
-      </div>
-
-      <!-- Quality -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">Quality</span>
-        </div>
-        <div class="quality-grid" id="quality-grid"></div>
-      </div>
-
-      <!-- Languages -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">Audio Language</span>
-        </div>
-        <div class="lang-grid" id="lang-grid"></div>
-      </div>
-
-      <!-- Options -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">Options</span>
-        </div>
-        <div style="display:grid;gap:8px" id="options-grid"></div>
-      </div>
+  <section class="card">
+    <h2>Providers</h2>
+    <p class="hint">Stream sources AniBox scrapes on every request. MultiMovies always serves direct CDN links for fast seeking.</p>
+    <div class="actions" style="margin-top:0;margin-bottom:1rem;">
+      <button class="btn btn-sm" onclick="setAllProviders(true)">Enable all</button>
+      <button class="btn btn-sm" onclick="setAllProviders(false)">Disable all</button>
     </div>
+    <div class="row-list" id="provider-list"></div>
+  </section>
 
-    <div class="side">
-      <div class="summary-panel">
-        <div class="sp-title">Install</div>
-        <div class="sp-meta" id="summary-meta"></div>
-        <button class="install-btn" onclick="install()" id="install-btn">Install in Stremio</button>
-        <div class="url-box" id="url-box"><code id="addon-url"></code></div>
-        <button class="copy-btn" id="copy-btn" onclick="copyUrl()" style="display:none">Copy URL</button>
-      </div>
+  <section class="card">
+    <h2>Install</h2>
+    <p class="hint">Paste this manifest URL into any Stremio-compatible app.</p>
+    <div class="url-box" id="addon-url"></div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="install()">Install in Stremio</button>
+      <button class="btn" onclick="copyUrl()" id="copy-btn">Copy URL</button>
     </div>
-  </div>
+  </section>
 
-  <div class="footer">Multianima v2.0 &middot; Streams from 6+ providers &middot; No logs, no tracking</div>
 </div>
 
 <script>
 const PROVIDERS = [
-  {key:'source_animelok', name:'AnimeLok', tags:['Most Streams','Hindi','Tamil','Telugu','Abyss','FlixCloud'], defaultOn:true},
-  {key:'source_watchanimeworld', name:'WatchAnimeWorld', tags:['ZephyrFlick','Hindi','Tamil','Telugu'], defaultOn:true},
-  {key:'source_animesalt', name:'AnimeSalt', tags:['Hindi','Tamil','English'], defaultOn:true},
-  {key:'source_animejoker', name:'AnimeJoker', tags:['Hindi','Multi-Source'], defaultOn:true},
-  {key:'source_desidubanime', name:'DesiDubAnime', tags:['HSAStream','Hindi Dub'], defaultOn:true},
-  {key:'source_bashapi', name:'BashAPI', tags:['Custom API','English','Hindi'], defaultOn:false},
-  {key:'source_animevilla', name:'AnimeVilla', tags:['HSAStream','Kiranime','Cloudscraper'], defaultOn:false},
-  {key:'source_aniflix', name:'Aniflix', tags:['Multi-Player','GDMirrorBot','Abyss','TRAWL'], defaultOn:false},
-];
-
-const QUALITIES = [
-  {key:'res_2160', label:'4K', rank:2160},
-  {key:'res_1080', label:'1080p', rank:1080},
-  {key:'res_720', label:'720p', rank:720},
-  {key:'res_480', label:'480p', rank:480},
-  {key:'res_360', label:'360p', rank:360},
-];
-
-const LANGS = [
-  {key:'audio_hindi', label:'Hindi'},
-  {key:'audio_tamil', label:'Tamil'},
-  {key:'audio_telugu', label:'Telugu'},
-  {key:'audio_english', label:'English'},
-  {key:'audio_japanese', label:'Japanese'},
-  {key:'audio_malayalam', label:'Malayalam'},
-  {key:'audio_kannada', label:'Kannada'},
-];
-
-const OPTIONS = [
-  {key:'subtitles_disabled', label:'Disable subtitles'},
-  {key:'hide_non_seekable', label:'Hide non-seekable streams'},
-];
-
-const PRESETS = [
-  {id:'default', label:'Default', providers:['source_animelok','source_watchanimeworld','source_animesalt','source_animejoker','source_desidubanime']},
-  {id:'minimal', label:'Minimal', providers:['source_animelok','source_watchanimeworld']},
-  {id:'all', label:'Everything', providers:PROVIDERS.map(p=>p.key)},
+  {key:'source_multimovies',     name:'MultiMovies',   desc:'Movies + Hindi series', def:true},
+  {key:'source_nxsha',           name:'NxSha',         desc:'Movies + series',       def:true},
+  {key:'source_watchanimeworld', name:'AnimeWorld',    desc:'Hindi dub series',      def:true},
 ];
 
 let state = {};
 
 function initState(){
-  PROVIDERS.forEach(p => state[p.key] = p.defaultOn ? 'on' : 'off');
-  QUALITIES.forEach(q => state[q.key] = 'on');
-  LANGS.forEach(l => state[l.key] = 'on');
-  OPTIONS.forEach(o => state[o.key] = 'off');
+  PROVIDERS.forEach(p => state[p.key] = p.def ? 'on' : 'off');
 }
 
 function buildConfig(){
-  return Object.fromEntries(Object.entries(state).filter(([k,v])=>v==='on'));
+  return Object.fromEntries(Object.entries(state).filter(([k,v]) => v === 'on'));
 }
 
 function encodeConfig(config){
@@ -202,105 +160,68 @@ function encodeConfig(config){
 }
 
 function getAddonUrl(){
-  const config = buildConfig();
-  const encoded = encodeConfig(config);
-  return window.location.origin + '/' + encoded + '/manifest.json';
+  return window.location.origin + '/' + encodeConfig(buildConfig()) + '/manifest.json';
 }
 
 function updateSummary(){
-  const provCount = PROVIDERS.filter(p=>state[p.key]==='on').length;
-  const langCount = LANGS.filter(l=>state[l.key]==='on').length;
-  const qualCount = QUALITIES.filter(q=>state[q.key]==='on').length;
-  document.getElementById('summary-meta').innerHTML =
-    '<strong>' + provCount + '</strong> providers &middot; <strong>' + langCount + '</strong> languages &middot; <strong>' + qualCount + '</strong> qualities';
-  document.getElementById('prov-count').textContent = provCount + '/' + PROVIDERS.length;
-  const url = getAddonUrl();
-  document.getElementById('addon-url').textContent = url;
+  document.getElementById('stat-prov').textContent = PROVIDERS.filter(p => state[p.key]==='on').length + '/' + PROVIDERS.length;
+  document.getElementById('addon-url').textContent = getAddonUrl();
 }
 
 function renderProviders(){
-  const grid = document.getElementById('provider-grid');
-  grid.innerHTML = '';
+  const list = document.getElementById('provider-list');
+  list.innerHTML = '';
   PROVIDERS.forEach(p => {
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'provider-card' + (state[p.key]==='on' ? ' is-selected' : '');
-    const tags = p.tags || [];
-    const lead = tags[0] || '';
-    const rest = tags.slice(1).join(' \u00b7 ');
-    card.innerHTML =
-      '<span class="pc-top"><span class="pc-name">' + p.name + '</span><span class="check-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span></span>' +
-      '<span class="pc-tags">' + (lead ? '<span class="pc-tag-lead">' + lead + '</span> ' : '') + rest + '</span>';
-    card.onclick = () => { state[p.key] = state[p.key]==='on' ? 'off' : 'on'; renderAll(); };
-    grid.appendChild(card);
+    const row = document.createElement('label');
+    row.className = 'row';
+    row.innerHTML =
+      '<div class="row-label"><h3>' + p.name + '</h3><p>' + p.desc + '</p></div>' +
+      '<input type="checkbox" class="prov-chk"' + (state[p.key]==='on' ? ' checked' : '') + '>';
+    row.querySelector('input').onchange = (e) => { state[p.key] = e.target.checked ? 'on' : 'off'; updateSummary(); };
+    list.appendChild(row);
   });
 }
 
-function renderQualities(){
-  const grid = document.getElementById('quality-grid');
-  grid.innerHTML = '';
-  QUALITIES.forEach(q => {
-    const pill = document.createElement('button');
-    pill.type = 'button';
-    pill.className = 'q-pill' + (state[q.key]==='on' ? ' is-selected' : '');
-    pill.innerHTML = '<span class="label">' + q.label + '</span><span class="check-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>';
-    pill.onclick = () => { state[q.key] = state[q.key]==='on' ? 'off' : 'on'; renderAll(); };
-    grid.appendChild(pill);
-  });
-}
-
-function renderLangs(){
-  const grid = document.getElementById('lang-grid');
-  grid.innerHTML = '';
-  LANGS.forEach(l => {
-    const pill = document.createElement('button');
-    pill.type = 'button';
-    pill.className = 'lang-pill' + (state[l.key]==='on' ? ' is-selected' : '');
-    pill.textContent = l.label;
-    pill.onclick = () => { state[l.key] = state[l.key]==='on' ? 'off' : 'on'; renderAll(); };
-    grid.appendChild(pill);
-  });
-}
-
-function renderOptions(){
-  const grid = document.getElementById('options-grid');
-  grid.innerHTML = '';
-  OPTIONS.forEach(o => {
-    const row = document.createElement('div');
-    row.className = 'opt-row';
-    row.innerHTML = '<span class="opt-label">' + o.label + '</span><button type="button" class="switch' + (state[o.key]==='on' ? ' is-on' : '') + '"></button>';
-    row.querySelector('.switch').onclick = () => { state[o.key] = state[o.key]==='on' ? 'off' : 'on'; renderAll(); };
-    grid.appendChild(row);
-  });
+function setAllProviders(on){
+  PROVIDERS.forEach(p => state[p.key] = on ? 'on' : 'off');
+  renderProviders(); updateSummary();
 }
 
 function renderAll(){
-  renderProviders();
-  renderQualities();
-  renderLangs();
-  renderOptions();
-  updateSummary();
+  renderProviders(); updateSummary();
 }
 
 function install(){
-  const url = getAddonUrl();
-  document.getElementById('url-box').style.display = 'block';
-  document.getElementById('copy-btn').style.display = 'block';
-  document.getElementById('addon-url').textContent = url;
-  setTimeout(()=>{
-    window.location.href = 'stremio://' + url.replace('https://','').replace('http://','');
-  }, 500);
+  setTimeout(() => { window.location.href = 'stremio://' + getAddonUrl().replace(/^https?:\/\//,''); }, 400);
 }
 
 function copyUrl(){
-  navigator.clipboard.writeText(getAddonUrl()).then(()=>{
-    document.getElementById('copy-btn').textContent = 'Copied!';
-    setTimeout(()=>{ document.getElementById('copy-btn').textContent = 'Copy URL'; }, 2000);
+  navigator.clipboard.writeText(getAddonUrl()).then(() => {
+    const b = document.getElementById('copy-btn');
+    if (b) { b.textContent = 'Copied!'; setTimeout(() => { b.textContent = 'Copy URL'; }, 2000); }
   });
 }
+
+// ─── Light / dark mode (dark default) ───
+function applyTheme(mode){
+  const root = document.documentElement;
+  if (mode === 'light') { root.classList.add('light'); root.classList.remove('dark'); }
+  else { root.classList.add('dark'); root.classList.remove('light'); }
+  document.getElementById('mode-label').textContent = mode === 'light' ? 'Light' : 'Dark';
+  try { localStorage.setItem('anibox-theme', mode); } catch(e){}
+}
+function currentMode(){
+  try { return localStorage.getItem('anibox-theme') || 'dark'; }
+  catch(e){ return 'dark'; }
+}
+const modeToggle = document.getElementById('mode-toggle');
+modeToggle.checked = currentMode() === 'light';
+modeToggle.addEventListener('change', () => applyTheme(modeToggle.checked ? 'light' : 'dark'));
+applyTheme(currentMode());
 
 initState();
 renderAll();
 </script>
+
 </body>
 </html>

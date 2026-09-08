@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <!-- Background -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#252628"/>
+      <stop offset="1" stop-color="#202123"/>
+    </linearGradient>
+
+    <!-- Main app icon gradient -->
+    <linearGradient id="icon" x1="0.08" y1="0.02" x2="0.92" y2="0.98">
+      <stop offset="0" stop-color="#9b45dc"/>
+      <stop offset="0.38" stop-color="#b52cc5"/>
+      <stop offset="0.72" stop-color="#e62b68"/>
+      <stop offset="1" stop-color="#f23557"/>
+    </linearGradient>
+
+    <!-- Inner glass gradient -->
+    <linearGradient id="inner" x1="0.12" y1="0" x2="0.88" y2="1">
+      <stop offset="0" stop-color="#a14bdd"/>
+      <stop offset="0.48" stop-color="#c72fba"/>
+      <stop offset="1" stop-color="#ed315c"/>
+    </linearGradient>
+
+    <!-- Icon highlight -->
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".28"/>
+      <stop offset=".42" stop-color="#ffffff" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Leaf -->
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd6e7"/>
+      <stop offset="1" stop-color="#f2a9cf"/>
+    </linearGradient>
+
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="13" flood-color="#000000" flood-opacity=".25"/>
+    </filter>
+
+    <filter id="playShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#7d176b" flood-opacity=".30"/>
+    </filter>
+  </defs>
+
+  <!-- Dark charcoal background -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+  <!-- Outer rounded app tile -->
+  <rect x="310" y="255" width="402" height="395" rx="76"
+        fill="url(#icon)" filter="url(#softShadow)"/>
+
+  <!-- Outer rim / raised glass edge -->
+  <rect x="319" y="264" width="384" height="377" rx="68"
+        fill="none" stroke="#d276e5" stroke-width="8" opacity=".58"/>
+
+  <!-- Inner rounded face -->
+  <rect x="337" y="282" width="348" height="341" rx="57"
+        fill="url(#inner)" opacity=".92"/>
+
+  <!-- Top glass highlight -->
+  <path d="M337 339
+           C337 307 362 282 395 282
+           H627
+           C660 282 685 307 685 340
+           V382
+           C588 338 465 331 337 384 Z"
+        fill="url(#shine)"/>
+
+  <!-- Subtle lower glow -->
+  <path d="M340 566 C425 622 579 646 683 574 V623
+           C666 642 650 650 621 650 H402
+           C371 650 350 630 340 605Z"
+        fill="#ff6686" opacity=".10"/>
+
+  <!-- Play button -->
+  <path d="M446 366
+           Q446 351 458 354
+           L602 438
+           Q614 445 602 452
+           L458 536
+           Q446 543 446 528 Z"
+        fill="#ffffff" filter="url(#playShadow)"/>
+
+  <!-- Small anime leaf accent — traced to match the supplied reference -->
+  <path d="M577 425
+           C565 418 560 405 563 392
+           C566 379 576 368 589 363
+           C597 360 607 359 615 360
+           C615 370 611 379 604 386
+           C613 381 621 375 628 370
+           C632 387 628 405 617 418
+           C606 431 590 434 577 425 Z"
+        fill="url(#leaf)"/>
+
+  <!-- Soft reference-style highlight on the leaf -->
+  <path d="M577 425
+           C566 417 562 405 565 393
+           C569 379 579 369 591 365"
+        fill="none" stroke="#ffe8f2" stroke-width="2.5"
+        stroke-linecap="round" opacity=".62"/>
+
+  <!-- Wordmark -->
+  <text x="512" y="766"
+        text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="79"
+        font-weight="500"
+        letter-spacing="-3.2"
+        fill="#ffffff">anibox</text>
+</svg>

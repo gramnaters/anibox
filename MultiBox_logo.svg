@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200">
+  <defs>
+    <linearGradient id="badge" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#0649ff"/>
+      <stop offset=".52" stop-color="#4b20df"/>
+      <stop offset="1" stop-color="#a51cff"/>
+    </linearGradient>
+    <linearGradient id="pink" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#ff27d8"/><stop offset="1" stop-color="#7044ff"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#4bb7ff"/><stop offset="1" stop-color="#0865ff"/>
+    </linearGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#d018ff"/><stop offset="1" stop-color="#087cff"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-opacity=".28"/>
+    </filter>
+    <clipPath id="diamond">
+      <path d="M600 45 C615 45 628 51 640 63 L1080 463 C1107 488 1107 526 1080 551 L654 964 C624 993 576 993 546 964 L120 551 C93 526 93 488 120 463 L560 63 C572 51 585 45 600 45Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Main badge -->
+  <path d="M600 45 C615 45 628 51 640 63 L1080 463 C1107 488 1107 526 1080 551 L654 964 C624 993 576 993 546 964 L120 551 C93 526 93 488 120 463 L560 63 C572 51 585 45 600 45Z"
+        fill="url(#badge)" filter="url(#shadow)"/>
+
+  <!-- Subtle glass facets -->
+  <g clip-path="url(#diamond)" opacity=".18">
+    <path d="M80 560 L560 70 L680 190 L190 690Z" fill="#50b8ff"/>
+    <path d="M610 40 L1110 470 L880 640 L520 250Z" fill="#ff42ed"/>
+  </g>
+
+  <!-- Play button -->
+  <path d="M555 270 Q555 238 584 256 L744 354 Q768 369 744 384 L584 482 Q555 500 555 468Z"
+        fill="#fff" filter="url(#shadow)"/>
+
+  <!-- Open box top flaps -->
+  <path d="M315 514 L430 462 L585 545 L469 610Z" fill="url(#pink)"/>
+  <path d="M885 514 L770 462 L615 545 L731 610Z" fill="url(#blue)"/>
+
+  <!-- Box front panels -->
+  <path d="M370 570 L585 683 L585 915 Q585 944 560 928 L370 795 Q352 782 352 757 L352 590 Q352 560 370 570Z"
+        fill="url(#pink)" filter="url(#shadow)"/>
+  <path d="M830 570 L615 683 L615 915 Q615 944 640 928 L830 795 Q848 782 848 757 L848 590 Q848 560 830 570Z"
+        fill="url(#blue)" filter="url(#shadow)"/>
+
+  <!-- Wordmark -->
+  <text x="600" y="1090" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif" font-size="150" font-weight="700"
+        letter-spacing="-7" fill="#091338">Multi<tspan fill="url(#word)">Box</tspan></text>
+</svg>

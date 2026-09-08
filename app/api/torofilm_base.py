@@ -244,7 +244,7 @@ class TorofilmAPI:
 
     def _classify_stream(self, url: str, name: str) -> dict:
         url_lower = url.lower()
-        if 'zephyr' in url_lower or 'as-cdn' in url_lower:
+        if 'zephyr' in url_lower:
             return {'player': 'zephyrflick', 'url': url, 'name': f'{name} (Zephyr)', 'languages': []}
         elif 'gdmirrorbot' in url_lower:
             return {'player': 'gdmirrorbot', 'url': url, 'name': f'{name} (GDMirror)', 'languages': []}

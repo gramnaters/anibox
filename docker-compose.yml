@@ -4,9 +4,16 @@ services:
     ports:
       - "8191:8191"
       - "8192:8192"
-    shm_size: 1gb
+    shm_size: 2gb
     environment:
-      BROWSER_POOL_SIZE: 2
+      BROWSER_POOL_SIZE: 5
+      BROWSER_CONTENT_PROCESSES: 4
+      BROWSER_ACQUIRE_TIMEOUT_MS: 30000
       MITM_PROXY_ENABLED: "false"
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8191/health"]
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 4g
