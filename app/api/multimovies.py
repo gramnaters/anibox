@@ -222,6 +222,32 @@ class MultiMoviesProvider:
             rp = self.session.get(proxy, headers={'Referer': embed_url}, timeout=TIMEOUT, verify=False)
             if rp.status_code != 200:
                 return out
+
+            # The directSrc token embedded in proxy.php is stale/cached and 403s.
+            # For streamhg, decode the hanerix /e/<sid> PACKER page instead, which
+            # yields a fresh, playable token.
+            m = re.search(r'stream\.([a-z]+)/([A-Za-z0-9_-]+)', rp.text)
+            m3 = re.search(r'/e/([A-Za-z0-9_-]+)', rp.text)
+            if m3:
+                sid = m3.group(1)
+                ref_host = re.search(r'https?://([^/]+)/e/', rp.text)
+                host = ref_host.group(1) if ref_host else 'hanerix.com'
+                page = f'https://{host}/e/{sid}'
+                try:
+                    from app.players.streamruby import get_video_from_streamruby_player
+                    vu, _q, _h = get_video_from_streamruby_player(page)
+                    if vu and vu.startswith('http'):
+                        out.append({
+                            'player': 'direct_m3u8',
+                            'url': vu,
+                            'name': 'MultiMovies',
+                            'referer': f'https://{host}/',
+                        })
+                        return out
+                except Exception as e:
+                    print(f'[multimovies] streamhg decode error: {e}')
+
+            # Fallback: directSrc (may be stale — last resort)
             m = re.search(r'directSrc="(https?:[^"]+)"', rp.text)
             if m:
                 url = m.group(1).replace('\\/', '/')
