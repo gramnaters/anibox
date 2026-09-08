@@ -11,7 +11,7 @@ BASE_MANIFEST = {
     'description': 'AniBox — stream movies and (Hindi dub) anime from multiple providers with quality and language filters.',
     'logo': '/static/anibox-icon-512.png',
     'types': ['movie', 'series'],
-    'idPrefixes': ['tt', 'tmdb:'],
+    'idPrefixes': ['tt', 'tmdb:', 'hd:tmdb:'],
     'catalogs': [
         {'type': 'series', 'id': 'hd_all', 'name': 'Hindi Dub Anime', 'extra': [
             {'name': 'search', 'isRequired': True}, {'name': 'skip', 'isRequired': False},
