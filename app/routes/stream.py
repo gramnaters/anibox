@@ -2,7 +2,6 @@ import urllib.parse, requests, re, time, inspect
 from flask import Blueprint, abort, request
 from cachetools import TTLCache
 from app.api import ALL_PROVIDERS
-from app.api.twopeckle import set_config as set_twopeckle_config
 from app.routes.utils import respond_with, log_error
 from app.routes.proxy import _fetch_upstream
 from app.players import resolve_stream, PLAYER_NAMES
@@ -183,7 +182,6 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
     content_id = urllib.parse.unquote(content_id)
     config = parse_config(config_data or '')
     enabled_providers = get_provider_from_config(config)
-    set_twopeckle_config(config)
 
     parts = content_id.split(':')
     season, episode = 1, 1

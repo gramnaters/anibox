@@ -13,3 +13,5 @@ SQLAlchemy~=2.0.0
 psycopg2-binary~=2.9.0
 nest-asyncio~=1.6.0
 typing_extensions>=4.0.0
+pycryptodome~=3.20.0
+cryptography~=43.0.1
