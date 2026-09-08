@@ -65,6 +65,39 @@ def debug():
     }
 
 
+@app.route('/diagnose')
+def diagnose():
+    """Report what upstream sites actually return from this server's IP
+    (CF challenge vs real content) — used to debug datacenter IP blocking."""
+    import requests as _rq
+    UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
+    out = {}
+    probes = {
+        'multimovies_search': 'https://multimovies.beer/?s=Inception',
+        'multimovies_home': 'https://multimovies.beer/',
+        'nxsha_home': 'https://nxsha.space/',
+        'iqsmart_home': 'https://pro.iqsmartgames.com/',
+    }
+    for name, url in probes.items():
+        try:
+            r = _rq.get(url, headers={'User-Agent': UA}, timeout=20, verify=False)
+            t = r.text or ''
+            low = t.lower()
+            out[name] = {
+                'status': r.status_code,
+                'len': len(t),
+                'has_result_item': 'result-item' in t,
+                'cf_challenge': ('challenge-platform' in low or 'cf-chl' in low
+                                 or 'just a moment' in low or 'cf-please-wait' in low
+                                 or 'captcha' in low or 'turnstile' in low),
+                'server': r.headers.get('server', ''),
+                'cf_ray': bool(r.headers.get('cf-ray')),
+            }
+        except Exception as e:
+            out[name] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
+    return out
+
+
 if __name__ == '__main__':
     port = int(Config.FLASK_PORT) if Config.FLASK_PORT.isdigit() else 5000
     print(f'AniBox | http://localhost:{port}')
