@@ -101,20 +101,34 @@ def _discover_anime(page=1):
 
 @catalog_bp.route('/catalog/<catalog_type>/<catalog_id>.json')
 @catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
+@catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
+@catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
 @catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>.json')
 @catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
+@catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
+@catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
 @catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>.json')
 @catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
+@catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
+@catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
 @catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>.json')
 @catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
-def addon_catalog(catalog_type, catalog_id, search=None, lang=None, config_data=None):
+@catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
+@catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
+def addon_catalog(catalog_type, catalog_id, search=None, skip=None, lang=None, config_data=None):
     if catalog_id not in ['hd_all', 'hd_latest']:
         abort(404)
 
     try:
         if search:
             search = urllib.parse.unquote(search)
-            results = _search_tmdb(search)
+            page = 1
+            try:
+                if skip:
+                    page = (int(skip) // 20) + 1
+            except Exception:
+                page = 1
+            results = _search_tmdb(search, page)
         elif catalog_id == 'hd_latest':
             results = _discover_anime(1)
         else:
