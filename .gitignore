@@ -44,7 +44,9 @@ zxc_crypto.py
 trawl_*.py
 trawl_verify.py
 *.har
+# PNG/JPG screenshots are ignored, EXCEPT the app's static icons.
 *.png
+!static/*.png
 *.jpeg
 *.jpg
 *.log
