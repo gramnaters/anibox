@@ -13,7 +13,6 @@ from cachetools import TTLCache, cached
 from bs4 import BeautifulSoup
 
 from app.api.iqsmart_common import resolve_embed, _resolve_fileslug
-
 DOMAINS = [
     'https://multimovies.beer',
     'https://multimovies.motorcycles',
@@ -163,6 +162,13 @@ class MultiMoviesProvider:
             streams = []
             for eu in embeds:
                 added = 0
+                # modiplay / filesforever embeds are self-contained (proxy.php -> hanerix
+                # m3u8) and do NOT touch the blocked iqsmartgames resolver.
+                if 'modiplay' in eu or 'filesforever' in eu:
+                    for sd in self._resolve_modiplay(eu):
+                        sd.setdefault('name', 'MultiMovies')
+                        streams.append(sd)
+                        added += 1
                 if 'iqsmartgames' in eu or 'gdmirrorbot' in eu or 'embedhelper' in eu:
                     for sd in resolve_embed(eu):
                         sd.setdefault('name', 'GDMirrorBot')
@@ -189,6 +195,46 @@ class MultiMoviesProvider:
         except Exception as e:
             print(f'[multimovies] streams error: {e}')
             return {'streams': []}
+
+    def _resolve_modiplay(self, embed_url):
+        """Resolve a modiplay/filesforever embed to a direct m3u8.
+
+        The embed page embeds an iframe to /proxy.php?p=<player>&c=<sid> whose
+        player JS exposes a directSrc="<m3u8>" (and, for streamhg, an iframe
+        to a hanerix PACKER page). This path avoids the CF-blocked
+        pro.iqsmartgames.com resolver entirely.
+        """
+        out = []
+        try:
+            if not embed_url or not embed_url.startswith('http'):
+                return out
+            r = self.session.get(embed_url, timeout=TIMEOUT, verify=False)
+            if r.status_code != 200:
+                return out
+            ifm = re.search(r'<iframe[^>]+src="([^"]+)"', r.text)
+            if not ifm:
+                return out
+            proxy = html.unescape(ifm.group(1))
+            if proxy.startswith('/'):
+                from urllib.parse import urlparse
+                p = urlparse(embed_url)
+                proxy = f'{p.scheme}://{p.netloc}{proxy}'
+            rp = self.session.get(proxy, headers={'Referer': embed_url}, timeout=TIMEOUT, verify=False)
+            if rp.status_code != 200:
+                return out
+            m = re.search(r'directSrc="(https?:[^"]+)"', rp.text)
+            if m:
+                url = m.group(1).replace('\\/', '/')
+                host = re.search(r'https?://([^/]+)', url)
+                out.append({
+                    'player': 'direct_m3u8',
+                    'url': url,
+                    'name': 'MultiMovies',
+                    'referer': f'https://{host.group(1)}/' if host else embed_url,
+                })
+        except Exception as e:
+            print(f'[multimovies] modiplay error: {e}')
+        return out
 
     def _episode_url(self, slug, kind, basename, season, episode, dom):
         details = self.get_anime_details(slug)
