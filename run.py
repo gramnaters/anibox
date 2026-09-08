@@ -166,7 +166,10 @@ def diagnose():
                     headers={'User-Agent': UA}, timeout=25, verify=False)
         t = r.text or ''
         post_ids = _re.findall(r'data-post="(\d+)"', t)
-        out['mm_movie_page'] = {'status': r.status_code, 'len': len(t), 'data_post': post_ids[:3]}
+        low = t.lower()
+        out['mm_movie_page'] = {'status': r.status_code, 'len': len(t), 'data_post': post_ids[:3],
+                                'cf_challenge': ('challenge-platform' in low or 'just a moment' in low),
+                                'has_playeroptions': 'playeroptions' in low}
         if post_ids:
             rp = _rq.post('https://multimovies.beer/wp-admin/admin-ajax.php',
                           data=f'action=doo_player_ajax&post={post_ids[0]}&nume=1&type=movie',
