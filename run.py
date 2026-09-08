@@ -145,6 +145,19 @@ def diagnose():
         out['vibuxer_e_page'] = {'status': r.status_code, 'len': len(t), 'has_packer': 'eval(function' in t}
     except Exception as e:
         out['vibuxer_e_page'] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
+
+    # Decode the vibuxer packer from Render's IP and fetch the resulting m3u8
+    try:
+        from app.players.streamruby import get_video_from_streamruby_player
+        vu, _q, _h = get_video_from_streamruby_player('https://vibuxer.com/e/q7cx9vgs8lv8')
+        out['streamhg_decode'] = {'url': (vu or '')[:110]}
+        if vu:
+            import urllib.parse as _up
+            pp = _up.urlparse(vu)
+            r2 = _rq.get(vu, headers={'User-Agent': UA, 'Referer': f'{pp.scheme}://{pp.hostname}/'}, timeout=25, verify=False)
+            out['streamhg_m3u8'] = {'status': r2.status_code, 'is_hls': '#EXTM3U' in (r2.text or '')}
+    except Exception as e:
+        out['streamhg_decode'] = {'error': f'{type(e).__name__}: {str(e)[:80]}'}
     return out
 
 
