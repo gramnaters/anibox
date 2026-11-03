@@ -96,6 +96,7 @@ PROVIDER_DISPLAY = {
     'watchanimeworld': 'AnimeWorld',
     'toonstream': 'ToonStream',
     'piratexplay': 'PirateXPlay',
+    'screenscape': 'ScreenScape',
 }
 
 

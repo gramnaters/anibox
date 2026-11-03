@@ -17,7 +17,10 @@ import requests
 from cachetools import TTLCache, cached
 
 BASE_URL = 'https://nxsha.space'
-AES_KEY = b'S8x!Jk4ZP1uG8$my'
+# Passphrase rotated server-side (extracted from nxsha.space's live frontend
+# JS: module 41159, `let t="f4488...";`). Crypto is still CryptoJS AES-256-CBC
+# (OpenSSL "Salted__" EvpKDF/MD5, base64url).
+AES_KEY = b'f4488ab4da401203d23baa129fc546153898162524635d6776826d0c867ccaa3'
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
 TIMEOUT = 15

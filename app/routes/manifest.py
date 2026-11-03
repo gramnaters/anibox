@@ -31,6 +31,7 @@ BASE_MANIFEST = {
         {'key': 'source_watchanimeworld', 'type': 'checkbox', 'title': 'AnimeWorld (Hindi dub series)', 'default': 'checked'},
         {'key': 'source_toonstream', 'type': 'checkbox', 'title': 'ToonStream (anime + cartoon)', 'default': 'checked'},
         {'key': 'source_piratexplay', 'type': 'checkbox', 'title': 'PirateXPlay (multi-language anime)', 'default': 'checked'},
+        {'key': 'source_screenscape', 'type': 'checkbox', 'title': 'ScreenScape (movies + series)', 'default': 'checked'},
     ],
     'behaviorHints': {'configurable': True, 'configurationRequired': False},
 }

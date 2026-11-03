@@ -30,6 +30,7 @@ def _default_config():
         'source_watchanimeworld': 'on',
         'source_toonstream': 'on',
         'source_piratexplay': 'on',
+        'source_screenscape': 'on',
     }
 
 
