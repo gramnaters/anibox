@@ -1,19 +1,55 @@
 """
 PirateXPlay provider (piratexplay.cc).
-Servers: HD (Multi), SHORT (Multi), VIDSTREAMING (Multi), GDMIRRORBOT (Multi).
-Uses bashapi.tech API for search + details.
-"""
-import requests, re, json, os
-from urllib.parse import quote
-from cachetools import TTLCache, cached
 
-BASE_URL = 'https://piratexplay.cc'
-BASHAPI_BASE = 'https://ind.bashapi.tech'
-UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-TIMEOUT = 15
+Search: JSON `/api/search.php/?keyword=` → {data:[{tmdb:{title,type,url}}]}.
+Details: `/series/{slug}` + `/movies/{slug}` (episodes `#episode_by_temp li`, links
+`/episode/{slug}-{s}x{e}/`). Streams: episode page iframes → `/public/player/index11.php?id=`
+→ data-link server URLs (bysezejataos, strmup, turbovidhls, abyssplayer, iqsmartgames, …)
+→ classified into existing player extractors.
+"""
+import re
+import requests
+from urllib.parse import urljoin
+from cachetools import TTLCache, cached
+from bs4 import BeautifulSoup
+
+BASE = 'https://piratexplay.cc'
+UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+      '(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
+TIMEOUT = 20
 
 search_cache = TTLCache(maxsize=512, ttl=3600)
+details_cache = TTLCache(maxsize=1024, ttl=3600)
 streams_cache = TTLCache(maxsize=512, ttl=600)
+
+
+def _classify_embed(url):
+    u = url.lower()
+    if 'iqsmartgames' in u or 'gdmirrorbot' in u:
+        return 'gdmirrorbot'
+    if 'turbovid' in u or 'emturbovid' in u:
+        return 'turbovid'
+    if 'abyssplayer' in u:
+        return 'abyss'
+    if 'byseze' in u or 'bysevepoin' in u or 'n1mwq' in u or 'byse' in u:
+        return 'byse'
+    if 'bysetayico' in u or 'filemoon' in u:
+        return 'filemoon'
+    if 'strmup' in u or 'streamwish' in u or 'pixdrive' in u:
+        return 'filemoon'
+    if 'rubystm' in u or 'streamruby' in u:
+        return 'streamruby'
+    if 'cloudy.upns' in u or 'upns' in u or 'uns.bio' in u:
+        return 'upnshare'
+    if 'vidmoly' in u:
+        return 'vidmoly'
+    if 'dood' in u:
+        return 'doodstream'
+    if 'streamtape' in u:
+        return 'streamtape'
+    if 'hanerix' in u or 'smoothpre' in u:
+        return 'streamhg'
+    return ''
 
 
 class PirateXPlayProvider:
@@ -24,152 +60,168 @@ class PirateXPlayProvider:
         self.session.headers.update({'User-Agent': UA})
 
     @cached(search_cache)
-    def search_anime(self, query):
-        results = []
+    def search_anime(self, query: str) -> list:
         try:
-            if query.strip():
-                r = requests.get(f'{BASHAPI_BASE}/search/{quote(query, safe="")}',
-                               headers={'User-Agent': UA}, timeout=TIMEOUT, verify=False)
-            else:
-                r = requests.get(f'{BASHAPI_BASE}/home', headers={'User-Agent': UA},
-                               timeout=TIMEOUT, verify=False)
-            data = r.json()
-            if not data.get('success'):
+            r = self.session.get(f'{BASE}/api/search.php/',
+                                 params={'keyword': query},
+                                 headers={'X-Requested-With': 'XMLHttpRequest'},
+                                 timeout=TIMEOUT, verify=False)
+            if r.status_code != 200:
                 return []
-
-            seen = set()
-            search_data = data.get('data', {})
-            items = search_data.get('data', []) if isinstance(search_data, dict) else []
-            if not items:
-                for section in search_data.get('main', []) if isinstance(search_data, dict) else []:
-                    items.extend(section.get('data', []))
-
-            for item in items:
-                slug = item.get('slug', '')
-                base_slug = re.sub(r'-\d+x\d+$', '', slug)
-                if base_slug in seen:
-                    continue
-                title = item.get('title', '')
-                if not title:
-                    continue
-                if query.strip() and query.lower() not in title.lower():
-                    continue
-                url = item.get('url', '')
-                seen.add(base_slug)
-                content_type = 'movie' if '/movies/' in url else item.get('type', 'series')
-                results.append({
-                    'title': title,
-                    'slug': base_slug,
-                    'poster': item.get('poster', ''),
-                    'type': content_type,
-                    'provider': self.NAME,
-                })
-        except:
-            pass
+            data = r.json().get('data') or []
+        except Exception:
+            return []
+        results = []
+        for item in data:
+            tmdb = (item or {}).get('tmdb') or {}
+            if not isinstance(tmdb, dict):
+                continue
+            title = tmdb.get('title', '')
+            itype = tmdb.get('type', '')
+            basename = tmdb.get('url', '')
+            if not title or not basename:
+                continue
+            kind = 'series' if itype == 'series' else 'movie'
+            prefix = 'series' if kind == 'series' else 'movies'
+            results.append({
+                'title': title,
+                'slug': f'{kind}/{basename}',
+                'poster': '',
+                'type': 'movie' if kind == 'movie' else 'series',
+                'provider': self.NAME,
+                'url': f'{BASE}/{prefix}/{basename}/',
+            })
         return results
 
-    def get_home_catalog(self):
+    def get_home_catalog(self) -> list:
         return []
 
-    def get_anime_details(self, slug):
+    def _slug_url(self, slug):
+        if '/' not in slug:
+            return None
+        kind, basename = slug.split('/', 1)
+        prefix = 'movies' if kind == 'movie' else 'series'
+        return f'{BASE}/{prefix}/{basename}/'
+
+    @cached(details_cache)
+    def get_anime_details(self, slug: str) -> dict:
+        url = self._slug_url(slug)
+        if not url:
+            return None
         try:
-            r = requests.get(f'{BASHAPI_BASE}/series/info/{slug}', headers={'User-Agent': UA},
-                           timeout=TIMEOUT, verify=False)
-            data = r.json()
-            if not data.get('success'):
+            r = self.session.get(url, timeout=TIMEOUT, verify=False)
+            if r.status_code != 200:
                 return None
-            d = data.get('data', {})
-            episodes = []
-            for season in d.get('seasons', []):
-                sn = season.get('season_no', 1)
-                for ep in season.get('episodes', []):
-                    episodes.append({
-                        'season': sn,
-                        'episode': ep.get('episode_no', 1),
-                        'title': ep.get('title', ''),
-                        'slug': ep.get('slug', ''),
-                    })
-            if not episodes:
-                episodes = [{'season': 1, 'episode': i, 'title': f'Episode {i}', 'slug': slug} for i in range(1, 300)]
-            return {
-                'title': d.get('title', slug),
-                'slug': slug,
-                'poster': d.get('poster', ''),
-                'type': 'series',
-                'provider': self.NAME,
-                'episodes': episodes,
-            }
-        except:
+            soup = BeautifulSoup(r.text, 'html.parser')
+        except Exception:
             return None
 
-    def get_episodes(self, slug):
-        d = self.get_anime_details(slug)
-        return d.get('episodes', []) if d else []
+        title = ''
+        h1 = soup.select_one('h1.entry-title') or soup.select_one('h1')
+        if h1:
+            title = h1.get_text(strip=True)
+        if not title:
+            og = soup.select_one('meta[property="og:title"]')
+            title = og.get('content', '').strip() if og else slug.split('/')[-1].replace('-', ' ').title()
+        img = soup.select_one('div.bghd img') or soup.select_one('.post-thumbnail img')
+        poster = (img.get('src') or img.get('data-src') or '') if img else ''
+
+        kind = slug.split('/', 1)[0]
+        if kind == 'movie':
+            return {
+                'title': title, 'slug': slug, 'poster': poster, 'type': 'movie',
+                'provider': self.NAME,
+                'episodes': [{'season': 1, 'episode': 1, 'title': title, 'slug': slug, 'ep_url': url}],
+            }
+
+        episodes = []
+        for li in soup.select('#episode_by_temp li, .post-lst li'):
+            a = li.select_one('a[href]')
+            if not a:
+                continue
+            href = a.get('href', '')
+            m = re.search(r'-(\d+)x(\d+)/?$', href)
+            if not m:
+                continue
+            s, e = int(m.group(1)), int(m.group(2))
+            name = li.select_one('.num-epi, h2.entry-title, header.entry-header span')
+            etitle = name.get_text(strip=True) if name else f'Episode {e}'
+            episodes.append({
+                'season': s, 'episode': e, 'title': etitle, 'slug': slug,
+                'ep_url': urljoin(BASE + '/', href),
+            })
+        if not episodes:
+            episodes = [{'season': 1, 'episode': i, 'title': f'Episode {i}', 'slug': slug}
+                        for i in range(1, 200)]
+        return {
+            'title': title, 'slug': slug, 'poster': poster, 'type': 'series',
+            'provider': self.NAME, 'episodes': episodes,
+        }
+
+    def get_episodes(self, slug: str) -> list:
+        details = self.get_anime_details(slug)
+        return details.get('episodes', []) if details else []
+
+    def _resolve_player_links(self, player_url, referer):
+        """Follow an index11.php player page → data-link server URLs."""
+        links = []
+        try:
+            r = self.session.get(player_url, headers={'Referer': referer}, timeout=TIMEOUT, verify=False)
+            if r.status_code != 200:
+                return links
+            soup = BeautifulSoup(r.text, 'html.parser')
+            for opt in soup.select('.server-option[data-link]'):
+                dl = opt.get('data-link', '')
+                if dl.startswith('http'):
+                    links.append(dl)
+            fr = soup.select_one('#playerFrame')
+            if fr and fr.get('src'):
+                links.append(fr.get('src'))
+        except Exception as e:
+            print(f'[piratexplay] player error: {e}')
+        return links
 
     @cached(streams_cache)
-    def get_episode_streams(self, slug, season=1, episode=1):
-        try:
-            # PirateXPlay uses bashapi.tech for streams.
-            # Series slug may need episode suffix: {slug}-{season}x{episode}
-            target = slug
+    def get_episode_streams(self, slug: str, season: int = 1, episode: int = 1) -> dict:
+        kind = slug.split('/', 1)[0] if '/' in slug else ''
+        details = self.get_anime_details(slug)
+        ep_url = None
+        if details:
+            for ep in details.get('episodes', []):
+                if ep.get('season') == season and ep.get('episode') == episode:
+                    ep_url = ep.get('ep_url')
+                    break
+        if not ep_url:
+            if kind == 'movie':
+                ep_url = self._slug_url(slug)
+            else:
+                base = self._slug_url(slug)
+                if base:
+                    ep_url = f'{base.rstrip("/")}-{season}x{episode}/'
+
+        streams = []
+        if ep_url:
             try:
-                info = requests.get(f'{BASHAPI_BASE}/series/info/{slug}',
-                                    headers={'User-Agent': UA}, timeout=max(TIMEOUT, 45), verify=False).json()
-                if info.get('success'):
-                    for s in info.get('data', {}).get('seasons', []):
-                        if s.get('season_no') != season:
+                r = self.session.get(ep_url, timeout=TIMEOUT, verify=False)
+                if r.status_code == 200:
+                    soup = BeautifulSoup(r.text, 'html.parser')
+                    seen = set()
+                    for ifr in soup.select('iframe[src], iframe[data-src]'):
+                        src = ifr.get('src') or ifr.get('data-src') or ''
+                        if not src.startswith('http'):
                             continue
-                        for ep in s.get('episodes', []):
-                            if ep.get('episode_no') == episode:
-                                target = ep.get('slug', slug)
-                                break
-                        break
-            except:
-                pass
-
-            r = requests.get(f'{BASHAPI_BASE}/episode/sources/{target}',
-                             timeout=max(TIMEOUT, 45), verify=False)
-            if r.status_code != 200:
-                return {'streams': []}
-            data = r.json()
-            if not data.get('success'):
-                return {'streams': []}
-
-            streams = []
-            # Direct m3u8 sources
-            for src in data.get('data', {}).get('sources', []):
-                url = src.get('url', '')
-                if url:
-                    streams.append({
-                        'player': 'direct_m3u8',
-                        'url': url,
-                        'name': src.get('label', 'Direct'),
-                    })
-
-            # Embed sources
-            for embed in data.get('data', {}).get('embeds', []):
-                if embed.startswith('//'):
-                    embed = 'https:' + embed
-                player = self._classify(embed)
-                streams.append({
-                    'player': player,
-                    'url': embed,
-                    'name': player.replace('_', ' ').title(),
-                })
-
-            return {'streams': streams}
-        except:
-            return {'streams': []}
-
-    def _classify(self, url):
-        u = url.lower()
-        if 'gdmirrorbot' in u: return 'gdmirrorbot'
-        if 'as-cdn' in u or 'zephyr' in u: return 'fireplayer'
-        if 'cloudy.upns' in u or 'p2pplay' in u: return 'streamp2p'
-        if 'vidmoly' in u: return 'vidmoly'
-        if 'abyssplayer' in u or 'player.abyss' in u: return 'abyss'
-        if 'emturbovid' in u or 'turbovid' in u: return 'turbovid'
-        if 'short.icu' in u: return 'shorticu'
-        if 'streamruby' in u or 'rubystm' in u: return 'streamruby'
-        if 'dood' in u: return 'dood'
-        return 'generic_embed'
+                        # index11.php player pages need following to data-links
+                        if 'index11.php' in src:
+                            for dl in self._resolve_player_links(src, ep_url):
+                                p = _classify_embed(dl)
+                                if p and dl not in seen:
+                                    seen.add(dl)
+                                    streams.append({'player': p, 'url': dl, 'name': self.NAME})
+                        else:
+                            p = _classify_embed(src)
+                            if p and src not in seen:
+                                seen.add(src)
+                                streams.append({'player': p, 'url': src, 'name': self.NAME})
+            except Exception as e:
+                print(f'[piratexplay] streams error: {e}')
+        return {'streams': streams}

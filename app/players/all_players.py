@@ -56,6 +56,7 @@ PLAYER_MAP = {
     'cloud.desidubanime.me': 'cloud', '.upns': 'upnshare',
     'piratexplay.cc': 'piratexplay',
     'hsastream.com': 'hsastream',
+    'bysezejataos.com': 'byse', 'bysevepoin.com': 'byse', 'byse': 'byse',
 }
 
 def classify_url(url: str) -> str:
@@ -629,31 +630,56 @@ def extract_playmogo(url):
     return {'streams': []}
 
 def extract_abyss(url):
-    """Abyss Player - try extraction via iframe/resolve. Falls back to empty if encrypted."""
+    """Abyss Player - POST const datas to enc-dec.app/api/dec-abyss → sources."""
     try:
-        resp = requests.get(url, headers={'User-Agent': UA}, timeout=TIMEOUT)
+        resp = requests.get(url, headers={
+            'User-Agent': UA,
+            'Origin': 'https://playhydrax.com',
+            'Referer': 'https://playhydrax.com/',
+        }, timeout=TIMEOUT, verify=False)
         html = resp.text
-        # Try to find m3u8/mp4 in the page
+
+        # Direct m3u8/mp4 in page
         m3u8 = re.search(r'(https?://[^\s\"\'<>]+\.m3u8[^\s\"\'<>]*)', html)
-        if m3u8: return {'streams': [{'player': 'direct_m3u8', 'url': m3u8.group(1), 'name': 'Abyss'}]}
-        # Check for base64 encoded config
-        datas = re.search(r'const datas = "([^"]+)"', html)
+        if m3u8:
+            return {'streams': [{'player': 'direct_m3u8', 'url': m3u8.group(1), 'name': 'Abyss'}]}
+
+        # const datas = "..." → POST to dec-abyss decrypt service
+        datas = re.search(r'const\s+datas\s*=\s*"([^"]*)"', html)
         if datas:
-            try:
-                config = json.loads(base64.b64decode(datas.group(1)))
-                # Check if media is already in the config
-                if isinstance(config.get('media'), str) and 'http' in config['media']:
-                    return {'streams': [{'player': 'direct_m3u8', 'url': config['media'], 'name': 'Abyss'}]}
-            except: pass
-        # Try iframe redirect
+            encrypted = datas.group(1)
+            r2 = requests.post('https://enc-dec.app/api/dec-abyss',
+                               headers={'User-Agent': UA, 'Origin': 'https://playhydrax.com',
+                                        'Referer': 'https://playhydrax.com/',
+                                        'Content-Type': 'application/json'},
+                               json={'text': encrypted}, timeout=TIMEOUT, verify=False)
+            if r2.status_code == 200:
+                try:
+                    data = r2.json()
+                    sources = (data.get('result') or {}).get('sources') or []
+                    streams = []
+                    for s in sources:
+                        u = s.get('url') or ''
+                        if u.startswith('http'):
+                            streams.append({'player': 'direct_m3u8', 'url': u,
+                                            'name': f"Abyss/{s.get('type') or s.get('codec') or ''}".strip('/')})
+                    if streams:
+                        return {'streams': streams}
+                except Exception:
+                    pass
+
+        # iframe redirect fallback
         iframe = re.search(r'iframe[^>]*src=["\']([^"\']+)["\']', html)
         if iframe:
             sub_player = classify_url(iframe.group(1))
             sub_ex = EXTRACTORS.get(sub_player)
             if sub_ex and sub_ex != extract_abyss:
-                try: return sub_ex(iframe.group(1))
-                except: pass
-    except: pass
+                try:
+                    return sub_ex(iframe.group(1))
+                except Exception:
+                    pass
+    except Exception as e:
+        print(f'[abyss] error: {e}')
     return {'streams': []}
 
 
@@ -811,6 +837,87 @@ def extract_piratexplay(url):
 
 
 # ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+# BYSE (bysezejataos / byse*.com) — AES-256-GCM encrypted playback JSON
+# ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+def _b64url_decode(s):
+    s = s.replace('-', '+').replace('_', '/')
+    pad = (4 - len(s) % 4) % 4
+    return base64.b64decode(s + '=' * pad)
+
+
+def extract_byse(url):
+    """Byse host (bysezejataos.com / byse*.com).
+
+    The /api/videos/<code> endpoint returns a playback object with
+    AES-256-GCM encrypted sources. Key is built from two key_parts:
+        key = b64url(key_parts[version-1]) + b64url(key_parts[size-version])
+    iv and payload are b64url. Decrypted JSON has sources[].url = m3u8.
+    """
+    try:
+        # Extract video code from /e/<code> or /xmi/<code> or any trailing slug
+        code = None
+        m = re.search(r'/(?:e|xmi|embed)/([A-Za-z0-9_-]+)', url)
+        if m:
+            code = m.group(1)
+        if not code:
+            code = url.rstrip('/').split('/')[-1]
+        if not code:
+            return {'streams': []}
+
+        host = urlparse(url).netloc
+        base = f'{urlparse(url).scheme}://{host}'
+
+        headers = {
+            'User-Agent': UA,
+            'Origin': base,
+            'Referer': f'{base}/embed/{code}',
+            'X-Embed-Origin': base,
+            'X-Embed-Parent': base,
+            'X-Embed-Referer': f'{base}/',
+        }
+
+        r = requests.get(f'{base}/api/videos/{code}', headers=headers, timeout=TIMEOUT, verify=False)
+        if r.status_code != 200:
+            return {'streams': []}
+        data = r.json()
+        playback = data.get('playback') or {}
+        if not playback:
+            return {'streams': []}
+
+        payload = playback.get('payload', '')
+        key_parts = playback.get('key_parts') or []
+        version = int(playback.get('version') or 0)
+        iv = playback.get('iv', '')
+
+        if not payload or len(key_parts) < 2:
+            return {'streams': []}
+
+        # Build AES key from two parts
+        if version > 0 and version <= len(key_parts):
+            key = _b64url_decode(key_parts[version - 1]) + _b64url_decode(key_parts[len(key_parts) - version])
+        else:
+            key = _b64url_decode(key_parts[0]) + _b64url_decode(key_parts[1])
+
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        pt = AESGCM(key).decrypt(_b64url_decode(iv), _b64url_decode(payload), None)
+        dec = json.loads(pt.decode('utf-8'))
+
+        streams = []
+        for src in dec.get('sources') or []:
+            m3u8 = src.get('url') or ''
+            if m3u8.startswith('http'):
+                streams.append({
+                    'player': 'direct_m3u8',
+                    'url': m3u8,
+                    'name': f"Byse/{src.get('label') or src.get('quality') or ''}".strip('/'),
+                })
+        return {'streams': streams}
+    except Exception as e:
+        print(f'[byse] error: {e}')
+        return {'streams': []}
+
+
+# ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
 # HSASTREAM — AES-128-CBC decrypt API responses → m3u8 streams
 # ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
 HSASTREAM_KEY = b'kiemtienmua911ca'
@@ -965,6 +1072,7 @@ EXTRACTORS = {
     'cloud': extract_cloud_desidub,
     'piratexplay': extract_piratexplay,
     'hsastream': extract_hsastream,
+    'byse': extract_byse,
 }
 
 PLAYER_NAMES = {
@@ -975,5 +1083,5 @@ PLAYER_NAMES = {
     'zephyrflick': 'ZephyrFlick', 'moviesapi': 'MoviesAPI', 'videasy': 'Videasy',
     'playmogo': 'PlayMogo', 'abyss': 'Abyss Player', 'flixcloud': 'FlixCloud',
     'megacloud': 'MegaCloud', 'direct_m3u8': 'Direct Stream',
-    'piratexplay': 'PirateXPlay', 'hsastream': 'HSAStream',
+    'piratexplay': 'PirateXPlay', 'hsastream': 'HSAStream', 'byse': 'Byse',
 }

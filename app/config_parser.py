@@ -28,6 +28,8 @@ def _default_config():
         'source_multimovies': 'on',
         'source_nxsha': 'on',
         'source_watchanimeworld': 'on',
+        'source_toonstream': 'on',
+        'source_piratexplay': 'on',
     }
 
 

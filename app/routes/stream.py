@@ -94,6 +94,8 @@ PROVIDER_DISPLAY = {
     'multimovies': 'MultiMovies',
     'nxsha': 'NxSha',
     'watchanimeworld': 'AnimeWorld',
+    'toonstream': 'ToonStream',
+    'piratexplay': 'PirateXPlay',
 }
 
 

@@ -29,6 +29,8 @@ BASE_MANIFEST = {
         {'key': 'source_multimovies', 'type': 'checkbox', 'title': 'MultiMovies (movies + Hindi series)', 'default': 'checked'},
         {'key': 'source_nxsha', 'type': 'checkbox', 'title': 'NxSha (movies + series)', 'default': 'checked'},
         {'key': 'source_watchanimeworld', 'type': 'checkbox', 'title': 'AnimeWorld (Hindi dub series)', 'default': 'checked'},
+        {'key': 'source_toonstream', 'type': 'checkbox', 'title': 'ToonStream (anime + cartoon)', 'default': 'checked'},
+        {'key': 'source_piratexplay', 'type': 'checkbox', 'title': 'PirateXPlay (multi-language anime)', 'default': 'checked'},
     ],
     'behaviorHints': {'configurable': True, 'configurationRequired': False},
 }
