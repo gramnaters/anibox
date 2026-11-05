@@ -78,9 +78,58 @@ def _is_subtitle_url(u):
     return u.lower().endswith(('.vtt', '.srt', '.ass', '.ssa'))
 
 
+_SEGMENT_EXTS = ('.ts', '.m4s', '.mp4', '.m4a', '.aac', '.mp3', '.key')
+
+
+def _segment_ext(u):
+    """Pick a filename extension for a proxied segment URL.
+
+    Some HLS demuxers (ffmpeg) reject segment URLs without a known media
+    extension, so the proxy exposes /seg/<id>.<ext> instead of /seg/<id>.
+    """
+    path = urlparse(u).path.lower()
+    for ext in _SEGMENT_EXTS:
+        if path.endswith(ext):
+            return ext
+    return '.ts'
+
+
+def _addon_base():
+    """Base URL of this addon as seen by the client (honours Render's TLS proxy)."""
+    scheme = (request.headers.get('X-Forwarded-Proto') or request.scheme).split(',')[0].strip()
+    return f'{scheme}://{request.host}'.rstrip('/')
+
+
+def addon_base_url():
+    """Return this addon's public base URL for the current request.
+
+    Call this on the request thread and pass the result to register_proxy_url
+    when registering from a worker thread (Flask's request is thread-local).
+    """
+    return _addon_base()
+
+
+def register_proxy_url(url, headers, base_url=None):
+    """Register an upstream media URL and return a local proxy URL for it.
+
+    Used by the stream route for CDNs that reject browser Origin headers or
+    require headers on sub-playlists/segments, which Stremio does not forward.
+    ``base_url`` must be supplied when called outside the request thread.
+    """
+    headers = headers or {}
+    kind = 'm3u8' if _is_playlist_url(url) else 'segment'
+    prefix, route = ('pl_', 'm3u8') if kind == 'm3u8' else ('sg_', 'seg')
+    pid = prefix + hashlib.sha1(
+        (url + '|' + (headers.get('Referer') or '')).encode()
+    ).hexdigest()[:16]
+    playlist_mappings[pid] = {'url': url, 'headers': headers, 'type': kind}
+    suffix = _segment_ext(url) if kind == 'segment' else '.m3u8'
+    return f'{(base_url or _addon_base()).rstrip("/")}/{route}/{pid}{suffix}'
+
+
 def _rewrite_m3u8_urls(content, base_url, headers):
     """Rewrite ALL URLs in an m3u8 playlist to go through this addon."""
-    addon_base = request.host_url.rstrip('/')
+    addon_base = _addon_base()
 
     def _register(u, kind):
         if kind == 'subtitle':
@@ -95,7 +144,8 @@ def _rewrite_m3u8_urls(content, base_url, headers):
             (u + '|' + ((headers or {}).get('Referer') or '')).encode()
         ).hexdigest()[:16]
         playlist_mappings[pid] = {'url': u, 'headers': headers, 'type': kind}
-        return f'{addon_base}/{route}/{pid}'
+        suffix = _segment_ext(u) if kind == 'segment' else '.m3u8'
+        return f'{addon_base}/{route}/{pid}{suffix}'
 
     def _rewrite_uri(m, line):
         u = m.group(1)
@@ -139,7 +189,9 @@ def _rewrite_m3u8_urls(content, base_url, headers):
 @proxy_bp.route('/m3u8/<playlist_id>')
 def proxy_m3u8(playlist_id):
     """Proxy an m3u8 playlist from the CDN, rewriting all internal URLs."""
-    mapping = playlist_mappings.get(playlist_id)
+    mapping = playlist_mappings.get(playlist_id) or playlist_mappings.get(
+        playlist_id.split('.', 1)[0]
+    )
     if not mapping:
         abort(404, description='Playlist mapping expired or not found')
 
@@ -163,43 +215,54 @@ def proxy_m3u8(playlist_id):
 
 @proxy_bp.route('/seg/<segment_id>')
 def proxy_segment(segment_id):
-    """Proxy a video segment from the CDN with the correct Referer."""
-    mapping = playlist_mappings.get(segment_id)
+    """Proxy a segment or direct media file from the CDN with the correct headers."""
+    # The public URL carries a media extension (/seg/sg_abc.ts); the mapping
+    # key does not.
+    mapping = playlist_mappings.get(segment_id) or playlist_mappings.get(
+        segment_id.split('.', 1)[0]
+    )
     if not mapping:
         abort(404, description='Segment mapping expired or not found')
 
+    upstream_headers = dict(mapping.get('headers') or {})
+    # Forward the client's Range header so seeking works for direct files.
+    client_range = request.headers.get('Range')
+    if client_range:
+        upstream_headers['Range'] = client_range
+
     try:
-        r = _fetch_upstream(mapping['url'], mapping.get('headers') or {}, stream=True)
-        if r.status_code != 200:
+        r = _fetch_upstream(mapping['url'], upstream_headers, stream=True)
+        if r.status_code not in (200, 206):
             abort(502, description=f'CDN returned {r.status_code}')
 
-        path = urlparse(mapping['url']).path.lower()
-        if path.endswith('.m4s'):
-            ctype = 'video/mp4'
-        elif path.endswith('.aac'):
-            ctype = 'audio/aac'
-        elif path.endswith('.m4a'):
-            ctype = 'audio/mp4'
-        elif path.endswith('.mp3'):
-            ctype = 'audio/mpeg'
-        elif path.endswith('.ts'):
-            ctype = 'video/MP2T'
-        else:
-            ctype = 'video/MP2T'
+        ctype = (r.headers.get('Content-Type') or '').split(';')[0].strip()
+        if not ctype or ctype.startswith('text/html'):
+            path = urlparse(mapping['url']).path.lower()
+            if path.endswith('.m4s') or path.endswith('.mp4'):
+                ctype = 'video/mp4'
+            elif path.endswith('.aac'):
+                ctype = 'audio/aac'
+            elif path.endswith('.m4a'):
+                ctype = 'audio/mp4'
+            elif path.endswith('.mp3'):
+                ctype = 'audio/mpeg'
+            elif path.endswith('.vtt'):
+                ctype = 'text/vtt'
+            else:
+                ctype = 'video/MP2T'
 
         response = Response(
             stream_with_context(r.iter_content(chunk_size=65536)),
+            status=r.status_code,
             content_type=ctype,
         )
-        if 'Content-Length' in r.headers:
-            response.headers['Content-Length'] = r.headers['Content-Length']
-        if 'Accept-Ranges' in r.headers:
-            response.headers['Accept-Ranges'] = r.headers['Accept-Ranges']
-        if 'Content-Range' in r.headers:
-            response.headers['Content-Range'] = r.headers['Content-Range']
+        for header in ('Content-Length', 'Content-Range', 'Accept-Ranges', 'ETag', 'Last-Modified'):
+            if header in r.headers:
+                response.headers[header] = r.headers[header]
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = '*'
+        response.headers['Access-Control-Expose-Headers'] = 'Content-Length, Content-Range, Accept-Ranges'
         response.headers['Cache-Control'] = 'public, max-age=86400'
         return response
     except Exception as e:

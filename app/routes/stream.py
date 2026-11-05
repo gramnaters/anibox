@@ -130,7 +130,58 @@ def _get_title_from_tmdb(tmdb_id, content_type='movie'):
         return ''
 
 
-def _search_providers_for_title(title, enabled_providers):
+_TITLE_STOPWORDS = {'the', 'a', 'an', 'of', 'and', 'to', 'in', 'on', 'for', 'part'}
+
+
+def _norm_title(text):
+    """Lowercase, drop punctuation/years, collapse whitespace."""
+    text = str(text or '').lower()
+    text = re.sub(r'\(\s*\d{4}\s*\)|\b(19|20)\d{2}\b', ' ', text)
+    text = re.sub(r'[^a-z0-9]+', ' ', text)
+    return ' '.join(text.split())
+
+
+def _match_title(query, candidates, content_type=None, season=None):
+    """Pick the candidate whose title contains the query phrase.
+
+    Search endpoints return whatever they think is relevant (ToonStream puts
+    "LEGO One Piece" first for "One Piece", PirateXPlay invents matches), so a
+    plain first-result pick leaks streams for the wrong show. We require the
+    query phrase to appear contiguously in the candidate title and prefer the
+    tightest match. Returns None when nothing matches.
+    """
+    q = _norm_title(query)
+    if not q:
+        return candidates[0] if candidates else None
+
+    best, best_key = None, None
+    for item in candidates:
+        t = _norm_title(item.get('title', ''))
+        if not t:
+            continue
+        pos = t.find(q)
+        if pos < 0:
+            # Allow the reverse ("Naruto Shippuden" vs query "Naruto").
+            rev = q.find(t)
+            if rev < 0:
+                continue
+            pos = 0
+        extra = len(set(t.split()) - set(q.split()) - _TITLE_STOPWORDS)
+        itype = item.get('type')
+        type_mismatch = 0 if (not content_type or not itype or itype == content_type) else 1
+        # Some providers' slugs carry the season ("...-season-5-46260").
+        slug = item.get('slug') or ''
+        season_in_slug = re.search(r'season-(\d+)-', slug)
+        season_rank = 0
+        if season_in_slug and season is not None:
+            season_rank = 0 if int(season_in_slug.group(1)) == season else 1
+        key = (type_mismatch, season_rank, 0 if t == q else 1, pos, extra, len(t))
+        if best_key is None or key < best_key:
+            best, best_key = item, key
+    return best
+
+
+def _search_providers_for_title(title, enabled_providers, content_type=None, season=None):
     """Search anime sites by title, return list of (provider_name, slug)"""
     results = []
     for pname in enabled_providers:
@@ -138,9 +189,9 @@ def _search_providers_for_title(title, enabled_providers):
         if not provider: continue
         try:
             items = provider.search_anime(title)
-            for item in items:
-                results.append((pname, item['slug']))
-                break
+            match = _match_title(title, items or [], content_type, season)
+            if match and match.get('slug'):
+                results.append((pname, match['slug']))
         except: pass
     return results
 
@@ -182,6 +233,15 @@ _PROVIDER_REFERER = {
     'animeworld': 'https://watchanimeworld.com/',
     'toonstream': 'https://toonstream.us/',
 }
+
+
+# Media CDNs that reject browser Origin headers or need per-request headers on
+# every sub-playlist/segment. Served through the addon's HLS proxy instead.
+_PROXY_MEDIA_HOSTS = (
+    'sssrr.org', 'r66nv9ed.com', 'marketforecasting.cfd',   # Abyss / Byse CDN
+    'streamruby.net', 'vmnow.online',                        # StreamRuby
+    'hanerix.com', 'smoothpre', 'vidhide',                   # StreamHG
+)
 
 
 def _referer_for_url(url, provider=None):
@@ -252,7 +312,7 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
     if not title:
         return respond_with({'streams': []})
 
-    provider_slugs = _search_providers_for_title(title, enabled_providers)
+    provider_slugs = _search_providers_for_title(title, enabled_providers, content_type, season)
     if not provider_slugs:
         return respond_with({'streams': []})
 
@@ -299,7 +359,6 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         url = resolved.get('url', '')
         if not url:
             return None
-
         # Correct Referer for header-sensitive file servers, derived from
         # the provider's sub-host page instead of the file-server IP.
         if player_key in ('rpmshare', 'rpmstream', 'streamp2p', 'upnshare', 'streamhg'):
@@ -325,8 +384,18 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
             'Referer': referer,
         }
 
-        # Always serve direct CDN URLs (never via the addon proxy) so play and
-        # seek go straight to the file server. Stremio forwards proxyHeaders.
+        # These CDNs reject browser Origin headers (Abyss: 404) or need the
+        # Referer on every sub-playlist/segment (StreamRuby), which Stremio's
+        # streaming server does not forward. Serve them through our HLS proxy.
+        if any(h in url for h in _PROXY_MEDIA_HOSTS):
+            try:
+                from app.routes.proxy import register_proxy_url
+                url = register_proxy_url(url, headers, base_url=_proxy_base)
+            except Exception as e:
+                print(f'[stream] proxy register failed: {e}', flush=True)
+
+        # Other hosts are served directly: Stremio forwards proxyHeaders, and
+        # play/seek go straight to the file server.
 
         stream_obj = {
             'title': display_title,
@@ -346,6 +415,13 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         if resolved.get('subtitles'):
             stream_obj['subtitles'] = resolved['subtitles']
         return (url, stream_obj)
+
+    try:
+        from app.routes.proxy import addon_base_url
+        _proxy_base = addon_base_url()
+    except Exception as e:
+        print(f'[stream] addon base failed: {e}', flush=True)
+        _proxy_base = ''
 
     with ThreadPoolExecutor(max_workers=8) as ex:
         built = list(ex.map(_build, flat))

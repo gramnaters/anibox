@@ -184,6 +184,12 @@ class PirateXPlayProvider:
     @cached(streams_cache)
     def get_episode_streams(self, slug: str, season: int = 1, episode: int = 1) -> dict:
         kind = slug.split('/', 1)[0] if '/' in slug else ''
+        # PirateXPlay indexes each season as its own series
+        # ("naruto-season-5-46260"). If the requested season differs, the site
+        # has no episode for it - don't fabricate a URL.
+        slug_season = re.search(r'season-(\d+)-', slug)
+        if slug_season and int(slug_season.group(1)) != season:
+            return {'streams': []}
         details = self.get_anime_details(slug)
         ep_url = None
         if details:
