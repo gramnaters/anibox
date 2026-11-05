@@ -241,6 +241,7 @@ _PROXY_MEDIA_HOSTS = (
     'sssrr.org', 'r66nv9ed.com', 'marketforecasting.cfd',   # Abyss / Byse CDN
     'streamruby.net', 'vmnow.online',                        # StreamRuby
     'hanerix.com', 'smoothpre', 'vidhide',                   # StreamHG
+    'zephyrix', 'zephyrflick', 'as-cdn',                     # Zephyr / FirePlayer
 )
 
 
@@ -390,7 +391,12 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         if any(h in url for h in _PROXY_MEDIA_HOSTS):
             try:
                 from app.routes.proxy import register_proxy_url
-                url = register_proxy_url(url, headers, base_url=_proxy_base)
+                # Zephyr serves its master as .../master.txt; mpv and other
+                # players only treat it as HLS when the proxied URL ends in
+                # .m3u8 (otherwise they parse it as a plain M3U playlist).
+                playlist_hint = 'm3u8' if '/cdn/hls/' in url else None
+                url = register_proxy_url(url, headers, base_url=_proxy_base,
+                                         kind=playlist_hint)
             except Exception as e:
                 print(f'[stream] proxy register failed: {e}', flush=True)
 

@@ -109,15 +109,17 @@ def addon_base_url():
     return _addon_base()
 
 
-def register_proxy_url(url, headers, base_url=None):
+def register_proxy_url(url, headers, base_url=None, kind=None):
     """Register an upstream media URL and return a local proxy URL for it.
 
     Used by the stream route for CDNs that reject browser Origin headers or
     require headers on sub-playlists/segments, which Stremio does not forward.
     ``base_url`` must be supplied when called outside the request thread.
+    ``kind`` forces 'm3u8' for playlists whose URL carries no playlist
+    extension (e.g. Zephyr's /cdn/hls/<id>/master.txt).
     """
     headers = headers or {}
-    kind = 'm3u8' if _is_playlist_url(url) else 'segment'
+    kind = kind or ('m3u8' if _is_playlist_url(url) else 'segment')
     prefix, route = ('pl_', 'm3u8') if kind == 'm3u8' else ('sg_', 'seg')
     pid = prefix + hashlib.sha1(
         (url + '|' + (headers.get('Referer') or '')).encode()
