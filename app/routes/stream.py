@@ -155,14 +155,43 @@ def _quality_from_name(name):
     return ''
 
 
-def _referer_for_url(url):
+# Host substring -> Referer. Order matters (first match wins). These CDNs
+# reject their own host as the referer and require the embedder's origin.
+_REFERER_MAP = (
+    # Abyss player CDN (PirateXPlay abyss/byse/gdmirror sources)
+    ('sssrr.org', 'https://abyssplayer.com/'),
+    ('zephyrix', 'https://play.zephyrix.top/'),
+    ('zephyrflick', 'https://play.zephyrix.top/'),
+    ('itsnitrox', 'https://nxsha.space/'),
+    ('aurorionacademy', 'https://nxsha.space/'),
+    ('hscow.com', 'https://nxsha.space/'),
+    ('nxstreamhub', 'https://nxsha.space/'),
+    ('streamflix', 'https://screenscape.me/'),
+    ('rousav.tech', 'https://m1.multimovies.courses/'),
+    ('vidrift', 'https://embed.vidrift.net/'),
+    ('vidmmo', 'https://m1.multimovies.courses/'),
+)
+
+
+# Generic CDN workers (Cloudflare) that gate on the embedder's Origin/Referer.
+_PROVIDER_REFERER = {
+    'multimovies': 'https://m1.multimovies.courses/',
+    'nxsha': 'https://nxsha.space/',
+    'screenscape': 'https://screenscape.me/',
+    'piratexplay': 'https://piratexplay.cc/',
+    'animeworld': 'https://watchanimeworld.com/',
+    'toonstream': 'https://toonstream.us/',
+}
+
+
+def _referer_for_url(url, provider=None):
     """Return the correct Referer header for a stream URL"""
-    if 'zephyrix' in url or 'zephyrflick' in url:
-        return 'https://play.zephyrix.top/'
-    if 'itsnitrox' in url or 'nxsha' in url:
-        return 'https://nxsha.space/'
-    if 'workers.dev' in url and ('streamflix' in url or 'stream.streamflix' in url):
-        return 'https://nxsha.space/'
+    # workers.dev proxies reject their own host; use the embedder origin.
+    if 'workers.dev' in url and provider in _PROVIDER_REFERER:
+        return _PROVIDER_REFERER[provider]
+    for needle, referer in _REFERER_MAP:
+        if needle in url:
+            return referer
     from urllib.parse import urlparse
     parsed = urlparse(url)
     return f'{parsed.scheme}://{parsed.hostname}/'
@@ -278,9 +307,9 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
             if _pp.scheme and _pp.hostname:
                 referer = f'{_pp.scheme}://{_pp.hostname}/'
             else:
-                referer = _referer_for_url(url)
+                referer = _referer_for_url(url, pname)
         else:
-            referer = _referer_for_url(url)
+            referer = _referer_for_url(url, pname)
 
         # Filter non-playable / ad-polluted / IP-blocked m3u8 streams.
         if '.m3u8' in url or 'm3u8' in url:
