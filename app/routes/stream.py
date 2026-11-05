@@ -221,6 +221,9 @@ _REFERER_MAP = (
     ('rousav.tech', 'https://m1.multimovies.courses/'),
     ('vidrift', 'https://embed.vidrift.net/'),
     ('vidmmo', 'https://m1.multimovies.courses/'),
+    ('vmpx.online', 'https://streamruby.net/'),
+    ('sprintcdn', 'https://streamruby.net/'),
+    ('owphbf24.com', 'https://streamruby.net/'),
 )
 
 
@@ -242,6 +245,7 @@ _PROXY_MEDIA_HOSTS = (
     'streamruby.net', 'vmnow.online',                        # StreamRuby
     'hanerix.com', 'smoothpre', 'vidhide',                   # StreamHG
     'zephyrix', 'zephyrflick', 'as-cdn',                     # Zephyr / FirePlayer
+    'vmpx.online', 'owphbf24.com', 'sprintcdn',              # StreamRuby rotating edges
 )
 
 
