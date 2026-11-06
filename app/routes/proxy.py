@@ -30,7 +30,7 @@ proxy_bp = Blueprint('proxy', __name__)
 playlist_mappings = TTLCache(maxsize=50000, ttl=43200)
 
 # id -> {'url': ..., 'headers': {...}}
-subtitle_mappings = TTLCache(maxsize=500, ttl=3600)
+subtitle_mappings = TTLCache(maxsize=8000, ttl=3600)
 
 _cookie_jar = requests.cookies.RequestsCookieJar()
 
@@ -75,10 +75,12 @@ def _is_playlist_url(u):
 
 
 def _is_subtitle_url(u):
-    return u.lower().endswith(('.vtt', '.srt', '.ass', '.ssa'))
+    path = urlparse(u).path.lower()
+    return path.endswith(('.vtt', '.srt', '.ass', '.ssa'))
 
 
-_SEGMENT_EXTS = ('.ts', '.m4s', '.mp4', '.m4a', '.aac', '.mp3', '.key')
+_SEGMENT_EXTS = ('.ts', '.m4s', '.mp4', '.m4a', '.aac', '.mp3', '.key',
+                 '.vtt', '.srt', '.ass', '.ssa')
 
 
 def _segment_ext(u):
@@ -135,7 +137,9 @@ def _rewrite_m3u8_urls(content, base_url, headers):
 
     def _register(u, kind):
         if kind == 'subtitle':
-            sid = 'sub_' + secrets.token_hex(8)
+            sid = 'sub_' + hashlib.sha1(
+                (u + '|' + ((headers or {}).get('Referer') or '')).encode()
+            ).hexdigest()[:16]
             subtitle_mappings[sid] = {'url': u, 'headers': headers}
             return f'{addon_base}/subtitles/{sid}'
         prefix, route = ('pl_', 'm3u8') if kind == 'm3u8' else ('sg_', 'seg')
@@ -177,11 +181,12 @@ def _rewrite_m3u8_urls(content, base_url, headers):
         # Resolve against the playlist base and register all of them so the
         # CDN Referer is applied to sub-playlists, keys, init segments, etc.
         absu = _resolve_url(base_url, stripped)
-        if _is_subtitle_url(absu):
-            out.append(_register(absu, 'subtitle'))
-        elif _is_playlist_url(absu) or prev_tag == 'playlist':
+        if _is_playlist_url(absu) or prev_tag == 'playlist':
             out.append(_register(absu, 'm3u8'))
         else:
+            # Subtitle segments (.vtt/.srt) land here too: /seg/<id>.vtt gives
+            # them a real extension and text/vtt content-type, which players
+            # require inside subtitle playlists.
             out.append(_register(absu, 'segment'))
         prev_tag = ''
 
@@ -274,24 +279,37 @@ def proxy_segment(segment_id):
 
 @proxy_bp.route('/subtitles/<subtitle_id>')
 def proxy_subtitle(subtitle_id):
-    """Proxy subtitle files with the correct content-type."""
+    """Proxy subtitle files with the correct content-type.
+
+    Some CDNs (PirateXPlay's sprintcdn edges) publish subtitles as an HLS
+    playlist of .vtt segments instead of a single file. Those URLs are
+    token/IP-bound, so passing the body through verbatim makes the player
+    fetch the segments directly from the CDN and hang. Detect that shape and
+    proxy every segment too.
+    """
     mapping = subtitle_mappings.get(subtitle_id)
     if not mapping:
-        abort(404)
+        abort(404, description='Subtitle mapping expired or not found')
 
     try:
         r = _fetch_upstream(mapping['url'], mapping.get('headers') or {})
         if r.status_code != 200:
-            abort(502)
+            abort(502, description=f'Upstream returned {r.status_code}')
 
-        if subtitle_id.endswith('.srt') or mapping['url'].lower().endswith('.srt'):
-            content_type = 'application/x-subrip'
-        elif mapping['url'].lower().endswith('.ass') or mapping['url'].lower().endswith('.ssa'):
-            content_type = 'text/x-ssa'
+        body = r.text or ''
+        if '#EXTM3U' in body[:1024]:
+            content = _rewrite_m3u8_urls(body, mapping['url'],
+                                         mapping.get('headers') or {})
+            response = Response(content, mimetype='application/vnd.apple.mpegurl')
         else:
-            content_type = 'text/vtt'
+            if subtitle_id.endswith('.srt') or mapping['url'].lower().endswith('.srt'):
+                content_type = 'application/x-subrip'
+            elif mapping['url'].lower().endswith('.ass') or mapping['url'].lower().endswith('.ssa'):
+                content_type = 'text/x-ssa'
+            else:
+                content_type = 'text/vtt'
+            response = Response(r.content, mimetype=content_type)
 
-        response = Response(r.content, mimetype=content_type)
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = '*'
