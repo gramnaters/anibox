@@ -126,6 +126,17 @@
   </section>
 
   <section class="card">
+    <h2>Stream labels</h2>
+    <p class="hint">How AniBox formats every stream. Rich and AIOStreams expose provider, player, resolution, codec, audio, languages and file size, plus a scene-style release filename that AIOStreams formatter rules can parse.</p>
+    <select id="format-style" style="width:100%;padding:.75rem .9rem;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font:inherit">
+      <option value="rich">Rich — multi-line details</option>
+      <option value="aiostreams">AIOStreams — rich + release filename</option>
+      <option value="compact">Compact — provider + quality</option>
+      <option value="plain">Plain — classic AniBox labels</option>
+    </select>
+  </section>
+
+  <section class="card">
     <h2>Install</h2>
     <p class="hint">Paste this manifest URL into any Stremio-compatible app.</p>
     <div class="url-box" id="addon-url"></div>
@@ -151,10 +162,14 @@ let state = {};
 
 function initState(){
   PROVIDERS.forEach(p => state[p.key] = p.def ? 'on' : 'off');
+  state.formatter_style = 'rich';
 }
 
 function buildConfig(){
-  return Object.fromEntries(Object.entries(state).filter(([k,v]) => v === 'on'));
+  const config = {};
+  PROVIDERS.forEach(p => { if (state[p.key] === 'on') config[p.key] = 'on'; });
+  config.formatter_style = state.formatter_style;
+  return config;
 }
 
 function encodeConfig(config){
@@ -224,6 +239,12 @@ applyTheme(currentMode());
 
 initState();
 renderAll();
+const formatStyle = document.getElementById('format-style');
+formatStyle.value = state.formatter_style;
+formatStyle.addEventListener('change', () => {
+  state.formatter_style = formatStyle.value;
+  updateSummary();
+});
 </script>
 
 </body>

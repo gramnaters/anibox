@@ -31,6 +31,7 @@ def _default_config():
         'source_toonstream': 'on',
         'source_piratexplay': 'on',
         'source_screenscape': 'on',
+        'formatter_style': 'rich',
     }
 
 

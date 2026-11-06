@@ -19,11 +19,22 @@ _IP_BLOCK_MARKERS = ('ip blocked', 'access denied', 'forbidden', 'your ip has be
 _pollution_cache = TTLCache(maxsize=2000, ttl=3600)
 
 
-def _m3u8_is_polluted(url, referer=''):
+def _inspect_m3u8(url, referer=''):
     """Verify a master m3u8 -> first variant -> first segment actually returns
-    video bytes (not ad images, ad-CDN playlists, HTML/IP-block pages)."""
-    if url in _pollution_cache:
-        return _pollution_cache[url]
+    video bytes (not ad images, ad-CDN playlists, HTML/IP-block pages).
+
+    Returns ``(polluted, metadata)`` where metadata carries the playlist's
+    resolution, bitrate, duration, codec and audio languages so the stream
+    formatter can enrich the Stremio/AIOStreams fields without a second fetch.
+    """
+    cached = _pollution_cache.get(url)
+    if cached is not None:
+        if isinstance(cached, tuple):
+            return cached
+        return cached, {}  # legacy bool entry
+
+    from app.stream_formatter import _merge_meta
+
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'}
     if referer:
         headers['Referer'] = referer
@@ -31,6 +42,8 @@ def _m3u8_is_polluted(url, referer=''):
         headers['Referer'] = 'https://megaplay.buzz/'
     elif 'itsnitrox' in url or 'nxsha' in url:
         headers['Referer'] = 'https://nxsha.space/'
+
+    meta = {'is_hls': True}
 
     def _bad(text):
         low = text.lower()
@@ -45,49 +58,63 @@ def _m3u8_is_polluted(url, referer=''):
         if r is None or r.status_code != 200:
             # Transient 403/timeout: don't hard-fail, the proxy retries during
             # playback. Only fail when we actually see bad content.
-            return False
+            return False, meta
         master = r.text
         if _bad(master):
-            _pollution_cache[url] = True
-            return True
+            _pollution_cache[url] = (True, meta)
+            return True, meta
 
         uris = [l.strip() for l in master.splitlines() if l.strip() and not l.startswith('#') and not l.startswith('data:')]
         if not uris:
-            return False
-        first = uris[0]
-        variant_url = first if first.startswith('http') else url.rsplit('/', 1)[0] + '/' + first
+            return False, meta
 
-        rv = _fetch_upstream(variant_url, headers, timeout=10)
-        if rv is None or rv.status_code != 200:
-            return False
-        variant = rv.text
+        if '#EXT-X-STREAM-INF' in master:
+            first = uris[0]
+            variant_url = first if first.startswith('http') else url.rsplit('/', 1)[0] + '/' + first
+            rv = _fetch_upstream(variant_url, headers, timeout=10)
+            if rv is None or rv.status_code != 200:
+                return False, meta
+            variant = rv.text
+        else:
+            # A media playlist: the master already lists the segments.
+            variant = master
+            variant_url = url
+
         if _bad(variant):
-            _pollution_cache[url] = True
-            return True
+            _pollution_cache[url] = (True, meta)
+            return True, meta
+
+        _merge_meta(master, variant, meta)
 
         # First segment could be directly in variant, or variant is another playlist
         segs = [l.strip() for l in variant.splitlines() if l.strip() and not l.startswith('#') and not l.startswith('data:')]
         if not segs:
-            return False
+            return False, meta
         seg = segs[0]
         seg_url = seg if seg.startswith('http') else variant_url.rsplit('/', 1)[0] + '/' + seg
+
+        path = urllib.parse.urlparse(seg_url).path.lower()
+        if path.endswith('.ts'):
+            meta.setdefault('container', 'ts')
+        elif path.endswith('.m4s') or path.endswith('.mp4'):
+            meta.setdefault('container', 'mp4')
 
         # First segment: only need the first bytes (magic + size check)
         seg_headers = dict(headers)
         seg_headers['Range'] = 'bytes=0-16383'
         rs = _fetch_upstream(seg_url, seg_headers, timeout=12)
         if rs is None or rs.status_code != 200:
-            return False
+            return False, meta
         data = rs.content
         if _is_image(data):
-            _pollution_cache[url] = True
-            return True
+            _pollution_cache[url] = (True, meta)
+            return True, meta
         if len(data) < 100:
-            return False
-        _pollution_cache[url] = False
-        return False
+            return False, meta
+        _pollution_cache[url] = (False, meta)
+        return False, meta
     except Exception:
-        return False
+        return False, meta
 
 
 PROVIDER_DISPLAY = {
@@ -376,18 +403,60 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
             referer = _referer_for_url(url, pname)
 
         # Filter non-playable / ad-polluted / IP-blocked m3u8 streams.
-        if '.m3u8' in url or 'm3u8' in url:
-            if _m3u8_is_polluted(url, referer):
-                print(f'[stream] filtered polluted/blocked: {url[:80]}')
-                return None
-
-        quality = _quality_from_name(sd.get('name') or '') or _quality_from_name(url)
-        display_title = _make_title(pname, player_key, quality, sd.get('name') or '')
+        style = str(config.get('formatter_style') or 'rich').lower()
+        if style not in ('rich', 'aiostreams', 'compact', 'plain'):
+            style = 'rich'
 
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
             'Referer': referer,
         }
+
+        from app.stream_formatter import (
+            format_stream, infer_languages, probe_direct,
+        )
+
+        meta = {}
+        is_hls = 'm3u8' in url
+        if is_hls:
+            polluted, meta = _inspect_m3u8(url, referer)
+            if polluted:
+                print(f'[stream] filtered polluted/blocked: {url[:80]}')
+                return None
+            meta.setdefault('is_hls', True)
+        elif style != 'plain':
+            meta.update(probe_direct(url, headers))
+
+        hint_quality = _quality_from_name(sd.get('name') or '') or _quality_from_name(url)
+        quality = meta.get('quality') or hint_quality
+        meta['quality'] = quality
+        meta.setdefault('quality_tag', 'WEB-DL')
+
+        languages = infer_languages(sd, pname, meta)
+        sd_name = (sd.get('name') or '').strip()
+        if (not sd_name
+                or sd_name.lower() in (pname.lower(), PROVIDER_DISPLAY.get(pname, '').lower())
+                or len(sd_name) > 34 or '\u00b7' in sd_name):
+            player_label = PLAYER_NAMES.get(player_key, player_key) or player_key
+        else:
+            player_label = sd_name
+        plain_title = _make_title(pname, player_key, quality, sd.get('name') or '')
+
+        formatted = format_stream(
+            style=style,
+            plain_title=plain_title,
+            provider_display=PROVIDER_DISPLAY.get(pname, pname),
+            player_label=player_label,
+            quality=quality,
+            meta=meta,
+            languages=languages,
+            subtitles=resolved.get('subtitles'),
+            title=title,
+            content_type=content_type,
+            season=season,
+            episode=episode,
+            source_url=url,
+        )
 
         # These CDNs reject browser Origin headers (Abyss: 404) or need the
         # Referer on every sub-playlist/segment (StreamRuby), which Stremio's
@@ -407,21 +476,24 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         # Other hosts are served directly: Stremio forwards proxyHeaders, and
         # play/seek go straight to the file server.
 
-        stream_obj = {
-            'title': display_title,
-            'name': display_title,
-            'url': url,
-            'behaviorHints': {
-                'notWebReady': False,
-                'bingeGroup': f'multianima-{pname}',
-                'proxyHeaders': {
-                    'request': {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
-                        'Referer': referer,
-                    }
-                }
-            },
+        hints = dict(formatted.get('behaviorHints') or {})
+        hints['notWebReady'] = False
+        hints['bingeGroup'] = f'multianima-{pname}-{player_key}'
+        hints['proxyHeaders'] = {
+            'request': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
+                'Referer': referer,
+            }
         }
+
+        stream_obj = {
+            'title': formatted['title'],
+            'name': formatted['name'],
+            'url': url,
+            'behaviorHints': hints,
+        }
+        if formatted.get('description'):
+            stream_obj['description'] = formatted['description']
         if resolved.get('subtitles'):
             stream_obj['subtitles'] = resolved['subtitles']
         return (url, stream_obj)
