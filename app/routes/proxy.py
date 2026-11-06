@@ -111,7 +111,7 @@ def addon_base_url():
     return _addon_base()
 
 
-def register_proxy_url(url, headers, base_url=None, kind=None):
+def register_proxy_url(url, headers, base_url=None, kind=None, ext=None):
     """Register an upstream media URL and return a local proxy URL for it.
 
     Used by the stream route for CDNs that reject browser Origin headers or
@@ -119,6 +119,9 @@ def register_proxy_url(url, headers, base_url=None, kind=None):
     ``base_url`` must be supplied when called outside the request thread.
     ``kind`` forces 'm3u8' for playlists whose URL carries no playlist
     extension (e.g. Zephyr's /cdn/hls/<id>/master.txt).
+    ``ext`` forces the proxy URL's media extension for direct files whose
+    upstream URL has none (e.g. an extensionless MP4) so players demux it
+    correctly.
     """
     headers = headers or {}
     kind = kind or ('m3u8' if _is_playlist_url(url) else 'segment')
@@ -127,7 +130,10 @@ def register_proxy_url(url, headers, base_url=None, kind=None):
         (url + '|' + (headers.get('Referer') or '')).encode()
     ).hexdigest()[:16]
     playlist_mappings[pid] = {'url': url, 'headers': headers, 'type': kind}
-    suffix = _segment_ext(url) if kind == 'segment' else '.m3u8'
+    if kind == 'segment':
+        suffix = ('.' + ext.lstrip('.')) if ext else _segment_ext(url)
+    else:
+        suffix = '.m3u8'
     return f'{(base_url or _addon_base()).rstrip("/")}/{route}/{pid}{suffix}'
 
 

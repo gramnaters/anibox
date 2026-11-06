@@ -425,7 +425,7 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
                 print(f'[stream] filtered polluted/blocked: {url[:80]}')
                 return None
             meta.setdefault('is_hls', True)
-        elif style != 'plain':
+        else:
             meta.update(probe_direct(url, headers))
 
         hint_quality = _quality_from_name(sd.get('name') or '') or _quality_from_name(url)
@@ -465,12 +465,15 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         if any(h in url for h in _PROXY_MEDIA_HOSTS):
             try:
                 from app.routes.proxy import register_proxy_url
-                # Zephyr serves its master as .../master.txt; mpv and other
-                # players only treat it as HLS when the proxied URL ends in
-                # .m3u8 (otherwise they parse it as a plain M3U playlist).
-                playlist_hint = 'm3u8' if '/cdn/hls/' in url else None
+                container = meta.get('container') or ''
+                if is_hls or container == 'm3u8':
+                    kind = 'm3u8'
+                else:
+                    # Direct file: keep the real container extension so mpv and
+                    # ExoPlayer demux it correctly (extensionless MP4 etc.).
+                    kind = None
                 url = register_proxy_url(url, headers, base_url=_proxy_base,
-                                         kind=playlist_hint)
+                                         kind=kind, ext=container or None)
             except Exception as e:
                 print(f'[stream] proxy register failed: {e}', flush=True)
 
