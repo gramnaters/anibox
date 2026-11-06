@@ -395,6 +395,11 @@ def _dot(text, limit=70):
     return text[:limit]
 
 
+# AIOStreams' ENCODES constants use AVC/HEVC/AV1, so the release filename uses
+# those tokens while the human-readable description keeps H.264/H.265.
+_AIO_ENCODE = {'H.264': 'AVC', 'H.265': 'HEVC', 'AV1': 'AV1', 'VP9': 'VP9'}
+
+
 def build_filename(title, content_type, season, episode, meta, languages, source_url=''):
     parts = []
     if title:
@@ -402,14 +407,17 @@ def build_filename(title, content_type, season, episode, meta, languages, source
     if content_type != 'movie' and season and episode:
         parts.append(f'S{int(season):02d}E{int(episode):02d}')
     quality = meta.get('quality') or 'Auto'
-    parts.append(_dot(quality))
+    # AIOStreams normalises '4K' to '2160p'; emit the numeric form in the
+    # release filename so its resolution parser matches unambiguously.
+    filename_quality = '2160p' if quality == '4K' else quality
+    parts.append(_dot(filename_quality))
     parts.append(_dot(meta.get('quality_tag') or 'WEB-DL'))
     for lang in languages:
         parts.append(_dot('Multi' if lang == 'Multi Audio' else lang))
     if meta.get('audio'):
         parts.append(_dot(meta['audio']))
     if meta.get('encode'):
-        parts.append(_dot(meta['encode']))
+        parts.append(_dot(_AIO_ENCODE.get(meta['encode'], meta['encode'])))
     if meta.get('bitrate'):
         parts.append(f'{round(int(meta["bitrate"]) / 1000)}kbps')
 
