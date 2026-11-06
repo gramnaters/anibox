@@ -417,7 +417,8 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         )
 
         meta = {}
-        is_hls = 'm3u8' in url
+        # Zephyr-style masters arrive as .../master.txt, which is still HLS.
+        is_hls = 'm3u8' in url or '/cdn/hls/' in url
         if is_hls:
             polluted, meta = _inspect_m3u8(url, referer)
             if polluted:
