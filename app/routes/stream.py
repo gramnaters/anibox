@@ -513,14 +513,23 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         built = list(ex.map(_build, flat))
 
     final = []
-    seen = set()
+    seen_urls = set()
+    seen_labels = set()
     for item in built:
         if not item:
             continue
         url, stream_obj = item
-        if url in seen:
+        if url in seen_urls:
             continue
-        seen.add(url)
+        # Providers often list the same episode several times from different
+        # mirrors (identical provider/player/quality/languages/size). Those
+        # streams are indistinguishable in the UI, so keep only the first.
+        label = (stream_obj.get('name'), stream_obj.get('title'),
+                 stream_obj.get('description'))
+        if label in seen_labels:
+            continue
+        seen_urls.add(url)
+        seen_labels.add(label)
         final.append(stream_obj)
 
     print(f'[stream] {content_id} => {len(final)} streams')
