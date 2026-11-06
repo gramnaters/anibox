@@ -116,7 +116,7 @@ def _language_name(value):
     for name in LANGUAGE_FLAGS:
         if key == name.lower():
             return name
-    return text.title() if len(text) <= 20 else ''
+    return ''
 
 
 def infer_languages(sd, provider, media_meta):
@@ -405,8 +405,7 @@ def build_filename(title, content_type, season, episode, meta, languages, source
     parts.append(_dot(quality))
     parts.append(_dot(meta.get('quality_tag') or 'WEB-DL'))
     for lang in languages:
-        if lang != 'Multi Audio':
-            parts.append(_dot(lang))
+        parts.append(_dot('Multi' if lang == 'Multi Audio' else lang))
     if meta.get('audio'):
         parts.append(_dot(meta['audio']))
     if meta.get('encode'):
