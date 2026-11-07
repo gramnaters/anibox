@@ -9,6 +9,10 @@ from app.config_parser import parse_config, get_provider_from_config
 
 stream_bp = Blueprint('stream', __name__)
 tmdb_title_cache = TTLCache(maxsize=500, ttl=3600)
+# Fully-built stream lists. Provider scraping + embed resolution is slow on
+# Render's free CPU (1-3 min), which exceeds client timeouts; caching the
+# result makes repeat opens instant and cuts upstream load.
+_stream_cache = TTLCache(maxsize=1000, ttl=600)
 
 # Image magic bytes -> a "video" segment that is really an ad image (pollution).
 _IMAGE_MAGIC = (b'\x89PNG', b'\xff\xd8\xff', b'GIF8', b'RIFF', b'\x00\x00\x00\x0cftypwebp')
@@ -313,6 +317,13 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
     config = parse_config(config_data or '')
     enabled_providers = get_provider_from_config(config)
 
+    cache_key = (content_type, content_id, tuple(sorted(enabled_providers)),
+                 str(config.get('formatter_style') or 'rich').lower())
+    cached = _stream_cache.get(cache_key)
+    if cached is not None:
+        print(f'[stream] cache hit {content_id} ({len(cached)} streams)')
+        return respond_with({'streams': cached})
+
     parts = content_id.split(':')
     season, episode = 1, 1
 
@@ -539,4 +550,5 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         final.append(stream_obj)
 
     print(f'[stream] {content_id} => {len(final)} streams')
+    _stream_cache[cache_key] = final
     return respond_with({'streams': final})
