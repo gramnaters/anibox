@@ -450,7 +450,7 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         meta['quality'] = quality
         meta.setdefault('quality_tag', 'WEB-DL')
 
-        languages = infer_languages(sd, pname, meta)
+        languages = infer_languages(sd, pname, meta, url)
         sd_name = (sd.get('name') or '').strip()
         if (not sd_name
                 or sd_name.lower() in (pname.lower(), PROVIDER_DISPLAY.get(pname, '').lower())

@@ -91,17 +91,6 @@ _LANG_CODES = {
     'vi': 'Vietnamese', 'vie': 'Vietnamese',
 }
 
-# What each provider ships by default (from the manifest's own descriptions).
-PROVIDER_LANGUAGES = {
-    'multimovies': ('Hindi',),
-    'nxsha': ('Hindi',),
-    'watchanimeworld': ('Hindi', 'Japanese'),
-    'toonstream': ('Hindi', 'English'),
-    'piratexplay': ('Multi Audio',),
-    'screenscape': ('Hindi', 'English'),
-}
-
-
 def _language_name(value):
     if isinstance(value, dict):
         value = value.get('name') or value.get('label') or value.get('language') or ''
@@ -119,37 +108,55 @@ def _language_name(value):
     return ''
 
 
-def infer_languages(sd, provider, media_meta):
-    """Combine explicit provider languages, playlist audio tracks and hints."""
+def infer_languages(sd, provider, media_meta, source_url=''):
+    """Return languages the stream source explicitly states — nothing else.
+
+    Sources, in order:
+      * an explicit ``languages`` field in the provider payload,
+      * HLS audio rendition ``LANGUAGE``/``NAME`` attributes,
+      * a language name the provider itself wrote in the stream label or in
+        the media filename/URL.
+
+    There is deliberately NO per-provider default: if the source does not say
+    what language the stream is, we report none rather than guessing.
+    """
     found = []
 
     def add(name):
         if name and name not in found:
             found.append(name)
 
-    for item in sd.get('languages') or []:
-        if isinstance(item, (list, tuple)):
-            for sub in item:
-                add(_language_name(sub))
+    def add_value(value):
+        if isinstance(value, (list, tuple)):
+            for sub in value:
+                add_value(sub)
+        elif isinstance(value, dict):
+            add(_language_name(value))
         else:
-            # "Hindi, English" is common in provider JSON.
-            for part in str(item).replace('/', ',').split(','):
+            # "Hindi, English" / "Hindi/English" / "Hindi-English"
+            for part in re.split(r'[,/&|]|(?<=[A-Za-z])-(?=[A-Za-z])', str(value or '')):
                 add(_language_name(part))
 
-    for item in (media_meta or {}).get('languages') or []:
-        add(_language_name(item))
+    for item in sd.get('languages') or []:
+        add_value(item)
 
+    # Real playlist metadata (media_meta comes from #EXT-X-MEDIA audio tracks).
+    for item in (media_meta or {}).get('languages') or []:
+        add_value(item)
+
+    # Explicit language words in the provider's own label or the media URL.
+    from urllib.parse import unquote
     haystack = ' '.join(str(x or '') for x in (
         sd.get('name'), sd.get('label'), sd.get('title'),
+        unquote(source_url or ''),
     ))
     for name in LANGUAGE_FLAGS:
         if name == 'Multi Audio':
             continue
-        if re.search(rf'(?<![a-z]){re.escape(name)}(?![a-z])', haystack, re.I):
+        if re.search(rf'(?<![A-Za-z]){re.escape(name)}(?![A-Za-z])', haystack, re.I):
             add(name)
-
-    if not found:
-        found = list(PROVIDER_LANGUAGES.get(provider, ()))
+    if re.search(r'(?<![A-Za-z])multi[\s_-]?audio(?![A-Za-z])', haystack, re.I):
+        add('Multi Audio')
 
     return found[:4]
 
