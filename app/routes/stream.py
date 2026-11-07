@@ -267,8 +267,14 @@ _PROVIDER_REFERER = {
 
 # Media CDNs that reject browser Origin headers or need per-request headers on
 # every sub-playlist/segment. Served through the addon's HLS proxy instead.
+#
+# NOTE: Abyss (sssrr.org) is deliberately NOT proxied. It serves real video
+# with just a Referer — which players already send via proxyHeaders — and only
+# 404s when a browser Origin header is present. ExoPlayer (Nuvio) and mpv never
+# send Origin, so direct playback works and keeps the (large) MP4 traffic off
+# this server. StreamRuby's rotating edges and StreamHG are IP/header bound.
 _PROXY_MEDIA_HOSTS = (
-    'sssrr.org', 'r66nv9ed.com', 'marketforecasting.cfd',   # Abyss / Byse CDN
+    'r66nv9ed.com', 'marketforecasting.cfd',                 # Byse / StreamRuby edge
     'streamruby.net', 'vmnow.online',                        # StreamRuby
     'hanerix.com', 'smoothpre', 'vidhide',                   # StreamHG
     'zephyrix', 'zephyrflick', 'as-cdn',                     # Zephyr / FirePlayer
