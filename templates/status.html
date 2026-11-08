@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/static/favicon.png">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<title>AniBox Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#05050b; --surface:#0a0a12; --surface-2:#0e0e18; --surface-3:#14141f;
+    --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.16);
+    --text:#f1f1f6; --muted:#8a8a99; --subtle:#585866; --dim:#585866;
+    --accent:#6d5efc; --accent-2:#9b7cff;
+    --success:#31d39a; --danger:#f4707f; --warning:#e5a153;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --radius:10px;
+  }
+  html.light{
+    --bg:#f6f6fa; --surface:#ffffff; --surface-2:#f0f0f6; --surface-3:#e8e8f0;
+    --line:rgba(10,10,20,.10); --line-strong:rgba(10,10,20,.2);
+    --text:#16161f; --muted:#5c5c6e; --subtle:#8a8a99; --dim:#8a8a99;
+    --accent:#5b4bdb; --accent-2:#7c5cff;
+    --success:#16a34a; --danger:#dc2626; --warning:#b57420;
+  }
+  html{font-size:16px;color-scheme:dark}
+  html.light{color-scheme:light}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 var(--sans);
+    -webkit-font-smoothing:antialiased;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+
+  .app-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:28px 0 40px}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}
+  .brand{display:inline-flex;align-items:center;gap:12px}
+  .brand img{width:40px;height:40px;border:1px solid var(--line);border-radius:10px;object-fit:cover;background:var(--surface-2)}
+  .brand-name{font-size:1.04rem;font-weight:800;line-height:1.2}
+  .brand-sub{color:var(--muted);font-size:.82rem;font-weight:600}
+  .top-actions{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:10px}
+
+  .icon-button,.button{min-height:40px;border:1px solid var(--line);border-radius:8px;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;color:var(--text);
+    background:var(--surface);font-weight:700;transition:border-color .14s,background .14s,transform .14s}
+  .icon-button{width:40px;padding:0}
+  .button{padding:0 14px;font-size:.82rem}
+  .button:hover,.icon-button:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+  .icon-button svg{width:17px;height:17px}
+  .icon-button.is-spinning svg{animation:spin .9s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px}
+  .metric{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--surface)}
+  .metric-label{font-size:.66rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--dim)}
+  .metric-value{font-size:1.55rem;font-weight:800;margin-top:.15rem;font-variant-numeric:tabular-nums}
+  .metric-value.ok{color:var(--success)}
+  .metric-value.bad{color:var(--danger)}
+
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .filters{display:inline-flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+  .filter{border:0;background:transparent;color:var(--muted);font-size:.78rem;font-weight:700;
+    padding:.35rem .7rem;border-radius:6px;transition:.14s}
+  .filter:hover{color:var(--text)}
+  .filter.on{background:var(--surface-3);color:var(--text)}
+  .updated{margin-left:auto;color:var(--dim);font-size:.76rem;font-family:var(--mono)}
+
+  .provider{border:1px solid var(--line);border-radius:10px;background:var(--surface);
+    padding:12px 14px;margin-bottom:8px}
+  .phead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:.66rem;font-weight:800;
+    letter-spacing:.07em;text-transform:uppercase;padding:.22rem .5rem;border-radius:999px;
+    border:1px solid var(--line);color:var(--subtle)}
+  .pill i{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .pill.up{color:var(--success);border-color:rgba(49,211,154,.35);background:rgba(49,211,154,.08)}
+  .pill.down{color:var(--danger);border-color:rgba(244,112,127,.35);background:rgba(244,112,127,.08)}
+  .pname{font-weight:700;font-size:.95rem}
+  .pmeta{color:var(--muted);font-size:.76rem;font-family:var(--mono)}
+  .ptime{margin-left:auto;color:var(--dim);font-size:.72rem;font-family:var(--mono)}
+
+  .titles{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:9px;padding-top:9px;
+    border-top:1px solid var(--line)}
+  .tlabel{font-size:.64rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
+    color:var(--dim);margin-right:4px}
+  .chip{font-size:.72rem;color:var(--text);background:var(--surface-2);border:1px solid var(--line);
+    border-radius:6px;padding:.18rem .45rem}
+  .none{font-size:.74rem;color:var(--dim)}
+  .err{font-size:.72rem;color:var(--danger);font-family:var(--mono);margin-top:6px;word-break:break-word}
+
+  .empty{border:1px dashed var(--line-strong);border-radius:10px;padding:34px 20px;text-align:center;color:var(--muted)}
+  .empty b{display:block;color:var(--text);margin-bottom:4px}
+  .spinner{width:18px;height:18px;border:2px solid var(--line-strong);border-top-color:var(--accent-2);
+    border-radius:50%;display:inline-block;vertical-align:-4px;margin-right:8px;animation:spin .7s linear infinite}
+
+  .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--dim);
+    font-size:.74rem;padding-top:20px;margin-top:8px;border-top:1px solid var(--line)}
+
+  @media (max-width:720px){
+    .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .app-shell{padding-top:18px}
+    .topbar{align-items:flex-start;flex-wrap:wrap}
+    .brand-sub{font-size:.76rem}
+    .updated{width:100%;margin-left:0}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="topbar">
+    <a class="brand" href="/configure">
+      <img src="/static/anibox-icon-512.png" alt="AniBox">
+      <div>
+        <div class="brand-name">AniBox Status</div>
+        <div class="brand-sub">Provider health &amp; working titles</div>
+      </div>
+    </a>
+    <div class="top-actions">
+      <button class="icon-button" id="refresh" type="button" title="Refresh status" aria-label="Refresh status">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+      </button>
+      <button class="icon-button" id="theme" type="button" title="Toggle theme" aria-label="Toggle theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+      <a class="button" href="/configure">Configure</a>
+    </div>
+  </header>
+
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">Up</div><div class="metric-value ok" id="m-up">—</div></div>
+    <div class="metric"><div class="metric-label">Down</div><div class="metric-value bad" id="m-down">—</div></div>
+    <div class="metric"><div class="metric-label">Streams</div><div class="metric-value" id="m-streams">—</div></div>
+    <div class="metric"><div class="metric-label">Last check</div><div class="metric-value" id="m-updated" style="font-size:1rem">—</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="filters" role="tablist" aria-label="Filter providers">
+      <button class="filter on" data-filter="all" role="tab" aria-selected="true">All</button>
+      <button class="filter" data-filter="up" role="tab" aria-selected="false">Up</button>
+      <button class="filter" data-filter="down" role="tab" aria-selected="false">Down</button>
+    </div>
+    <span class="updated" id="updated">Checking…</span>
+  </div>
+
+  <div id="list">
+    <div class="empty"><b><span class="spinner"></span>Checking providers…</b>The first check can take a few minutes.</div>
+  </div>
+
+  <footer class="foot">
+    <span>Auto-refreshes every 30s · checks run every 30 min</span>
+    <span>AniBox · Stremio / Nuvio addon</span>
+  </footer>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+let status = null;
+let filter = 'all';
+let loading = false;
+
+function rel(iso) {
+  if (!iso) return 'never';
+  const ms = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(ms / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  return Math.floor(h / 24) + 'd ago';
+}
+function fmtMs(ms) {
+  if (ms == null) return '—';
+  return ms >= 1000 ? (ms / 1000).toFixed(1) + 's' : ms + 'ms';
+}
+
+function render() {
+  const providers = Object.values((status && status.providers) || {});
+  const up = providers.filter(p => p.status === 'up').length;
+  const down = providers.filter(p => p.status === 'down').length;
+  const streams = providers.reduce((n, p) => n + (p.streamCount || 0), 0);
+
+  $('#m-up').textContent = providers.length ? up : '—';
+  $('#m-down').textContent = providers.length ? down : '—';
+  $('#m-streams').textContent = providers.length ? streams : '—';
+  $('#m-updated').textContent = status && status.updatedAt ? rel(status.updatedAt) : '—';
+  $('#updated').textContent = status && status.updatedAt
+    ? 'Updated ' + rel(status.updatedAt) + (status.checking ? ' · re-checking…' : '')
+    : (status && status.checking ? 'Checking providers…' : 'Waiting for first check…');
+
+  const shown = providers
+    .filter(p => filter === 'all' || p.status === filter)
+    .sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+
+  const list = $('#list');
+  list.innerHTML = '';
+
+  if (!providers.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = (status && status.checking)
+      ? '<b><span class="spinner"></span>Checking providers…</b>The first check can take a few minutes.'
+      : '<b>No status yet</b>The monitor starts on the first request.';
+    list.appendChild(empty);
+    return;
+  }
+
+  if (!shown.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = '<b>Nothing here</b>No provider matches this filter.';
+    list.appendChild(empty);
+    return;
+  }
+
+  shown.forEach(p => {
+    const kind = p.status === 'up' || p.status === 'down' ? p.status : 'unknown';
+    const row = document.createElement('article');
+    row.className = 'provider';
+
+    const head = document.createElement('div');
+    head.className = 'phead';
+
+    const pill = document.createElement('span');
+    pill.className = 'pill ' + kind;
+    pill.innerHTML = '<i></i>' + (kind === 'up' ? 'Up' : kind === 'down' ? 'Down' : 'Unknown');
+    head.appendChild(pill);
+
+    const name = document.createElement('span');
+    name.className = 'pname';
+    name.textContent = p.name || p.id;
+    head.appendChild(name);
+
+    const meta = document.createElement('span');
+    meta.className = 'pmeta';
+    meta.textContent = (p.streamCount || 0) + ' streams · ' + fmtMs(p.responseMs);
+    head.appendChild(meta);
+
+    const time = document.createElement('span');
+    time.className = 'ptime';
+    time.textContent = rel(p.lastChecked);
+    head.appendChild(time);
+
+    row.appendChild(head);
+
+    const titles = document.createElement('div');
+    titles.className = 'titles';
+    const label = document.createElement('span');
+    label.className = 'tlabel';
+    label.textContent = 'Working titles';
+    titles.appendChild(label);
+
+    if (p.workingTitles && p.workingTitles.length) {
+      p.workingTitles.forEach(t => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = t;
+        titles.appendChild(chip);
+      });
+    } else {
+      const none = document.createElement('span');
+      none.className = 'none';
+      none.textContent = kind === 'down' ? 'None — no streams returned' : 'Not checked yet';
+      titles.appendChild(none);
+    }
+    row.appendChild(titles);
+
+    if (p.error && kind === 'down') {
+      const err = document.createElement('div');
+      err.className = 'err';
+      err.textContent = p.error;
+      row.appendChild(err);
+    }
+
+    list.appendChild(row);
+  });
+}
+
+async function load(force) {
+  if (loading) return;
+  loading = true;
+  $('#refresh').classList.add('is-spinning');
+  try {
+    const res = await fetch('/api/status' + (force ? '?refresh=1' : ''), { cache: 'no-store' });
+    if (res.ok) {
+      status = await res.json();
+      render();
+    }
+  } catch (e) {
+    // keep the last known state
+  } finally {
+    loading = false;
+    $('#refresh').classList.remove('is-spinning');
+  }
+}
+
+function applyTheme(mode) {
+  document.documentElement.classList.toggle('light', mode === 'light');
+  document.documentElement.classList.toggle('dark', mode !== 'light');
+  try { localStorage.setItem('anibox-theme', mode); } catch (e) {}
+}
+const savedTheme = (() => { try { return localStorage.getItem('anibox-theme') || 'dark'; } catch (e) { return 'dark'; } })();
+applyTheme(savedTheme);
+
+$('#theme').addEventListener('click', () => {
+  applyTheme(document.documentElement.classList.contains('light') ? 'dark' : 'light');
+});
+$('#refresh').addEventListener('click', () => load(true));
+$$('.filter').forEach(btn => btn.addEventListener('click', () => {
+  filter = btn.dataset.filter;
+  $$('.filter').forEach(b => {
+    const on = b === btn;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', String(on));
+  });
+  render();
+}));
+
+load(false);
+setInterval(() => load(false), 30000);
+</script>
+</body>
+</html>

@@ -14,6 +14,7 @@ from app.routes.catalog import catalog_bp
 from app.routes.meta import meta_bp
 from app.routes.stream import stream_bp
 from app.routes.proxy import proxy_bp
+from app.routes.status import status_bp
 
 app = Flask(__name__, template_folder='./templates', static_folder='./static')
 app.config.from_object('config.Config')
@@ -22,6 +23,7 @@ app.register_blueprint(catalog_bp)
 app.register_blueprint(meta_bp)
 app.register_blueprint(stream_bp)
 app.register_blueprint(proxy_bp)
+app.register_blueprint(status_bp)
 
 Compress(app)
 logging.basicConfig(format='%(asctime)s %(message)s')
