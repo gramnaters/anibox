@@ -16,7 +16,8 @@
     --bg:#05050b; --surface:#0a0a12; --surface-2:#0e0e18;
     --line:rgba(255,255,255,.08); --line-soft:rgba(255,255,255,.045);
     --tx:#f1f1f6; --mut:#8a8a99; --dim:#585866;
-    --ind:#6d5efc; --vio:#9b7cff; --tl:#22c9b6; --ok:#31d39a; --bad:#f4707f;
+    --ind:#ff5c8a; --vio:#b45cff; --tl:#22c9b6; --ok:#31d39a; --bad:#f4707f;
+    --grad-a:#e11d63; --grad-b:#7c3aed;
     --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
     --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
     --r:12px;
@@ -25,7 +26,8 @@
     --bg:#f6f6fa; --surface:#ffffff; --surface-2:#f0f0f6;
     --line:rgba(10,10,20,.10); --line-soft:rgba(10,10,20,.055);
     --tx:#16161f; --mut:#5c5c6e; --dim:#8a8a99;
-    --ind:#5b4bdb; --vio:#7c5cff; --ok:#16a34a; --bad:#dc2626;
+    --ind:#d81b60; --vio:#7c3aed; --ok:#16a34a; --bad:#dc2626;
+    --grad-a:#be185d; --grad-b:#6d28d9;
   }
   html{font-size:16px;color-scheme:dark}
   html.light{color-scheme:light}
@@ -41,9 +43,8 @@
   .rail{background:#08080e;border-right:1px solid var(--line);display:flex;flex-direction:column;
     align-items:center;padding:.9rem 0;gap:.3rem}
   html.light .rail{background:var(--surface)}
-  .brand{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;margin-bottom:1rem;
-    overflow:hidden;border:1px solid rgba(109,94,252,.42);box-shadow:inset 0 1px 1px rgba(255,255,255,.24)}
-  .brand img{width:100%;height:100%;object-fit:cover;display:block}
+  .brand{width:34px;height:34px;display:grid;place-items:center;margin-bottom:1rem}
+  .brand img{width:34px;height:34px;object-fit:contain;display:block}
   .railnav{display:flex;flex-direction:column;gap:.3rem}
   .railbtn{width:40px;height:40px;border:0;border-radius:11px;background:transparent;color:var(--dim);
     cursor:pointer;display:grid;place-items:center;position:relative;transition:background .15s,color .15s}
@@ -88,7 +89,7 @@
   html.light .opt{background:rgba(10,10,20,.018)}
   html.light .opt:hover{background:rgba(10,10,20,.035);border-color:rgba(10,10,20,.18)}
   .opt .ico{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none;
-    background:rgba(109,94,252,.13);border:1px solid rgba(109,94,252,.28);color:#c9c1ff}
+    background:rgba(255,92,138,.13);border:1px solid rgba(255,92,138,.28);color:#ffd1e0}
   html.light .opt .ico{color:var(--ind);background:rgba(91,75,219,.1)}
   .opt .ico svg{width:16px;height:16px}
   .opt .txt{min-width:0;flex:1}
@@ -99,7 +100,7 @@
     text-transform:uppercase;padding:.22rem .5rem;border-radius:999px;border:1px solid var(--line);
     color:var(--dim);background:rgba(255,255,255,.03);white-space:nowrap}
   .opt[data-on="true"] .st{color:var(--ok);border-color:rgba(49,211,154,.35);background:rgba(49,211,154,.08)}
-  .opt[data-selected="true"]{border-color:rgba(109,94,252,.55);background:rgba(109,94,252,.09)}
+  .opt[data-selected="true"]{border-color:rgba(255,92,138,.55);background:rgba(255,92,138,.09)}
 
   .swwrap{position:relative;width:34px;height:19px;flex:none}
   .swwrap input{position:absolute;opacity:0;width:0;height:0}
@@ -107,7 +108,7 @@
   html.light .sw{background:rgba(10,10,20,.16)}
   .sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
     background:#fff;transition:transform .15s}
-  .swwrap input:checked + .sw{background:rgba(109,94,252,.9)}
+  .swwrap input:checked + .sw{background:rgba(255,92,138,.9)}
   .swwrap input:checked + .sw::after{transform:translateX(15px)}
   .swwrap input:focus-visible + .sw{outline:2px solid var(--vio);outline-offset:2px}
 
@@ -117,7 +118,7 @@
   .opt[data-selected="true"] .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--ind)}
 
   /* ---------- sidebar ---------- */
-  .cap{font-size:.68rem;font-weight:750;letter-spacing:.12em;text-transform:uppercase;color:#b3abff;
+  .cap{font-size:.68rem;font-weight:750;letter-spacing:.12em;text-transform:uppercase;color:#ffb3cd;
     margin-bottom:.55rem;display:flex;align-items:center;gap:.5rem}
   html.light .cap{color:var(--ind)}
   .cap em{font-style:normal;margin-left:auto;letter-spacing:0;text-transform:none;font-weight:500;
@@ -134,14 +135,14 @@
     white-space:pre-wrap;margin:0}
 
   /* ---------- install ---------- */
-  .linkcard{border:1px solid rgba(109,94,252,.28);border-radius:16px;padding:1.1rem 1.2rem;
-    background:linear-gradient(150deg,rgba(109,94,252,.10),rgba(255,255,255,.015) 55%)}
+  .linkcard{border:1px solid rgba(255,92,138,.28);border-radius:16px;padding:1.1rem 1.2rem;
+    background:linear-gradient(150deg,rgba(255,92,138,.10),rgba(255,255,255,.015) 55%)}
   .linkrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5rem}
-  .linkrow code{font-family:var(--mono);font-size:.79rem;color:#d2ccff;background:rgba(0,0,0,.5);
+  .linkrow code{font-family:var(--mono);font-size:.79rem;color:#ffc9dd;background:rgba(0,0,0,.5);
     border:1px solid var(--line);border-radius:10px;padding:.65rem .8rem;white-space:nowrap;
     overflow-x:auto;scrollbar-width:none;min-width:0}
   html.light .linkrow code{background:rgba(10,10,20,.05);color:var(--tx)}
-  .linkhint{margin:.7rem 0 0;font-size:.76rem;color:#c4bcff;line-height:1.5}
+  .linkhint{margin:.7rem 0 0;font-size:.76rem;color:#ffc2d8;line-height:1.5}
   html.light .linkhint{color:var(--mut)}
 
   .btn{border:1px solid var(--line);cursor:pointer;font:inherit;font-weight:700;border-radius:10px;
@@ -152,7 +153,7 @@
   html.light .btn{background:rgba(10,10,20,.05)}
   html.light .btn:hover{background:rgba(10,10,20,.09)}
   .btn.sm{padding:.4rem .7rem;font-size:.75rem}
-  .btn.primary{background:linear-gradient(135deg,var(--ind),var(--vio));color:#fff;border:0}
+  .btn.primary{background:linear-gradient(135deg,var(--grad-a),var(--grad-b));color:#fff;border:0}
   .btn.primary:hover{filter:brightness(1.08)}
   .btn svg{width:15px;height:15px;flex:0 0 auto}
   .actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
@@ -162,11 +163,14 @@
     border:1px solid var(--line);background:rgba(255,255,255,.02)}
   html.light .step{background:rgba(10,10,20,.018)}
   .step .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none;
-    font-family:var(--mono);font-size:.72rem;font-weight:700;color:#cfc8ff;
-    background:rgba(109,94,252,.14);border:1px solid rgba(109,94,252,.3)}
+    font-family:var(--mono);font-size:.72rem;font-weight:700;color:#ffd6e4;
+    background:rgba(255,92,138,.14);border:1px solid rgba(255,92,138,.3)}
   html.light .step .n{color:var(--ind)}
   .step b{display:block;font-size:.84rem;font-weight:600}
   .step small{display:block;font-size:.74rem;color:var(--mut);margin-top:.05rem}
+
+  .status-wrap{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+  .status-wrap iframe{width:100%;height:72vh;min-height:520px;border:0;display:block;background:var(--surface)}
 
   .pagefoot{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:var(--dim);
     font-size:.74rem;padding-top:1.9rem;margin-top:1.9rem;border-top:1px solid var(--line)}
@@ -221,11 +225,10 @@
       <button class="railbtn" role="tab" data-tab="install" aria-selected="false" aria-controls="panel-install" title="Install" aria-label="Install">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
       </button>
+      <button class="railbtn" role="tab" data-tab="status" aria-selected="false" aria-controls="panel-status" title="Status" aria-label="Status">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3.34 19a10 10 0 1 1 17.32 0"/><path d="M12 14 8 10"/><circle cx="12" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg>
+      </button>
     </nav>
-
-    <a class="railbtn" href="/status" title="Status" aria-label="Status">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3.34 19a10 10 0 1 1 17.32 0"/><path d="M12 14 8 10"/><circle cx="12" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg>
-    </a>
 
     <div class="railfoot">
       <button class="railbtn" id="theme" title="Toggle theme" aria-label="Toggle theme">
@@ -330,6 +333,12 @@
       </div>
     </section>
 
+    <section id="panel-status" class="panel" role="tabpanel" hidden>
+      <div class="status-wrap">
+        <iframe id="status-frame" title="AniBox status" loading="lazy"></iframe>
+      </div>
+    </section>
+
     <footer class="pagefoot">
       <span>AniBox · Stremio / Nuvio addon</span>
       <span>metadata from the source · nothing guessed</span>
@@ -376,6 +385,7 @@ const TABS = {
   providers: {title:'Providers', desc:'Choose which sources AniBox scrapes.'},
   labels:    {title:'Stream labels', desc:'Choose how results are presented in the picker.'},
   install:   {title:'Install', desc:'Add AniBox to Stremio or Nuvio.'},
+  status:    {title:'Status', desc:'Live provider health and working titles.'},
 };
 
 let state = {};
@@ -449,6 +459,10 @@ function setTab(name){
     btn.tabIndex = on ? 0 : -1;
   });
   $$('[role="tabpanel"]').forEach(p => { p.hidden = p.id !== 'panel-' + name; });
+  if (name === 'status') {
+    const frame = $('#status-frame');
+    if (frame && !frame.getAttribute('src')) frame.src = '/status?embed=1';
+  }
   $('#page-title').textContent = TABS[name].title;
   $('#page-desc').textContent = TABS[name].desc;
   document.title = 'AniBox — ' + TABS[name].title;
