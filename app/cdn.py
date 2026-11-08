@@ -13,10 +13,26 @@ Only the shape of the URL is used; no network access and no guessing.
 """
 from __future__ import annotations
 
+import base64
 import re
 from urllib.parse import parse_qs, unquote, urlparse
 
 _MEDIA_EXT = re.compile(r'\.(mkv|mp4|m3u8|ts|webm|m4v|mov)$', re.I)
+
+# Abyss file tokens are base64 blobs whose first ~36 characters identify the
+# file; the tail is a per-request signature. Measured on live data: streams of
+# the same file share 36-37 leading chars, distinct files share at most 1.
+_ABYSS_ID_LEN = 36
+
+
+def _abyss_token_id(token: str) -> str:
+    """Stable file identity inside an Abyss ``/sora/<size>/<token>`` token."""
+    try:
+        raw = base64.urlsafe_b64decode(token + '=' * (-len(token) % 4))
+        text = raw.decode('latin-1')
+        return text[:_ABYSS_ID_LEN]
+    except Exception:
+        return token
 
 
 def _base_domain(host: str) -> str:
@@ -48,11 +64,11 @@ def cdn_file_key(url: str):
     host = (parsed.hostname or '').lower()
     path = parsed.path or ''
 
-    # Abyss / Byse (sssrr.org): /sora/<bytes>/<token>, token stable per file.
-    # The byte-size prefix alone is not unique, so both are part of the key.
+    # Abyss / Byse (sssrr.org): /sora/<bytes>/<token>. The token's stable
+    # prefix identifies the file; its tail is a signature and rotates.
     m = re.search(r'/sora/(\d+)/([^/?#]+)', path)
     if m:
-        return ('abyss', m.group(1), m.group(2))
+        return ('abyss', m.group(1), _abyss_token_id(m.group(2)))
 
     # Hanerix / StreamHG: /stream/<a>/<b>/<expiry>/<file_id>/master.m3u8
     m = re.search(r'/stream/[^/]+/[^/]+/\d+/(\d+)/', path)
