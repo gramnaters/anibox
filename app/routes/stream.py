@@ -6,6 +6,7 @@ from app.routes.utils import respond_with, log_error
 from app.routes.proxy import _fetch_upstream
 from app.players import resolve_stream, PLAYER_NAMES
 from app.config_parser import parse_config, get_provider_from_config
+from app.cdn import cdn_file_key
 
 stream_bp = Blueprint('stream', __name__)
 tmdb_title_cache = TTLCache(maxsize=500, ttl=3600)
@@ -476,6 +477,10 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
             source_url=url,
         )
 
+        # Identity of the real media file, captured before the URL is swapped
+        # for a proxy URL, so dedupe compares files rather than labels.
+        file_key = cdn_file_key(url)
+
         # These CDNs reject browser Origin headers (Abyss: 404) or need the
         # Referer on every sub-playlist/segment (StreamRuby), which Stremio's
         # streaming server does not forward. Serve them through our HLS proxy.
@@ -517,7 +522,7 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
             stream_obj['description'] = formatted['description']
         if resolved.get('subtitles'):
             stream_obj['subtitles'] = resolved['subtitles']
-        return (url, stream_obj)
+        return (file_key, url, stream_obj)
 
     try:
         from app.routes.proxy import addon_base_url
@@ -530,23 +535,17 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         built = list(ex.map(_build, flat))
 
     final = []
-    seen_urls = set()
-    seen_labels = set()
+    seen_files = set()
     for item in built:
         if not item:
             continue
-        url, stream_obj = item
-        if url in seen_urls:
+        file_key, url, stream_obj = item
+        # One entry per real media file. Different providers/mirrors that serve
+        # the same file collapse; distinct files that happen to share a label
+        # stay separate.
+        if file_key in seen_files:
             continue
-        # Providers often list the same episode several times from different
-        # mirrors (identical provider/player/quality/languages/size). Those
-        # streams are indistinguishable in the UI, so keep only the first.
-        label = (stream_obj.get('name'), stream_obj.get('title'),
-                 stream_obj.get('description'))
-        if label in seen_labels:
-            continue
-        seen_urls.add(url)
-        seen_labels.add(label)
+        seen_files.add(file_key)
         final.append(stream_obj)
 
     print(f'[stream] {content_id} => {len(final)} streams')
