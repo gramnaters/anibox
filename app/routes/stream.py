@@ -1,4 +1,5 @@
 import urllib.parse, requests, re, time, inspect
+from concurrent.futures import ThreadPoolExecutor
 from flask import Blueprint, abort, request
 from cachetools import TTLCache
 from app.api import ALL_PROVIDERS
@@ -366,25 +367,34 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
     if not provider_slugs:
         return respond_with({'streams': []})
 
-    # Collect streams from providers — keep provider info
-    raw_streams = []
-    for pname, slug in provider_slugs[:5]:
+    # Collect streams from providers in parallel. Each provider makes several
+    # HTTP calls; doing them sequentially is what made cold requests take
+    # minutes on Render's CPU.
+    def _scrape(ps):
+        pname, slug = ps
         provider = ALL_PROVIDERS.get(pname)
-        if not provider: continue
+        if not provider:
+            return []
         try:
             kwargs = {}
             if 'media_type' in inspect.signature(provider.get_episode_streams).parameters:
                 kwargs['media_type'] = content_type
             data = provider.get_episode_streams(slug, season, episode, **kwargs)
+            out = []
             for sd in data.get('streams', []):
                 sd['_provider'] = pname
-                raw_streams.append(sd)
+                out.append(sd)
+            return out
         except Exception as e:
             print(f'[stream] provider {pname}: {e}')
+            return []
+
+    with ThreadPoolExecutor(max_workers=5) as ex:
+        provider_batches = list(ex.map(_scrape, provider_slugs[:5]))
+    raw_streams = [sd for batch in provider_batches for sd in batch]
 
     # Resolve all streams (parallel — sequential resolve is what makes
     # Stremio time out on first open)
-    from concurrent.futures import ThreadPoolExecutor
 
     def _resolve_one(sd):
         try:
@@ -431,10 +441,15 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         }
 
         from app.stream_formatter import (
-            format_stream, infer_languages, probe_direct,
+            format_stream, infer_languages, probe_direct, codec_display,
         )
 
         meta = {}
+        # Source-declared metadata (player APIs return quality/size/codec for
+        # some hosts). Only used when the source actually provides it.
+        resolved_quality = _quality_from_name(str(resolved.get('quality') or ''))
+        resolved_size = resolved.get('size')
+        resolved_encode = codec_display(resolved.get('codec'))
         # Zephyr-style masters arrive as .../master.txt, which is still HLS.
         is_hls = 'm3u8' in url or '/cdn/hls/' in url
         if is_hls:
@@ -446,7 +461,18 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         else:
             meta.update(probe_direct(url, headers))
 
-        hint_quality = _quality_from_name(sd.get('name') or '') or _quality_from_name(url)
+        # Apply source-declared values when probing didn't already supply them.
+        if resolved_size and not meta.get('size'):
+            try:
+                meta['size'] = int(resolved_size)
+            except (TypeError, ValueError):
+                pass
+        if resolved_encode and not meta.get('encode'):
+            meta['encode'] = resolved_encode
+
+        hint_quality = (resolved_quality
+                        or _quality_from_name(sd.get('name') or '')
+                        or _quality_from_name(url))
         quality = meta.get('quality') or hint_quality
         meta['quality'] = quality
         meta.setdefault('quality_tag', 'WEB-DL')

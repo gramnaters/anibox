@@ -106,8 +106,13 @@ def _flatten(result, parent_name, max_streams=20):
     streams = []
     for s in result.get('streams', [])[:max_streams]:
         if s.get('url'):
-            streams.append(_stremio_fmt(s['url'], f"{parent_name}/{s.get('name','Stream')}",
-                                        subtitles=s.get('subtitles')))
+            item = _stremio_fmt(s['url'], f"{parent_name}/{s.get('name','Stream')}",
+                                subtitles=s.get('subtitles'))
+            # Carry through source-declared metadata (nothing inferred here).
+            for key in ('quality', 'size', 'codec', 'languages', 'audio'):
+                if s.get(key) is not None:
+                    item[key] = s[key]
+            streams.append(item)
     return streams
 
 
@@ -662,7 +667,10 @@ def extract_abyss(url):
                         u = s.get('url') or ''
                         if u.startswith('http'):
                             streams.append({'player': 'direct_m3u8', 'url': u,
-                                            'name': f"Abyss/{s.get('type') or s.get('codec') or ''}".strip('/')})
+                                            'name': f"Abyss/{s.get('type') or s.get('codec') or ''}".strip('/'),
+                                            'quality': s.get('type'),
+                                            'size': s.get('size'),
+                                            'codec': s.get('codec')})
                     if streams:
                         return {'streams': streams}
                 except Exception:
@@ -910,6 +918,9 @@ def extract_byse(url):
                     'player': 'direct_m3u8',
                     'url': m3u8,
                     'name': f"Byse/{src.get('label') or src.get('quality') or ''}".strip('/'),
+                    'quality': src.get('label') or src.get('quality'),
+                    'size': src.get('size'),
+                    'codec': src.get('codec'),
                 })
         return {'streams': streams}
     except Exception as e:

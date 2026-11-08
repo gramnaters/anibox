@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <title>AniBox — Configure</title>
 <script>
-  // Dark mode is the default; respect a stored preference.
+  // Dark is the default; apply the stored preference before paint.
   (function(){
     try {
       if (localStorage.getItem('anibox-theme') === 'light') {
@@ -20,142 +20,306 @@
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  :root {
-    --bg: #ffffff;
-    --surface: #ffffff;
-    --border: #d7dbdf;
-    --ink: #1a2029;
-    --ink-muted: #5b6470;
-    --ink-faint: #8a93a0;
-    --accent: #2563eb;
-    --accent-soft: #eff4ff;
-    --green: #16a34a;
-    --toggle-off: #d7dbdf;
-    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  :root{
+    --bg:#f4f5f9;
+    --ink:#12131a;
+    --muted:#5d6270;
+    --faint:#8b90a0;
+    --glass:rgba(255,255,255,.62);
+    --glass-strong:rgba(255,255,255,.82);
+    --border:rgba(17,19,26,.10);
+    --border-strong:rgba(17,19,26,.18);
+    --accent:#7c5cff;
+    --accent-2:#3b82f6;
+    --accent-soft:rgba(124,92,255,.12);
+    --ok:#16a34a;
+    --track:rgba(17,19,26,.16);
+    --shadow:0 24px 60px -28px rgba(24,20,60,.45);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
   }
-  html.dark {
-    --bg: #0f1115;
-    --surface: #171a20;
-    --border: #2a2f39;
-    --ink: #e7ebf0;
-    --ink-muted: #9aa3b0;
-    --ink-faint: #6b7280;
-    --accent: #3b82f6;
-    --accent-soft: #1b2740;
-    --green: #22c55e;
-    --toggle-off: #3a404b;
+  html.dark{
+    --bg:#08080d;
+    --ink:#f2f3f8;
+    --muted:#a2a7b5;
+    --faint:#6f7484;
+    --glass:rgba(255,255,255,.045);
+    --glass-strong:rgba(255,255,255,.075);
+    --border:rgba(255,255,255,.09);
+    --border-strong:rgba(255,255,255,.18);
+    --accent:#a78bfa;
+    --accent-2:#60a5fa;
+    --accent-soft:rgba(139,92,246,.18);
+    --ok:#4ade80;
+    --track:rgba(255,255,255,.16);
+    --shadow:0 30px 80px -30px rgba(0,0,0,.85);
   }
 
-  html { font-size: 16px; -webkit-font-smoothing: antialiased; background: var(--bg); color: var(--ink); }
-  body { font-family: var(--font); line-height: 1.5; transition: background 0.2s, color 0.2s; }
-
-  .shell { max-width: 40rem; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
-
-  header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
-  header img { width: 2.25rem; height: 2.25rem; object-fit: contain; }
-  header h1 { font-size: 1.25rem; font-weight: 700; }
-
-  .mode-toggle {
-    margin-left: auto; display: inline-flex; align-items: center; gap: 0.4rem;
-    font-size: 0.8125rem; color: var(--ink-muted); cursor: pointer; user-select: none;
+  html{font-size:16px;-webkit-font-smoothing:antialiased;background:var(--bg);color:var(--ink)}
+  body{font-family:var(--font);line-height:1.55;min-height:100vh;overflow-x:hidden;transition:background .25s,color .25s}
+  body::before,body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none}
+  body::before{
+    background:
+      radial-gradient(900px 620px at 12% -12%, rgba(139,92,246,.30), transparent 62%),
+      radial-gradient(820px 540px at 102% -6%, rgba(59,130,246,.24), transparent 58%),
+      radial-gradient(760px 520px at 52% 112%, rgba(236,72,153,.14), transparent 62%);
   }
-  .mode-toggle .switch {
-    position: relative; width: 2.5rem; height: 1.5rem; flex-shrink: 0; cursor: pointer;
+  body::after{
+    z-index:-1;
+    background:linear-gradient(180deg, rgba(8,8,13,0) 0%, rgba(8,8,13,.55) 70%, rgba(8,8,13,.9) 100%);
   }
-  .mode-toggle .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .mode-toggle .track { position: absolute; inset: 0; background: var(--toggle-off); border-radius: 999px; transition: background 0.15s; }
-  .mode-toggle input:checked + .track { background: var(--accent); }
-  .mode-toggle .knob { position: absolute; top: 0.125rem; left: 0.125rem; width: 1.25rem; height: 1.25rem; background: #fff; border-radius: 50%; transition: transform 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-  .mode-toggle input:checked ~ .knob { transform: translateX(1rem); }
+  html.light body::after{background:linear-gradient(180deg, rgba(244,245,249,0) 0%, rgba(244,245,249,.5) 70%, rgba(244,245,249,.9) 100%)}
 
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
-  .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
-  .card .hint { font-size: 0.8125rem; color: var(--ink-muted); margin-bottom: 1rem; }
+  .wrap{max-width:56rem;margin:0 auto;padding:1.25rem 1.1rem 4rem}
 
-  .row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 0; }
-  .row + .row { border-top: 1px solid var(--border); }
-  .row-label { flex: 1; min-width: 0; }
-  .row-label h3 { font-size: 0.9375rem; font-weight: 600; }
-  .row-label p { font-size: 0.8125rem; color: var(--ink-muted); }
+  /* frosted surfaces */
+  .glass{
+    background:var(--glass);
+    border:1px solid var(--border);
+    border-radius:24px;
+    backdrop-filter:blur(22px) saturate(150%);
+    -webkit-backdrop-filter:blur(22px) saturate(150%);
+    box-shadow:var(--shadow);
+  }
 
-  .toggle { position: relative; width: 2.5rem; height: 1.5rem; flex-shrink: 0; cursor: pointer; }
-  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .toggle-track { position: absolute; inset: 0; background: var(--toggle-off); border-radius: 999px; transition: background 0.15s; }
-  .toggle input:checked + .toggle-track { background: var(--accent); }
-  .toggle-knob { position: absolute; top: 0.125rem; left: 0.125rem; width: 1.25rem; height: 1.25rem; background: #fff; border-radius: 50%; transition: transform 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-  .toggle input:checked ~ .toggle-knob { transform: translateX(1rem); }
+  /* top bar */
+  .topbar{
+    position:sticky;top:.75rem;z-index:20;
+    display:flex;align-items:center;gap:.8rem;
+    padding:.7rem .85rem;margin-bottom:1.6rem;
+  }
+  .brand{display:flex;align-items:center;gap:.7rem;min-width:0}
+  .brand img{width:2.4rem;height:2.4rem;object-fit:contain;border-radius:12px;background:rgba(255,255,255,.05)}
+  .brand .txt{min-width:0}
+  .brand h1{font-size:1.05rem;font-weight:700;letter-spacing:-.01em}
+  .brand p{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-actions{margin-left:auto;display:flex;align-items:center;gap:.5rem}
 
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 0.4rem; padding: 0.6rem 1rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
-  .btn:hover { border-color: var(--ink-faint); }
-  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .btn-primary:hover { filter: brightness(1.05); }
-  .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.75rem; }
+  .icon-btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+    height:2.35rem;padding:0 .8rem;border-radius:999px;cursor:pointer;
+    border:1px solid var(--border);background:var(--glass-strong);color:var(--ink);
+    font:inherit;font-size:.78rem;font-weight:600;transition:.18s;
+  }
+  .icon-btn:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+  .icon-btn svg{width:1rem;height:1rem}
 
-  .url-box { margin-top: 0.75rem; padding: 0.7rem 0.85rem; background: var(--accent-soft); border: 1px solid var(--border); border-radius: 0.4rem; word-break: break-all; font-size: 0.78rem; color: var(--ink-muted); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  .actions { display: flex; gap: 0.625rem; flex-wrap: wrap; margin-top: 1rem; }
-  .stats { display: flex; gap: 1.5rem; margin-bottom: 1.25rem; }
-  .stat { font-size: 0.8125rem; color: var(--ink-muted); }
-  .stat b { font-size: 1rem; color: var(--ink); font-weight: 700; }
+  /* hero */
+  .hero{padding:2.2rem 1.4rem 1.4rem;text-align:center;margin-bottom:1.4rem}
+  .hero .eyebrow{
+    display:inline-flex;align-items:center;gap:.4rem;margin-bottom:.9rem;
+    padding:.28rem .7rem;border-radius:999px;font-size:.7rem;font-weight:600;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--accent);background:var(--accent-soft);border:1px solid var(--border)
+  }
+  .hero h2{font-size:clamp(1.6rem,4vw,2.4rem);line-height:1.15;letter-spacing:-.03em;font-weight:800;margin-bottom:.6rem}
+  .hero h2 span{background:linear-gradient(100deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero > p{max-width:34rem;margin:0 auto 1.4rem;color:var(--muted);font-size:.92rem}
+
+  .install{margin:0 auto;max-width:40rem;padding:1rem;border-radius:20px}
+  .url-row{display:flex;gap:.5rem;align-items:stretch}
+  .url{
+    flex:1;min-width:0;display:flex;align-items:center;
+    padding:.65rem .8rem;border-radius:14px;background:rgba(0,0,0,.18);
+    border:1px solid var(--border);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.74rem;color:var(--muted);
+    overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  }
+  html.light .url{background:rgba(255,255,255,.65)}
+  .actions{display:flex;gap:.55rem;justify-content:center;flex-wrap:wrap;margin-top:.85rem}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+    border-radius:14px;padding:.7rem 1.15rem;font:inherit;font-size:.86rem;font-weight:650;
+    cursor:pointer;border:1px solid var(--border);background:var(--glass-strong);color:var(--ink);
+    transition:.18s;white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);border-color:var(--border-strong)}
+  .btn:active{transform:translateY(0)}
+  .btn-primary{
+    border:none;color:#fff;
+    background:linear-gradient(100deg,var(--accent),var(--accent-2));
+    box-shadow:0 12px 30px -12px rgba(124,92,255,.75);
+  }
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn-ghost{background:transparent}
+  .btn-sm{padding:.42rem .8rem;border-radius:999px;font-size:.75rem}
+
+  /* panels */
+  .panel{padding:1.25rem;margin-bottom:1.35rem}
+  .panel-head{display:flex;align-items:center;gap:.6rem;margin-bottom:.2rem}
+  .panel-head h3{font-size:1rem;font-weight:700;letter-spacing:-.01em}
+  .chip{
+    margin-left:auto;font-size:.72rem;font-weight:700;color:var(--accent);
+    background:var(--accent-soft);border:1px solid var(--border);
+    padding:.18rem .6rem;border-radius:999px;font-variant-numeric:tabular-nums
+  }
+  .hint{color:var(--muted);font-size:.82rem;margin-bottom:1rem}
+  .toolbar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+
+  /* provider cards */
+  .provider-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
+  .provider{
+    display:flex;align-items:center;gap:.75rem;padding:.85rem .9rem;
+    border-radius:18px;border:1px solid var(--border);background:var(--glass-strong);
+    cursor:pointer;transition:.18s;position:relative;overflow:hidden;
+  }
+  .provider:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+  .provider.is-off{opacity:.55}
+  .p-avatar{
+    width:2.2rem;height:2.2rem;border-radius:12px;flex:0 0 auto;
+    display:grid;place-items:center;font-size:.85rem;font-weight:800;color:#fff;
+    background:linear-gradient(140deg,var(--h1,#8b5cf6),var(--h2,#3b82f6));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .p-body{min-width:0;flex:1}
+  .p-body h4{font-size:.88rem;font-weight:650;line-height:1.2}
+  .p-body p{font-size:.72rem;color:var(--muted);line-height:1.35;margin-top:.1rem;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* switch */
+  .switch{position:relative;width:2.5rem;height:1.45rem;flex:0 0 auto;cursor:pointer}
+  .switch input{opacity:0;width:0;height:0;position:absolute}
+  .track{position:absolute;inset:0;border-radius:999px;background:var(--track);transition:background .18s;border:1px solid var(--border)}
+  .knob{position:absolute;top:.16rem;left:.16rem;width:1.08rem;height:1.08rem;border-radius:50%;
+    background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35);transition:transform .18s}
+  .switch input:checked + .track{background:linear-gradient(100deg,#8b5cf6,#2563eb);border-color:transparent}
+  .switch input:checked + .track .knob{transform:translateX(1.02rem)}
+  .switch input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* style cards */
+  .style-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
+  .style-card{
+    position:relative;display:flex;flex-direction:column;gap:.3rem;
+    padding:.9rem;border-radius:18px;border:1px solid var(--border);
+    background:var(--glass-strong);cursor:pointer;transition:.18s;overflow:hidden;
+  }
+  .style-card:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+  .style-card input{position:absolute;opacity:0;pointer-events:none}
+  .style-card.is-selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset,0 12px 30px -18px rgba(124,92,255,.8);background:var(--accent-soft)}
+  .style-card:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+  .style-card .s-name{font-size:.86rem;font-weight:700}
+  .style-card .s-desc{font-size:.72rem;color:var(--muted);line-height:1.4}
+  .style-card .s-preview{
+    margin-top:.35rem;padding:.5rem .55rem;border-radius:11px;background:rgba(0,0,0,.22);
+    border:1px solid var(--border);font-size:.64rem;line-height:1.45;color:var(--muted);
+    white-space:pre-line;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  html.light .style-card .s-preview{background:rgba(255,255,255,.7)}
+
+  footer{text-align:center;color:var(--faint);font-size:.72rem;padding:1.4rem 0 .4rem}
+  footer a{color:var(--muted);text-decoration:none}
+
+  .toast{
+    position:fixed;left:50%;bottom:1.4rem;transform:translateX(-50%) translateY(1.2rem);
+    padding:.6rem 1rem;border-radius:999px;font-size:.8rem;font-weight:600;
+    background:var(--glass-strong);border:1px solid var(--border);backdrop-filter:blur(16px);
+    opacity:0;pointer-events:none;transition:.25s;z-index:50
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:560px){
+    .wrap{padding:1rem .8rem 3rem}
+    .provider-grid,.style-grid{grid-template-columns:1fr}
+    .hero{padding:1.6rem 1rem 1.2rem}
+    .brand p{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+  }
 </style>
 </head>
 <body>
 
-<div class="shell">
+<div class="wrap">
 
-  <header>
-    <img src="/static/anibox-icon-512.png" alt="AniBox" onerror="this.src='/static/anibox-mark.png'">
-    <h1>AniBox</h1>
-    <label class="mode-toggle">
-      <span id="mode-label">Dark</span>
-      <span class="switch"><input type="checkbox" id="mode-toggle"><span class="track"></span><span class="knob"></span></span>
-    </label>
+  <header class="topbar glass">
+    <div class="brand">
+      <img src="/static/anibox-icon-512.png" alt="AniBox" onerror="this.src='/static/anibox-mark.png'">
+      <div class="txt">
+        <h1>AniBox</h1>
+        <p>Multi-source anime, movies &amp; cartoons</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="copy-top" type="button" title="Copy manifest URL">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <span>Copy</span>
+      </button>
+      <label class="icon-btn" title="Toggle theme">
+        <span id="mode-label">Dark</span>
+        <span class="switch" style="width:2.1rem;height:1.25rem">
+          <input type="checkbox" id="mode-toggle">
+          <span class="track"><span class="knob" style="width:.9rem;height:.9rem"></span></span>
+        </span>
+      </label>
+    </div>
   </header>
 
-  <div class="stats">
-    <div class="stat"><b id="stat-prov">0/5</b> Providers</div>
-  </div>
+  <section class="hero glass">
+    <span class="eyebrow">Stremio / Nuvio addon</span>
+    <h2>Stream anime.<br><span>Your sources, your way.</span></h2>
+    <p>Pick the providers and the stream labels you want. AniBox builds a personal manifest URL — no account, no setup.</p>
 
-  <section class="card">
-    <h2>Providers</h2>
-    <p class="hint">Stream sources AniBox scrapes on every request. MultiMovies always serves direct CDN links for fast seeking.</p>
-    <div class="actions" style="margin-top:0;margin-bottom:1rem;">
-      <button class="btn btn-sm" onclick="setAllProviders(true)">Enable all</button>
-      <button class="btn btn-sm" onclick="setAllProviders(false)">Disable all</button>
-    </div>
-    <div class="row-list" id="provider-list"></div>
-  </section>
-
-  <section class="card">
-    <h2>Stream labels</h2>
-    <p class="hint">How AniBox formats every stream. Rich and AIOStreams expose provider, player, resolution, codec, audio, languages and file size, plus a scene-style release filename that AIOStreams formatter rules can parse.</p>
-    <select id="format-style" style="width:100%;padding:.75rem .9rem;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font:inherit">
-      <option value="rich">Rich — multi-line details</option>
-      <option value="aiostreams">AIOStreams — rich + release filename</option>
-      <option value="compact">Compact — provider + quality</option>
-      <option value="plain">Plain — classic AniBox labels</option>
-    </select>
-  </section>
-
-  <section class="card">
-    <h2>Install</h2>
-    <p class="hint">Paste this manifest URL into any Stremio-compatible app.</p>
-    <div class="url-box" id="addon-url"></div>
-    <div class="actions">
-      <button class="btn btn-primary" onclick="install()">Install in Stremio</button>
-      <button class="btn" onclick="copyUrl()" id="copy-btn">Copy URL</button>
+    <div class="install glass">
+      <div class="url-row">
+        <div class="url" id="addon-url" title="Manifest URL"></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="install()" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          Install in Stremio
+        </button>
+        <button class="btn" id="copy-btn" onclick="copyUrl()" type="button">Copy URL</button>
+      </div>
     </div>
   </section>
 
+  <section class="panel glass">
+    <div class="panel-head">
+      <h3>Providers</h3>
+      <span class="chip" id="stat-prov">0/6</span>
+    </div>
+    <p class="hint">Every source AniBox scrapes. Turn off what you don't need to keep the stream list fast and clean.</p>
+    <div class="toolbar">
+      <button class="btn btn-sm" onclick="setAllProviders(true)" type="button">Enable all</button>
+      <button class="btn btn-sm btn-ghost" onclick="setAllProviders(false)" type="button">Disable all</button>
+    </div>
+    <div class="provider-grid" id="provider-list"></div>
+  </section>
+
+  <section class="panel glass">
+    <div class="panel-head">
+      <h3>Stream labels</h3>
+    </div>
+    <p class="hint">How each stream is presented in the picker. Rich and AIOStreams expose provider, player, resolution, codec, audio, languages and size, plus a scene-style filename AIOStreams rules can parse.</p>
+    <div class="style-grid" id="style-list"></div>
+  </section>
+
+  <footer>
+    AniBox · <a href="/configure">configure</a> · metadata comes from the source; nothing is guessed
+  </footer>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 const PROVIDERS = [
-  {key:'source_multimovies',     name:'MultiMovies',   desc:'Movies + Hindi series', def:true},
-  {key:'source_nxsha',           name:'NxSha',         desc:'Movies + series',       def:true},
-  {key:'source_watchanimeworld', name:'AnimeWorld',    desc:'Hindi dub series',      def:true},
-  {key:'source_toonstream',      name:'ToonStream',    desc:'Anime + cartoon',       def:true},
-  {key:'source_piratexplay',     name:'PirateXPlay',   desc:'Multi-language anime',  def:true},
-  {key:'source_screenscape',     name:'ScreenScape',   desc:'Movies + series',       def:true},
+  {key:'source_multimovies',     name:'MultiMovies',   desc:'Movies + Hindi series',       def:true, h1:'#f59e0b', h2:'#ef4444'},
+  {key:'source_nxsha',           name:'NxSha',         desc:'Movies + series',             def:true, h1:'#22d3ee', h2:'#3b82f6'},
+  {key:'source_watchanimeworld', name:'AnimeWorld',    desc:'Hindi dub series',            def:true, h1:'#a78bfa', h2:'#6366f1'},
+  {key:'source_toonstream',      name:'ToonStream',    desc:'Anime + cartoon',             def:true, h1:'#34d399', h2:'#10b981'},
+  {key:'source_piratexplay',     name:'PirateXPlay',   desc:'Multi-language anime',        def:true, h1:'#fb7185', h2:'#e11d48'},
+  {key:'source_screenscape',     name:'ScreenScape',   desc:'Movies + series',             def:true, h1:'#60a5fa', h2:'#2563eb'},
+];
+
+const STYLES = [
+  {key:'rich',       name:'Rich',       desc:'Multi-line provider, player, codec, languages and size.',
+   preview:'AniBox · 1080p\n🎬 AnimeWorld  📡 Zephyr\n📺 1080p · WEB-DL · H.264\n🎧 🇮🇳 Hindi · 🇯🇵 Japanese'},
+  {key:'aiostreams', name:'AIOStreams', desc:'Rich details plus a scene-style release filename for AIOStreams rules.',
+   preview:'AniBox · 1080p\n📦 Naruto.S01E01.1080p.WEB-DL.AVC-AniBox.m3u8\n🏷️ AniBox'},
+  {key:'compact',    name:'Compact',    desc:'Provider and quality only — a short, dense list.',
+   preview:'AnimeWorld · 1080p\nZephyr · 1080p'},
+  {key:'plain',      name:'Plain',      desc:'Classic AniBox label, no extra metadata.',
+   preview:'AnimeWorld / Zephyr / 1080p'},
 ];
 
 let state = {};
@@ -182,45 +346,104 @@ function getAddonUrl(){
 }
 
 function updateSummary(){
-  document.getElementById('stat-prov').textContent = PROVIDERS.filter(p => state[p.key]==='on').length + '/' + PROVIDERS.length;
+  const on = PROVIDERS.filter(p => state[p.key] === 'on').length;
+  document.getElementById('stat-prov').textContent = on + '/' + PROVIDERS.length;
   document.getElementById('addon-url').textContent = getAddonUrl();
+  document.querySelectorAll('.style-card').forEach(card => {
+    card.classList.toggle('is-selected', card.dataset.style === state.formatter_style);
+  });
 }
 
 function renderProviders(){
   const list = document.getElementById('provider-list');
   list.innerHTML = '';
   PROVIDERS.forEach(p => {
-    const row = document.createElement('label');
-    row.className = 'row';
-    row.innerHTML =
-      '<div class="row-label"><h3>' + p.name + '</h3><p>' + p.desc + '</p></div>' +
-      '<input type="checkbox" class="prov-chk"' + (state[p.key]==='on' ? ' checked' : '') + '>';
-    row.querySelector('input').onchange = (e) => { state[p.key] = e.target.checked ? 'on' : 'off'; updateSummary(); };
-    list.appendChild(row);
+    const el = document.createElement('label');
+    el.className = 'provider' + (state[p.key] === 'on' ? '' : ' is-off');
+    el.style.setProperty('--h1', p.h1);
+    el.style.setProperty('--h2', p.h2);
+    el.innerHTML =
+      '<span class="p-avatar">' + p.name.charAt(0) + '</span>' +
+      '<span class="p-body"><h4></h4><p></p></span>' +
+      '<span class="switch"><input type="checkbox"' + (state[p.key] === 'on' ? ' checked' : '') + '>' +
+      '<span class="track"><span class="knob"></span></span></span>';
+    el.querySelector('h4').textContent = p.name;
+    el.querySelector('p').textContent = p.desc;
+    const input = el.querySelector('input');
+    input.addEventListener('change', () => {
+      state[p.key] = input.checked ? 'on' : 'off';
+      el.classList.toggle('is-off', !input.checked);
+      updateSummary();
+    });
+    list.appendChild(el);
+  });
+}
+
+function renderStyles(){
+  const list = document.getElementById('style-list');
+  list.innerHTML = '';
+  STYLES.forEach(s => {
+    const el = document.createElement('label');
+    el.className = 'style-card' + (state.formatter_style === s.key ? ' is-selected' : '');
+    el.dataset.style = s.key;
+    el.innerHTML =
+      '<input type="radio" name="formatter-style" value="' + s.key + '"' + (state.formatter_style === s.key ? ' checked' : '') + '>' +
+      '<span class="s-name"></span><span class="s-desc"></span><span class="s-preview"></span>';
+    el.querySelector('.s-name').textContent = s.name;
+    el.querySelector('.s-desc').textContent = s.desc;
+    el.querySelector('.s-preview').textContent = s.preview;
+    const input = el.querySelector('input');
+    input.addEventListener('change', () => {
+      if (!input.checked) return;
+      state.formatter_style = s.key;
+      updateSummary();
+    });
+    list.appendChild(el);
   });
 }
 
 function setAllProviders(on){
   PROVIDERS.forEach(p => state[p.key] = on ? 'on' : 'off');
-  renderProviders(); updateSummary();
+  renderProviders();
+  updateSummary();
 }
 
 function renderAll(){
-  renderProviders(); updateSummary();
+  renderProviders();
+  renderStyles();
+  updateSummary();
 }
 
 function install(){
-  setTimeout(() => { window.location.href = 'stremio://' + getAddonUrl().replace(/^https?:\/\//,''); }, 400);
+  setTimeout(() => {
+    window.location.href = 'stremio://' + getAddonUrl().replace(/^https?:\/\//, '');
+  }, 350);
 }
 
-function copyUrl(){
-  navigator.clipboard.writeText(getAddonUrl()).then(() => {
-    const b = document.getElementById('copy-btn');
-    if (b) { b.textContent = 'Copied!'; setTimeout(() => { b.textContent = 'Copy URL'; }, 2000); }
-  });
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('show'), 1800);
 }
 
-// ─── Light / dark mode (dark default) ───
+async function copyUrl(){
+  const url = getAddonUrl();
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('Manifest URL copied');
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    toast('Manifest URL copied');
+  }
+  const b = document.getElementById('copy-btn');
+  if (b) { b.textContent = 'Copied!'; setTimeout(() => { b.textContent = 'Copy URL'; }, 2000); }
+}
+
+// ── Theme ──
 function applyTheme(mode){
   const root = document.documentElement;
   if (mode === 'light') { root.classList.add('light'); root.classList.remove('dark'); }
@@ -232,19 +455,16 @@ function currentMode(){
   try { return localStorage.getItem('anibox-theme') || 'dark'; }
   catch(e){ return 'dark'; }
 }
+
 const modeToggle = document.getElementById('mode-toggle');
 modeToggle.checked = currentMode() === 'light';
 modeToggle.addEventListener('change', () => applyTheme(modeToggle.checked ? 'light' : 'dark'));
 applyTheme(currentMode());
 
+document.getElementById('copy-top').addEventListener('click', copyUrl);
+
 initState();
 renderAll();
-const formatStyle = document.getElementById('format-style');
-formatStyle.value = state.formatter_style;
-formatStyle.addEventListener('change', () => {
-  state.formatter_style = formatStyle.value;
-  updateSummary();
-});
 </script>
 
 </body>

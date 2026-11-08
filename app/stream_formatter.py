@@ -406,6 +406,17 @@ def _dot(text, limit=70):
 # those tokens while the human-readable description keeps H.264/H.265.
 _AIO_ENCODE = {'H.264': 'AVC', 'H.265': 'HEVC', 'AV1': 'AV1', 'VP9': 'VP9'}
 
+_CODEC_DISPLAY = {
+    'h264': 'H.264', 'avc': 'H.264', 'avc1': 'H.264',
+    'h265': 'H.265', 'hevc': 'H.265', 'hvc1': 'H.265', 'hev1': 'H.265',
+    'av1': 'AV1', 'vp9': 'VP9',
+}
+
+
+def codec_display(codec):
+    """Map a source-declared codec string to its display name (or '')."""
+    return _CODEC_DISPLAY.get(str(codec or '').strip().lower(), '')
+
 
 def build_filename(title, content_type, season, episode, meta, languages, source_url=''):
     parts = []
