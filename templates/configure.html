@@ -11,16 +11,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  /* AniBox brand: neutral surfaces + pink accent taken from the logo */
   :root{
     --bg:#161616; --fg:#eee; --card:#191919; --pop:#222; --muted:#222;
     --muted-fg:#b4b4b4; --border:#484848; --input:#2a2a2a;
-    --primary:#70b8ff; --primary-fg:#111; --ring:#70b8ff; --radius:.5rem;
+    --primary:#ff5c8a; --primary-fg:#161616; --primary-strong:#e11d63;
+    --ring:#ff5c8a; --radius:.5rem;
     --font:'Karla',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    --pad:1.25rem;
   }
   html.light{
     --bg:#fcfcfc; --fg:#202020; --card:#f9f9f9; --pop:#f0f0f0; --muted:#f0f0f0;
     --muted-fg:#646464; --border:#cecece; --input:#fff;
-    --primary:#113264; --primary-fg:#fff; --ring:#0d74ce;
+    --primary:#c2185b; --primary-fg:#fff; --primary-strong:#9d174d;
+    --ring:#c2185b;
   }
   html{font-size:16px;color-scheme:dark}
   html.light{color-scheme:light}
@@ -31,46 +36,61 @@
 
   .app{display:flex;min-height:100vh}
 
-  /* left rail — Miruro app shell */
+  /* ---------- rail ---------- */
   .rail{
-    width:3.75rem;flex:0 0 3.75rem;display:flex;flex-direction:column;align-items:center;
-    gap:.4rem;padding:.6rem 0;border-right:1px solid var(--border);background:var(--bg);
+    width:4rem;flex:0 0 4rem;display:flex;flex-direction:column;align-items:center;
+    gap:.45rem;padding:.7rem 0;border-right:1px solid var(--border);background:var(--bg);
     position:sticky;top:0;height:100vh;
   }
-  .rail-logo{
-    width:2.4rem;height:2.4rem;border-radius:.5rem;display:grid;place-items:center;
-    background:var(--primary);color:var(--primary-fg);margin-bottom:.65rem
-  }
-  .rail-logo svg{width:1.3rem;height:1.3rem}
+  .rail-logo{width:2.5rem;height:2.5rem;border-radius:.55rem;overflow:hidden;display:block;margin-bottom:.7rem;
+    border:1px solid var(--border);background:#fff}
+  .rail-logo img{width:100%;height:100%;object-fit:cover;display:block}
   .rail-nav{display:flex;flex-direction:column;gap:.35rem}
   .rail-btn{
-    width:2.6rem;height:2.6rem;border-radius:.45rem;border:1px solid transparent;background:transparent;
+    width:2.75rem;height:2.75rem;border-radius:.5rem;border:1px solid transparent;background:transparent;
     color:var(--muted-fg);display:grid;place-items:center
   }
   .rail-btn:hover{background:var(--muted);color:var(--fg)}
-  .rail-btn.active{background:color-mix(in srgb,var(--primary) 14%,transparent);
+  .rail-btn.active{background:color-mix(in srgb,var(--primary) 15%,transparent);
     border-color:color-mix(in srgb,var(--primary) 45%,transparent);color:var(--primary)}
-  .rail-btn svg{width:1.2rem;height:1.2rem}
+  .rail-btn svg{width:1.25rem;height:1.25rem}
   .rail-bottom{margin-top:auto}
 
-  .main{flex:1;min-width:0;padding:1.5rem clamp(1rem,4vw,3rem) 4rem;max-width:60rem}
+  /* ---------- page ---------- */
+  .main{flex:1;min-width:0;padding:1.5rem clamp(1rem,2.4vw,2.5rem) 3rem}
+  .content{max-width:82rem;margin:0 auto}
 
-  .topbar{display:flex;align-items:center;gap:1rem;margin-bottom:2rem}
-  .topbar h1{font-size:1.5rem;line-height:1.1;font-weight:800;letter-spacing:-.01em}
-  .topbar p{color:var(--muted-fg);font-size:.9rem}
+  .topbar{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;min-height:2.5rem}
+  .topbar h1{font-size:1.55rem;line-height:1.1;font-weight:800;letter-spacing:-.015em}
+  .topbar p{color:var(--muted-fg);font-size:.92rem;margin-top:.15rem}
   .chip{
-    margin-left:auto;font-size:.85rem;font-weight:600;color:var(--primary);
+    margin-left:auto;flex:0 0 auto;font-size:.85rem;font-weight:600;color:var(--primary);
     border:1px solid color-mix(in srgb,var(--primary) 40%,var(--border));
     background:color-mix(in srgb,var(--primary) 10%,transparent);
-    padding:.3rem .7rem;border-radius:999px;white-space:nowrap
+    padding:.35rem .75rem;border-radius:999px;white-space:nowrap
   }
 
-  .panel{animation:none}
-  h2{font-size:1.35rem;line-height:1.1;font-weight:700;letter-spacing:-.01em;margin-bottom:.4rem}
-  .hint{color:var(--muted-fg);font-size:.92rem;margin-bottom:1.25rem}
-  .section-head{display:flex;align-items:center;gap:1rem;margin-bottom:.4rem}
-  .section-head h2{margin:0}
+  .layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(17.5rem,.85fr);gap:1rem;align-items:stretch}
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:var(--pad);display:flex;flex-direction:column;min-width:0
+  }
+  .card-head{display:flex;align-items:center;gap:1rem;margin-bottom:.25rem}
+  .card-head h2{margin:0}
   .toolbar{margin-left:auto;display:flex;gap:.5rem}
+  h2{font-size:1.12rem;line-height:1.2;font-weight:700;letter-spacing:-.01em;margin-bottom:.55rem}
+  .hint{color:var(--muted-fg);font-size:.9rem;margin-bottom:1rem}
+  .note{color:var(--muted-fg);font-size:.85rem;line-height:1.5;margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)}
+
+  .steps{display:flex;flex-direction:column;gap:.9rem;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+  .step{display:flex;gap:.8rem;align-items:flex-start}
+  .step .n{width:1.65rem;height:1.65rem;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+    background:color-mix(in srgb,var(--primary) 16%,transparent);color:var(--primary);
+    font-size:.8rem;font-weight:700}
+  .step h4{font-size:.95rem;font-weight:600;line-height:1.3}
+  .step p{font-size:.85rem;color:var(--muted-fg);line-height:1.4}
+
+  .footer{color:var(--muted-fg);font-size:.8rem;text-align:center;padding:1.75rem 0 0}
 
   .btn{
     height:2.5rem;padding:0 .95rem;border-radius:.4rem;border:1px solid var(--border);
@@ -79,73 +99,88 @@
   }
   .btn:hover{border-color:var(--muted-fg)}
   .btn.primary{background:var(--primary);border-color:var(--primary);color:var(--primary-fg)}
-  .btn.primary:hover{filter:brightness(.94)}
+  .btn.primary:hover{filter:brightness(.95)}
   .btn.sm{height:2.1rem;font-size:.85rem;padding:0 .7rem}
   .btn svg{width:1rem;height:1rem;flex:0 0 auto}
 
-  /* install panel */
-  .field{margin-bottom:1rem}
-  .field .label{font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted-fg);margin-bottom:.45rem}
-  .url{
-    display:flex;align-items:center;min-height:2.75rem;padding:.5rem .8rem;
-    background:var(--pop);border:1px solid var(--border);border-radius:.4rem;
-    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;color:var(--muted-fg);
-    word-break:break-all
-  }
-  .actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
-  .note{color:var(--muted-fg);font-size:.88rem;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)}
-  .note code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;color:var(--fg)}
-
-  /* provider list */
-  .list{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--card)}
-  .row{display:flex;align-items:center;gap:.9rem;padding:.85rem 1rem;border-bottom:1px solid var(--border);cursor:pointer}
+  /* ---------- provider list ---------- */
+  .list{border:1px solid var(--border);border-radius:.4rem;overflow:hidden;background:var(--card)}
+  .row{display:flex;align-items:center;gap:.9rem;padding:.8rem .9rem;border-bottom:1px solid var(--border);cursor:pointer}
   .row:last-child{border-bottom:none}
   .row:hover{background:color-mix(in srgb,var(--fg) 4%,transparent)}
-  .row .glyph{
-    width:2.15rem;height:2.15rem;border-radius:.4rem;display:grid;place-items:center;
-    background:var(--muted);color:var(--muted-fg);flex:0 0 auto
-  }
+  .row .glyph{width:2.15rem;height:2.15rem;border-radius:.4rem;display:grid;place-items:center;
+    background:var(--muted);color:var(--muted-fg);flex:0 0 auto}
   .row .glyph svg{width:1.15rem;height:1.15rem}
-  .row[data-on="true"] .glyph{color:var(--primary);background:color-mix(in srgb,var(--primary) 14%,var(--muted))}
+  .row[data-on="true"] .glyph{color:var(--primary);background:color-mix(in srgb,var(--primary) 15%,var(--muted))}
+  .row .body{min-width:0;flex:1}
   .row h3{font-size:1rem;font-weight:600;line-height:1.25}
   .row p{font-size:.85rem;color:var(--muted-fg);line-height:1.35}
-  .row .body{min-width:0;flex:1}
 
   .switch{position:relative;width:2.6rem;height:1.5rem;flex:0 0 auto}
   .switch input{position:absolute;opacity:0;width:0;height:0}
-  .switch .track{position:absolute;inset:0;border-radius:999px;background:var(--input);border:1px solid var(--border);transition:background .16s ease,border-color .16s ease}
+  .switch .track{position:absolute;inset:0;border-radius:999px;background:var(--input);
+    border:1px solid var(--border);transition:background .16s ease,border-color .16s ease}
   .switch .knob{position:absolute;top:.18rem;left:.18rem;width:1.12rem;height:1.12rem;border-radius:50%;
     background:var(--muted-fg);transition:transform .16s ease,background .16s ease}
   .switch input:checked + .track{background:var(--primary);border-color:var(--primary)}
   .switch input:checked + .track .knob{transform:translateX(1.08rem);background:var(--primary-fg)}
 
-  /* segmented style picker */
-  .segmented{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin-bottom:1rem}
-  .seg{
-    border:1px solid var(--border);background:var(--card);border-radius:.4rem;padding:.7rem .6rem;
-    text-align:left;display:flex;flex-direction:column;gap:.15rem
-  }
-  .seg strong{font-size:.95rem;font-weight:700}
-  .seg span{font-size:.8rem;color:var(--muted-fg);line-height:1.3}
-  .seg[aria-pressed="true"]{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,transparent)}
-  .seg[aria-pressed="true"] strong{color:var(--primary)}
+  /* ---------- facts / summary ---------- */
+  .facts{display:flex;flex-direction:column;gap:.6rem;margin-top:.25rem}
+  .facts > div{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+    padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+  .facts dt{color:var(--muted-fg);font-size:.88rem}
+  .facts dd{font-size:.95rem;font-weight:700;text-align:right}
+
+  .tips{list-style:none;display:flex;flex-direction:column;gap:.55rem;margin-top:1.1rem;padding-top:1.1rem;
+    border-top:1px solid var(--border);color:var(--muted-fg);font-size:.85rem;line-height:1.45}
+  .tips li{position:relative;padding-left:1.05rem}
+  .tips li::before{content:"";position:absolute;left:0;top:.55rem;width:.35rem;height:.35rem;border-radius:50%;background:var(--primary)}
+
+  /* ---------- labels ---------- */
+  .style-list{display:flex;flex-direction:column;gap:.5rem}
+  .style{border:1px solid var(--border);border-radius:.4rem;background:var(--card);
+    padding:.8rem .9rem;cursor:pointer;display:flex;gap:.75rem;align-items:flex-start}
+  .style:hover{border-color:var(--muted-fg)}
+  .style[data-selected="true"]{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 9%,transparent)}
+  .radio{width:1.05rem;height:1.05rem;border-radius:50%;border:2px solid var(--border);
+    margin-top:.2rem;flex:0 0 auto;display:grid;place-items:center}
+  .style[data-selected="true"] .radio{border-color:var(--primary)}
+  .style[data-selected="true"] .radio::after{content:"";width:.48rem;height:.48rem;border-radius:50%;background:var(--primary)}
+  .style h3{font-size:.98rem;font-weight:700;line-height:1.25}
+  .style p{font-size:.85rem;color:var(--muted-fg);line-height:1.35}
 
   .preview{
-    border:1px solid var(--border);border-radius:var(--radius);background:var(--pop);
-    padding:1rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    font-size:.82rem;line-height:1.6;color:var(--muted-fg);white-space:pre-wrap
+    border:1px solid var(--border);border-radius:.4rem;background:var(--pop);padding:.9rem;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem;
+    line-height:1.6;color:var(--muted-fg);white-space:pre-wrap;flex:1
   }
+
+  /* ---------- install ---------- */
+  .url{
+    display:block;width:100%;padding:.7rem .8rem;background:var(--pop);
+    border:1px solid var(--border);border-radius:.4rem;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.8rem;line-height:1.55;color:var(--muted-fg);word-break:break-all;margin-bottom:1rem
+  }
+  .actions{display:flex;gap:.6rem;flex-wrap:wrap}
 
   .toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%) translateY(1rem);
     background:var(--card);border:1px solid var(--border);border-radius:999px;
     padding:.55rem 1rem;font-size:.9rem;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:40}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr}
+  }
   @media (max-width:760px){
-    .rail{width:3.25rem;flex-basis:3.25rem}
-    .main{padding:1rem 1rem 3rem}
-    .segmented{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .topbar{flex-wrap:wrap}
+    .rail{width:3.5rem;flex-basis:3.5rem}
+    .rail-logo{width:2.2rem;height:2.2rem}
+    .main{padding:1rem 1rem 2.5rem}
+    .topbar{flex-wrap:wrap;gap:.5rem}
+    .topbar h1{font-size:1.35rem}
+    .toolbar{margin-left:0}
+    .card-head{flex-wrap:wrap}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -154,22 +189,19 @@
 <div class="app">
 
   <aside class="rail" aria-label="Sections">
-    <div class="rail-logo" title="AniBox" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="5"/>
-        <path d="m10 8 6 4-6 4V8Z" fill="currentColor" stroke="none"/>
-      </svg>
-    </div>
+    <a class="rail-logo" href="#providers" aria-label="AniBox home">
+      <img src="/static/anibox-icon-512.png" alt="AniBox">
+    </a>
 
     <nav class="rail-nav" role="tablist" aria-orientation="vertical" aria-label="Sections">
-      <button class="rail-btn active" role="tab" data-tab="install" aria-selected="true" aria-controls="panel-install" title="Install" aria-label="Install">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-      </button>
-      <button class="rail-btn" role="tab" data-tab="providers" aria-selected="false" aria-controls="panel-providers" title="Providers" aria-label="Providers">
+      <button class="rail-btn active" role="tab" data-tab="providers" aria-selected="true" aria-controls="panel-providers" title="Providers" aria-label="Providers">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       </button>
       <button class="rail-btn" role="tab" data-tab="labels" aria-selected="false" aria-controls="panel-labels" title="Stream labels" aria-label="Stream labels">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 12 22l-9-9V3h10l7.59 7.59a2 2 0 0 1 0 2.82Z"/><circle cx="7.5" cy="7.5" r="1"/></svg>
+      </button>
+      <button class="rail-btn" role="tab" data-tab="install" aria-selected="false" aria-controls="panel-install" title="Install" aria-label="Install">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
       </button>
     </nav>
 
@@ -181,49 +213,110 @@
   </aside>
 
   <main class="main">
-    <div class="topbar">
-      <div>
-        <h1>AniBox</h1>
-        <p id="page-desc">Stremio / Nuvio addon · install</p>
-      </div>
-      <span class="chip" id="count">6/6 providers</span>
-    </div>
+    <div class="content">
 
-    <section class="panel" id="panel-install" role="tabpanel" aria-labelledby="panel-install">
-      <h2>Install</h2>
-      <p class="hint">Add this manifest URL to Stremio, Nuvio or any Stremio-compatible app.</p>
-      <div class="field">
-        <div class="label">Manifest URL</div>
-        <code class="url" id="url"></code>
-      </div>
-      <div class="actions">
-        <button class="btn primary" id="go">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          Install in Stremio
-        </button>
-        <button class="btn" id="copy">Copy URL</button>
-      </div>
-      <p class="note">The URL updates automatically as you change providers and labels. Paste it into Nuvio's addon screen if the button doesn't open Stremio.</p>
-    </section>
-
-    <section class="panel" id="panel-providers" role="tabpanel" aria-labelledby="panel-providers" hidden>
-      <div class="section-head">
-        <h2>Providers</h2>
-        <div class="toolbar">
-          <button class="btn sm" id="all-on">Enable all</button>
-          <button class="btn sm" id="all-off">Disable all</button>
+      <header class="topbar">
+        <div>
+          <h1 id="page-title">Providers</h1>
+          <p id="page-desc">Choose which sources AniBox scrapes.</p>
         </div>
-      </div>
-      <p class="hint">Every enabled source is scraped on each request. Turn off what you don't need.</p>
-      <div class="list" id="providers-list"></div>
-    </section>
+        <span class="chip" id="count">6/6 providers</span>
+      </header>
 
-    <section class="panel" id="panel-labels" role="tabpanel" aria-labelledby="panel-labels" hidden>
-      <h2>Stream labels</h2>
-      <p class="hint">How each result is presented in the picker.</p>
-      <div class="segmented" id="styles"></div>
-      <div class="preview" id="preview"></div>
-    </section>
+      <section class="panel" id="panel-providers" role="tabpanel">
+        <div class="layout">
+          <div class="card">
+            <div class="card-head">
+              <h2>Sources</h2>
+              <div class="toolbar">
+                <button class="btn sm" id="all-on">Enable all</button>
+                <button class="btn sm" id="all-off">Disable all</button>
+              </div>
+            </div>
+            <p class="hint">Every enabled source is scraped on each request.</p>
+            <div class="list" id="providers-list"></div>
+          </div>
+
+          <aside class="card">
+            <h2>Selection</h2>
+            <dl class="facts">
+              <div><dt>Enabled providers</dt><dd class="sum-providers">6/6</dd></div>
+              <div><dt>Stream label</dt><dd class="sum-style">Rich</dd></div>
+              <div><dt>Manifest</dt><dd>Ready</dd></div>
+              <div><dt>Deduplication</dt><dd>CDN identity</dd></div>
+              <div><dt>Metadata</dt><dd>Source only</dd></div>
+            </dl>
+            <ul class="tips">
+              <li>Disable sources you don't watch to shorten scraping.</li>
+              <li>Fewer sources means a faster, cleaner stream list.</li>
+              <li>Mirror duplicates are removed by CDN file identity.</li>
+            </ul>
+            <p class="note">Your selection is encoded in the manifest URL, so it follows you to any app.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-labels" role="tabpanel" hidden>
+        <div class="layout">
+          <div class="card">
+            <h2>Stream labels</h2>
+            <p class="hint">Choose how each result is presented in the picker.</p>
+            <div class="style-list" id="styles"></div>
+          </div>
+
+          <aside class="card">
+            <h2>Preview</h2>
+            <div class="preview" id="preview"></div>
+            <dl class="facts">
+              <div><dt>Enabled providers</dt><dd class="sum-providers">6/6</dd></div>
+              <div><dt>Deduplication</dt><dd>CDN identity</dd></div>
+            </dl>
+            <p class="note">Rich and AIOStreams expose provider, player, resolution, codec, audio, languages and size.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-install" role="tabpanel" hidden>
+        <div class="layout">
+          <div class="card">
+            <h2>Manifest URL</h2>
+            <p class="hint">Paste this into Stremio, Nuvio or any Stremio-compatible app.</p>
+            <code class="url" id="url"></code>
+            <div class="actions">
+              <button class="btn primary" id="go">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                Install in Stremio
+              </button>
+              <button class="btn" id="copy">Copy URL</button>
+            </div>
+
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div><h4>Copy the manifest URL</h4><p>Use the button above, or copy the URL manually.</p></div></div>
+              <div class="step"><span class="n">2</span><div><h4>Open your app's addon screen</h4><p>Stremio: Addons → Install from URL. Nuvio: Addons → Add repository.</p></div></div>
+              <div class="step"><span class="n">3</span><div><h4>Paste and install</h4><p>AniBox appears as a catalog and a stream source.</p></div></div>
+            </div>
+          </div>
+
+          <aside class="card">
+            <h2>Summary</h2>
+            <dl class="facts">
+              <div><dt>Enabled providers</dt><dd class="sum-providers">6/6</dd></div>
+              <div><dt>Stream label</dt><dd class="sum-style">Rich</dd></div>
+              <div><dt>Deduplication</dt><dd>CDN identity</dd></div>
+              <div><dt>Metadata</dt><dd>Source only</dd></div>
+            </dl>
+            <ul class="tips">
+              <li>Works in Stremio, Nuvio and other compatible apps.</li>
+              <li>No account or sign-in required.</li>
+            </ul>
+            <p class="note">The URL updates automatically whenever you change providers or labels.</p>
+          </aside>
+        </div>
+      </section>
+
+      <footer class="footer">AniBox · Stremio / Nuvio addon · metadata comes from the source</footer>
+
+    </div>
   </main>
 </div>
 
@@ -239,10 +332,14 @@ const PROVIDERS = [
   {key:'source_screenscape',     name:'ScreenScape',   desc:'Movies + series',       icon:'monitor', def:true},
 ];
 const STYLES = [
-  {key:'rich', name:'Rich', desc:'Full multi-line details', preview:'AniBox · 1080p\n🎬 AnimeWorld  📡 Zephyr\n📺 1080p · WEB-DL · H.264\n🎧 🇮🇳 Hindi · 🇯🇵 Japanese\n💾 1.4 GB'},
-  {key:'aiostreams', name:'AIOStreams', desc:'Rich + release filename', preview:'AniBox · 1080p\n📦 Naruto.S01E01.1080p.WEB-DL.AVC-AniBox.m3u8\n🏷️ AniBox'},
-  {key:'compact', name:'Compact', desc:'Provider + quality', preview:'AnimeWorld · 1080p\nZephyr · 1080p'},
-  {key:'plain', name:'Plain', desc:'Classic label', preview:'AnimeWorld / Zephyr / 1080p'},
+  {key:'rich', name:'Rich', desc:'Full multi-line provider, player, codec, languages and size.',
+   preview:'AniBox · 1080p\n🎬 AnimeWorld  📡 Zephyr\n📺 1080p · WEB-DL · H.264\n🎧 🇮🇳 Hindi · 🇯🇵 Japanese\n🎛️ AAC · 3.2 Mbps\n💾 1.4 GB'},
+  {key:'aiostreams', name:'AIOStreams', desc:'Rich details plus a scene-style release filename.',
+   preview:'AniBox · 1080p\n📦 Naruto.S01E01.1080p.WEB-DL.AVC-AniBox.m3u8\n🏷️ AniBox'},
+  {key:'compact', name:'Compact', desc:'Provider and quality only — a short, dense list.',
+   preview:'AnimeWorld · 1080p\nZephyr · 1080p'},
+  {key:'plain', name:'Plain', desc:'Classic AniBox label with no extra metadata.',
+   preview:'AnimeWorld / Zephyr / 1080p'},
 ];
 
 const ICONS = {
@@ -255,31 +352,36 @@ const ICONS = {
 };
 
 const TABS = {
-  install:   'Stremio / Nuvio addon · install',
-  providers: 'Stremio / Nuvio addon · providers',
-  labels:    'Stremio / Nuvio addon · stream labels',
+  providers: {title:'Providers', desc:'Choose which sources AniBox scrapes.'},
+  labels:    {title:'Stream labels', desc:'Choose how results are presented in the picker.'},
+  install:   {title:'Install', desc:'Add AniBox to Stremio or Nuvio.'},
 };
 
 let state = {};
 const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
 
 function initState(){ PROVIDERS.forEach(p => state[p.key] = p.def ? 'on' : 'off'); state.formatter_style = 'rich'; }
 function buildConfig(){ const c = {}; PROVIDERS.forEach(p => { if (state[p.key] === 'on') c[p.key] = 'on'; }); c.formatter_style = state.formatter_style; return c; }
 function encodeConfig(c){ return btoa(unescape(encodeURIComponent(JSON.stringify(c)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,''); }
 function getAddonUrl(){ const base = (location.origin && location.origin !== 'null') ? location.origin : 'https://anibox-4l4u.onrender.com'; return base + '/' + encodeConfig(buildConfig()) + '/manifest.json'; }
 
+function currentStyle(){ return STYLES.find(s => s.key === state.formatter_style) || STYLES[0]; }
+
 function update(){
   const on = PROVIDERS.filter(p => state[p.key] === 'on').length;
-  $('#count').textContent = on + '/' + PROVIDERS.length + ' providers';
+  const total = PROVIDERS.length;
+  const style = currentStyle();
+  $('#count').textContent = on + '/' + total + ' providers';
   $('#url').textContent = getAddonUrl();
-  document.querySelectorAll('.seg').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.style === state.formatter_style)));
-  const st = STYLES.find(s => s.key === state.formatter_style);
-  $('#preview').textContent = st ? st.preview : '';
+  $$('.sum-providers').forEach(el => el.textContent = on + '/' + total);
+  $$('.sum-style').forEach(el => el.textContent = style.name);
+  $$('.style').forEach(el => el.dataset.selected = String(el.dataset.style === state.formatter_style));
+  $('#preview').textContent = style.preview;
 }
 
 function renderProviders(){
-  const list = $('#providers-list');
-  list.innerHTML = '';
+  const list = $('#providers-list'); list.innerHTML = '';
   PROVIDERS.forEach(p => {
     const row = document.createElement('label');
     row.className = 'row';
@@ -301,32 +403,32 @@ function renderProviders(){
 }
 
 function renderStyles(){
-  const wrap = $('#styles');
-  wrap.innerHTML = '';
+  const wrap = $('#styles'); wrap.innerHTML = '';
   STYLES.forEach(s => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'seg'; b.dataset.style = s.key;
-    b.innerHTML = '<strong></strong><span></span>';
-    b.querySelector('strong').textContent = s.name;
-    b.querySelector('span').textContent = s.desc;
-    b.addEventListener('click', () => { state.formatter_style = s.key; update(); });
-    wrap.appendChild(b);
+    const el = document.createElement('label');
+    el.className = 'style'; el.dataset.style = s.key;
+    el.innerHTML = '<span class="radio"></span><span><h3></h3><p></p></span>';
+    el.querySelector('h3').textContent = s.name;
+    el.querySelector('p').textContent = s.desc;
+    el.addEventListener('click', () => { state.formatter_style = s.key; update(); });
+    wrap.appendChild(el);
   });
 }
 
 function setAll(on){ PROVIDERS.forEach(p => state[p.key] = on ? 'on' : 'off'); renderProviders(); update(); }
 
 function setTab(name){
-  if (!TABS[name]) name = 'install';
-  document.querySelectorAll('[role="tab"]').forEach(btn => {
+  if (!TABS[name]) name = 'providers';
+  $$('[role="tab"]').forEach(btn => {
     const on = btn.dataset.tab === name;
     btn.classList.toggle('active', on);
     btn.setAttribute('aria-selected', String(on));
     btn.tabIndex = on ? 0 : -1;
   });
-  document.querySelectorAll('[role="tabpanel"]').forEach(p => { p.hidden = p.id !== 'panel-' + name; });
-  $('#page-desc').textContent = TABS[name];
-  document.title = 'AniBox — ' + name.charAt(0).toUpperCase() + name.slice(1);
+  $$('[role="tabpanel"]').forEach(p => { p.hidden = p.id !== 'panel-' + name; });
+  $('#page-title').textContent = TABS[name].title;
+  $('#page-desc').textContent = TABS[name].desc;
+  document.title = 'AniBox — ' + TABS[name].title;
   try { history.replaceState(null, '', '#' + name); } catch(e){}
 }
 
@@ -348,11 +450,9 @@ function applyTheme(mode){
 const savedTheme = (() => { try { return localStorage.getItem('anibox-theme') || 'dark'; } catch(e){ return 'dark'; } })();
 applyTheme(savedTheme);
 
-document.querySelectorAll('[role="tab"]').forEach(btn => {
-  btn.addEventListener('click', () => setTab(btn.dataset.tab));
-});
-document.querySelector('.rail-nav').addEventListener('keydown', e => {
-  const tabs = [...document.querySelectorAll('[role="tab"]')];
+$$('[role="tab"]').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
+$('.rail-nav').addEventListener('keydown', e => {
+  const tabs = [...$$('[role="tab"]')];
   const i = tabs.findIndex(t => t.classList.contains('active'));
   if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
     e.preventDefault(); const n = tabs[(i + 1) % tabs.length]; n.focus(); n.click();
@@ -368,7 +468,7 @@ $('#all-on').addEventListener('click', () => setAll(true));
 $('#all-off').addEventListener('click', () => setAll(false));
 
 initState(); renderProviders(); renderStyles(); update();
-setTab((location.hash || '').replace('#', '') || 'install');
+setTab((location.hash || '').replace('#', '') || 'providers');
 </script>
 </body>
 </html>
