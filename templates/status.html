@@ -15,7 +15,7 @@
     --bg:#05050b; --surface:#0a0a12; --surface-2:#0e0e18; --surface-3:#14141f;
     --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.16);
     --text:#f1f1f6; --muted:#8a8a99; --subtle:#585866; --dim:#585866;
-    --accent:#ff5c8a; --accent-2:#b45cff;
+    --accent:#6d5efc; --accent-2:#9b7cff;
     --success:#31d39a; --danger:#f4707f; --warning:#e5a153;
     --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
     --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -25,7 +25,7 @@
     --bg:#f6f6fa; --surface:#ffffff; --surface-2:#f0f0f6; --surface-3:#e8e8f0;
     --line:rgba(10,10,20,.10); --line-strong:rgba(10,10,20,.2);
     --text:#16161f; --muted:#5c5c6e; --subtle:#8a8a99; --dim:#8a8a99;
-    --accent:#d81b60; --accent-2:#7c3aed;
+    --accent:#5b4bdb; --accent-2:#7c5cff;
     --success:#16a34a; --danger:#dc2626; --warning:#b57420;
   }
   html{font-size:16px;color-scheme:dark}
@@ -36,7 +36,7 @@
   button{font:inherit;color:inherit;cursor:pointer}
   :focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
 
-  .app-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:28px 0 40px}
+  .app-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:28px 0 20px}
 
   .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}
   .brand{display:inline-flex;align-items:center;gap:12px}
@@ -102,7 +102,7 @@
 
   body.embed{background:transparent}
   body.embed .topbar,body.embed .foot{display:none}
-  body.embed .app-shell{width:100%;max-width:none;padding:14px 14px 18px}
+  body.embed .app-shell{width:100%;max-width:none;padding:16px 16px 16px;min-height:100%}
 
   @media (max-width:720px){
     .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
