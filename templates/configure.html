@@ -49,19 +49,24 @@
   .brand b{font-size:.86rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
 
   .railsec{font-size:.625rem;font-weight:600;letter-spacing:1.3px;text-transform:uppercase;
-    color:var(--dim);padding:.55rem .7rem .3rem}
+    color:rgba(246,247,249,.32);padding:.5rem .75rem .3rem}
+  html.light .railsec{color:rgba(21,23,28,.4)}
 
   .railnav{display:flex;flex-direction:column;gap:2px}
-  .railbtn{border:0;background:transparent;color:var(--mut);cursor:pointer;
-    display:flex;align-items:center;gap:.65rem;width:100%;height:36px;padding:0 12px;
-    border-radius:8px;font-size:.8125rem;font-weight:500;text-align:left;
+  .railbtn{border:0;background:transparent;color:rgba(246,247,249,.5);cursor:pointer;
+    display:flex;align-items:center;gap:.5rem;width:100%;min-height:36px;padding:8px 12px;
+    border-radius:8px;font-size:.8125rem;font-weight:400;text-align:left;
     transition:background .14s,color .14s}
+  html.light .railbtn{color:rgba(21,23,28,.55)}
   .railbtn:hover{background:rgba(255,255,255,.05);color:var(--tx)}
   html.light .railbtn:hover{background:rgba(10,10,20,.05)}
-  .railbtn.on{background:rgba(109,94,252,.16);color:var(--ind-soft);font-weight:600}
-  html.light .railbtn.on{background:rgba(91,75,219,.12);color:var(--ind)}
+  .railbtn.on{background:rgba(255,255,255,.08);color:#fff;font-weight:600}
+  html.light .railbtn.on{background:rgba(10,10,20,.07);color:var(--tx)}
   .railbtn svg{width:16px;height:16px;flex:none}
   .railbtn span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .railcount{margin-left:auto;font-size:.75rem;font-weight:400;color:rgba(246,247,249,.3);
+    font-variant-numeric:tabular-nums}
+  html.light .railcount{color:rgba(21,23,28,.4)}
 
   .railfoot{margin-top:auto;padding-top:.7rem;border-top:1px solid var(--line-soft);display:grid;gap:2px}
 
@@ -178,9 +183,47 @@
   .step b{display:block;font-size:.83rem;font-weight:600}
   .step small{display:block;font-size:.75rem;color:var(--mut);margin-top:.05rem}
 
-  .status-wrap{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
-  .status-wrap iframe{width:100%;height:calc(100vh - 218px);min-height:420px;border:0;display:block;
-    background:var(--surface)}
+  /* ---------- status (inline) ---------- */
+  .status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin-bottom:1rem}
+  .smetric{border:1px solid var(--line);border-radius:10px;padding:.9rem 1rem;background:rgba(255,255,255,.02)}
+  .smetric-label{font-size:.625rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .smetric-value{font-size:1.5rem;font-weight:800;margin-top:.15rem;font-variant-numeric:tabular-nums;line-height:1.2}
+  .smetric-value.ok{color:var(--ok)}
+  .smetric-value.bad{color:var(--bad)}
+  .smetric-value.sm{font-size:1rem;line-height:1.6}
+
+  .status-toolbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}
+  .status-filters{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:8px;
+    background:rgba(255,255,255,.02)}
+  .sfilter{border:0;background:transparent;color:var(--mut);font-size:.75rem;font-weight:600;
+    padding:.3rem .65rem;border-radius:6px;transition:.14s}
+  .sfilter:hover{color:var(--tx)}
+  .sfilter.on{background:var(--raised);color:var(--tx)}
+  .st-updated{margin-left:auto;color:var(--dim);font-size:.75rem;font-family:var(--mono)}
+
+  .providers{display:grid;gap:.5rem}
+  .prow{border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);padding:.75rem .9rem}
+  .prow-head{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+  .ppill{display:inline-flex;align-items:center;gap:.4rem;font-size:.625rem;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;padding:.18rem .45rem;border-radius:999px;border:1px solid var(--line);color:var(--dim)}
+  .ppill i{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .ppill.up{color:var(--ok);border-color:rgba(49,211,154,.35);background:rgba(49,211,154,.08)}
+  .ppill.down{color:var(--bad);border-color:rgba(244,112,127,.35);background:rgba(244,112,127,.08)}
+  .pname{font-weight:600;font-size:.9rem}
+  .pmeta{color:var(--mut);font-size:.74rem;font-family:var(--mono)}
+  .ptime{margin-left:auto;color:var(--dim);font-size:.72rem;font-family:var(--mono)}
+  .ptitles{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.55rem;padding-top:.55rem;
+    border-top:1px solid var(--line)}
+  .ptlabel{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-right:.2rem}
+  .pchip{font-size:.72rem;color:var(--tx);background:var(--surface-2);border:1px solid var(--line);
+    border-radius:6px;padding:.15rem .45rem}
+  .pnone{font-size:.74rem;color:var(--dim)}
+  .perr{font-size:.72rem;color:var(--bad);font-family:var(--mono);margin-top:.4rem;word-break:break-word}
+  .status-empty{border:1px dashed var(--line);border-radius:10px;padding:2rem 1.5rem;text-align:center;color:var(--mut)}
+  .status-empty b{display:block;color:var(--tx);margin-bottom:.25rem}
+  .spinner{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--ind);border-radius:50%;
+    display:inline-block;vertical-align:-3px;margin-right:.5rem;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
   .pagefoot{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:var(--dim);
     font-size:.74rem;padding-top:1.6rem;margin-top:1.6rem;border-top:1px solid var(--line)}
@@ -213,13 +256,13 @@
     .railfoot .railbtn span{display:none}
     .railbtn span{font-size:.625rem;letter-spacing:.01em}
     .railbtn svg{width:19px;height:19px}
-    .railbtn.on{background:rgba(109,94,252,.18)}
+    .railbtn.on{background:rgba(255,255,255,.12)}
+    .railcount{display:none}
     .view{padding:18px 16px calc(84px + env(safe-area-inset-bottom));overflow:visible}
     .topline{margin-bottom:1.1rem}
     h1{font-size:1.4rem}
     .lede{margin-bottom:1.2rem;font-size:.86rem}
-    .status-wrap{border:0;border-radius:0;background:transparent}
-    .status-wrap iframe{height:calc(100vh - 196px);min-height:380px}
+    .status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     .pagefoot{padding-bottom:.5rem}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -237,19 +280,16 @@
     <div class="railsec">Configuration</div>
     <nav class="railnav" role="tablist" aria-orientation="vertical" aria-label="Sections">
       <button class="railbtn on" role="tab" data-tab="providers" aria-selected="true" aria-controls="panel-providers" title="Providers">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
         <span>Providers</span>
+        <span class="railcount" id="nav-prov-count">6</span>
       </button>
       <button class="railbtn" role="tab" data-tab="labels" aria-selected="false" aria-controls="panel-labels" title="Stream labels">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41 12 22l-9-9V3h10l7.59 7.59a2 2 0 0 1 0 2.82Z"/><circle cx="7.5" cy="7.5" r="1"/></svg>
         <span>Labels</span>
       </button>
       <button class="railbtn" role="tab" data-tab="install" aria-selected="false" aria-controls="panel-install" title="Install">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
         <span>Install</span>
       </button>
       <button class="railbtn" role="tab" data-tab="status" aria-selected="false" aria-controls="panel-status" title="Status">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3.34 19a10 10 0 1 1 17.32 0"/><path d="M12 14 8 10"/><circle cx="12" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg>
         <span>Status</span>
       </button>
     </nav>
@@ -366,8 +406,23 @@
     </section>
 
     <section id="panel-status" class="panel" role="tabpanel" hidden>
-      <div class="status-wrap">
-        <iframe id="status-frame" title="AniBox status" loading="lazy"></iframe>
+      <div class="status-grid">
+        <div class="smetric"><div class="smetric-label">Up</div><div class="smetric-value ok" id="st-up">—</div></div>
+        <div class="smetric"><div class="smetric-label">Down</div><div class="smetric-value bad" id="st-down">—</div></div>
+        <div class="smetric"><div class="smetric-label">Streams</div><div class="smetric-value" id="st-streams">—</div></div>
+        <div class="smetric"><div class="smetric-label">Last check</div><div class="smetric-value sm" id="st-updated">—</div></div>
+      </div>
+      <div class="status-toolbar">
+        <div class="status-filters" role="group" aria-label="Filter providers">
+          <button class="sfilter on" data-f="all" aria-pressed="true">All</button>
+          <button class="sfilter" data-f="up" aria-pressed="false">Up</button>
+          <button class="sfilter" data-f="down" aria-pressed="false">Down</button>
+        </div>
+        <button class="btn sm" id="status-refresh">Refresh</button>
+        <span class="st-updated" id="status-updated">Checking…</span>
+      </div>
+      <div class="providers" id="status-list">
+        <div class="status-empty"><b><span class="spinner"></span>Checking providers…</b>The first check can take a few minutes.</div>
       </div>
     </section>
 
@@ -437,6 +492,7 @@ function update(){
   const style = currentStyle();
   $('#count').textContent = on + '/' + total + ' providers';
   $('#prov-count').textContent = on + '/' + total;
+  $('#nav-prov-count').textContent = on;
   $('#url').textContent = getAddonUrl();
   $$('.sum-providers').forEach(el => el.textContent = on + '/' + total);
   $$('.sum-style').forEach(el => el.textContent = style.name);
@@ -492,9 +548,9 @@ function setTab(name){
     btn.tabIndex = on ? 0 : -1;
   });
   $$('[role="tabpanel"]').forEach(p => { p.hidden = p.id !== 'panel-' + name; });
-  if (name === 'status') {
-    const frame = $('#status-frame');
-    if (frame && !frame.getAttribute('src')) frame.src = '/status?embed=1';
+  if (name === 'status' && !statusStarted) {
+    statusStarted = true;
+    loadStatus(false);
   }
   $('#page-title').textContent = TABS[name].title;
   $('#page-desc').textContent = TABS[name].desc;
@@ -511,6 +567,80 @@ async function copyUrl(){
   catch(e){ toast('Copy failed'); }
 }
 function install(){ setTimeout(() => { location.href = 'stremio://' + getAddonUrl().replace(/^https?:\/\//,''); }, 300); }
+
+/* ---------- status (inline) ---------- */
+let statusData = null;
+let statusFilter = 'all';
+let statusLoading = false;
+let statusStarted = false;
+
+function relTime(iso){ if(!iso) return 'never'; const ms = Date.now() - new Date(iso).getTime(); const m = Math.floor(ms/60000); if(m<1) return 'just now'; if(m<60) return m+'m ago'; const h=Math.floor(m/60); if(h<24) return h+'h ago'; return Math.floor(h/24)+'d ago'; }
+function fmtMs(ms){ if(ms==null) return '—'; return ms>=1000 ? (ms/1000).toFixed(1)+'s' : ms+'ms'; }
+
+function renderStatus(){
+  const providers = Object.values((statusData && statusData.providers) || {});
+  const up = providers.filter(p => p.status === 'up').length;
+  const down = providers.filter(p => p.status === 'down').length;
+  const streams = providers.reduce((n,p) => n + (p.streamCount||0), 0);
+  $('#st-up').textContent = providers.length ? up : '—';
+  $('#st-down').textContent = providers.length ? down : '—';
+  $('#st-streams').textContent = providers.length ? streams : '—';
+  $('#st-updated').textContent = statusData && statusData.updatedAt ? relTime(statusData.updatedAt) : '—';
+  $('#status-updated').textContent = statusData && statusData.updatedAt
+    ? 'Updated ' + relTime(statusData.updatedAt) + (statusData.checking ? ' · re-checking…' : '')
+    : (statusData && statusData.checking ? 'Checking providers…' : 'Waiting for first check…');
+
+  const shown = providers
+    .filter(p => statusFilter === 'all' || p.status === statusFilter)
+    .sort((a,b) => (a.name||a.id).localeCompare(b.name||b.id));
+  const list = $('#status-list'); list.innerHTML = '';
+
+  if (!providers.length) {
+    list.innerHTML = '<div class="status-empty">' + (statusData && statusData.checking
+      ? '<b><span class="spinner"></span>Checking providers…</b>The first check can take a few minutes.'
+      : '<b>No status yet</b>The monitor starts on the first request.') + '</div>';
+    return;
+  }
+  if (!shown.length) {
+    list.innerHTML = '<div class="status-empty"><b>Nothing here</b>No provider matches this filter.</div>';
+    return;
+  }
+  shown.forEach(p => {
+    const kind = (p.status === 'up' || p.status === 'down') ? p.status : 'unknown';
+    const row = document.createElement('article');
+    row.className = 'prow';
+    row.innerHTML = '<div class="prow-head">' +
+      '<span class="ppill ' + kind + '"><i></i>' + (kind==='up'?'Up':kind==='down'?'Down':'Unknown') + '</span>' +
+      '<span class="pname"></span><span class="pmeta"></span><span class="ptime"></span></div>' +
+      '<div class="ptitles"><span class="ptlabel">Working titles</span></div>';
+    row.querySelector('.pname').textContent = p.name || p.id;
+    row.querySelector('.pmeta').textContent = (p.streamCount||0) + ' streams · ' + fmtMs(p.responseMs);
+    row.querySelector('.ptime').textContent = relTime(p.lastChecked);
+    const titles = row.querySelector('.ptitles');
+    if (p.workingTitles && p.workingTitles.length) {
+      p.workingTitles.forEach(t => { const c = document.createElement('span'); c.className='pchip'; c.textContent=t; titles.appendChild(c); });
+    } else {
+      const n = document.createElement('span'); n.className='pnone';
+      n.textContent = kind==='down' ? 'None — no streams returned' : 'Not checked yet';
+      titles.appendChild(n);
+    }
+    if (p.error && kind === 'down') {
+      const e = document.createElement('div'); e.className='perr'; e.textContent=p.error; row.appendChild(e);
+    }
+    list.appendChild(row);
+  });
+}
+
+async function loadStatus(force){
+  if (statusLoading) return;
+  statusLoading = true;
+  const btn = $('#status-refresh'); if (btn) btn.disabled = true;
+  try {
+    const res = await fetch('/api/status' + (force ? '?refresh=1' : ''), { cache:'no-store' });
+    if (res.ok) { statusData = await res.json(); renderStatus(); }
+  } catch(e) { /* keep last known state */ }
+  finally { statusLoading = false; if (btn) btn.disabled = false; }
+}
 
 function applyTheme(mode){
   document.documentElement.classList.toggle('light', mode === 'light');
@@ -536,6 +666,14 @@ $('#copy').addEventListener('click', copyUrl);
 $('#go').addEventListener('click', install);
 $('#all-on').addEventListener('click', () => setAll(true));
 $('#all-off').addEventListener('click', () => setAll(false));
+
+$('#status-refresh').addEventListener('click', () => loadStatus(true));
+$$('.sfilter').forEach(btn => btn.addEventListener('click', () => {
+  statusFilter = btn.dataset.f;
+  $$('.sfilter').forEach(b => { const on = b === btn; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+  renderStatus();
+}));
+setInterval(() => { if (statusStarted) loadStatus(false); }, 30000);
 
 initState(); renderProviders(); renderStyles(); update();
 setTab((location.hash || '').replace('#', '') || 'providers');
