@@ -85,21 +85,35 @@ class NxShaProvider:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({'User-Agent': UA})
+        self._last_error = None
 
     def _api(self, endpoint, payload):
         q = _encode_data(payload)
-        r = self.session.get(f'{BASE_URL}{endpoint}?q={q}',
-                             headers={'User-Agent': UA, 'Referer': f'{BASE_URL}/'},
-                             timeout=TIMEOUT, verify=False)
-        if r.status_code != 200:
+        try:
+            r = self.session.get(f'{BASE_URL}{endpoint}?q={q}',
+                                 headers={'User-Agent': UA, 'Referer': f'{BASE_URL}/'},
+                                 timeout=TIMEOUT, verify=False)
+        except Exception as e:
+            self._last_error = f'{endpoint} request failed: {e}'
             return None
-        body = r.json()
-        if not body or '_hash' not in body:
+        if r.status_code != 200:
+            self._last_error = f'{endpoint} status {r.status_code}'
             return None
         try:
-            return json.loads(_crypto_js_decrypt(body['_hash']))
+            body = r.json()
+        except Exception as e:
+            self._last_error = f'{endpoint} bad json: {e}'
+            return None
+        if not body or '_hash' not in body:
+            self._last_error = f'{endpoint} missing _hash envelope'
+            return None
+        try:
+            data = json.loads(_crypto_js_decrypt(body['_hash']))
+            self._last_error = None
+            return data
         except Exception as e:
             print(f'[nxsha] decrypt {endpoint} error: {e}')
+            self._last_error = f'decrypt failed: {e}'
             return None
 
     def _get_servers(self, tmdb_id, media_type, season=1, episode=1):
@@ -225,10 +239,12 @@ class NxShaProvider:
                     continue
                 seen.add(s['url'])
                 unique.append(s)
-            return {'streams': unique}
+            if unique:
+                return {'streams': unique}
+            return {'streams': [], 'error': self._last_error or 'no sources returned'}
         except Exception as e:
             print(f'[nxsha] episode streams error: {e}')
-            return {'streams': []}
+            return {'streams': [], 'error': str(e)}
 
     def _tmdb_from_slug(self, slug):
         if slug and str(slug).isdigit():

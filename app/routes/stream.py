@@ -125,11 +125,9 @@ def _inspect_m3u8(url, referer=''):
 
 PROVIDER_DISPLAY = {
     'multimovies': 'MultiMovies',
-    'nxsha': 'NxSha',
     'watchanimeworld': 'AnimeWorld',
     'toonstream': 'ToonStream',
     'piratexplay': 'PirateXPlay',
-    'screenscape': 'ScreenScape',
 }
 
 

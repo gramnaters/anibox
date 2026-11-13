@@ -5,9 +5,19 @@ and records whether it is up, how long it took, how many streams it returned
 and which titles actually produced streams. Results stay in memory and are
 served by /api/status; the page polls that endpoint, so refreshing the page
 never blocks on a scrape.
+
+Hardening (vs. the original):
+- provider module caches are cleared before each probe so a previous transient
+  failure (which the ``@cached`` decorators store verbatim, including empty
+  results) can't poison this check;
+- a provider that comes back "down" is retried once on a fresh cache to rule
+  out a one-off upstream blip;
+- per-title failures and any ``error`` the provider exposes are surfaced in
+  the status entry instead of being swallowed as a bare "down".
 """
 from __future__ import annotations
 
+import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -25,6 +35,7 @@ PROBE_TITLES = (
 
 CHECK_INTERVAL = 1800   # re-check every 30 minutes
 WORKERS = 3             # providers probed in parallel
+_RETRY_DELAY = 1.5      # seconds between a "down" probe and its one retry
 
 _state = {'updatedAt': None, 'providers': {}}
 _lock = threading.Lock()
@@ -32,12 +43,30 @@ _started = False
 _checking = False
 _wake = threading.Event()
 
+# Module-level cache attribute names the providers share.
+_CACHE_ATTRS = ('search_cache', 'streams_cache', 'details_cache',
+                'episode_streams_cache')
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _check_provider(pname, provider):
+def _clear_provider_caches(provider):
+    """Drop a provider's module-level caches so the probe reads fresh results."""
+    mod = sys.modules.get(provider.__class__.__module__)
+    if not mod:
+        return
+    for name in _CACHE_ATTRS:
+        cache = getattr(mod, name, None)
+        if cache is not None and hasattr(cache, 'clear'):
+            try:
+                cache.clear()
+            except Exception:
+                pass
+
+
+def _check_provider_once(pname, provider):
     started = time.time()
     entry = {
         'id': pname,
@@ -56,21 +85,37 @@ def _check_provider(pname, provider):
             slugs = _search_providers_for_title(title, [pname], ctype, season)
             slug = next((s for p, s in slugs if p == pname), None)
             if not slug:
+                errors.append(f'{title}: no matching title')
                 continue
-            data = provider.get_episode_streams(slug, season, episode)
-            streams = (data or {}).get('streams') or []
+            data = provider.get_episode_streams(slug, season, episode) or {}
+            streams = data.get('streams') or []
             if streams:
                 titles.append(title)
                 entry['streamCount'] += len(streams)
+            else:
+                err = data.get('error')
+                errors.append(f'{title}: {err}' if err else f'{title}: 0 streams')
         except Exception as e:
-            errors.append(f'{title}: {e}')
+            errors.append(f'{title}: {type(e).__name__}: {e}')
 
     entry['workingTitles'] = titles
     entry['status'] = 'up' if titles else 'down'
     entry['lastChecked'] = _now()
     entry['responseMs'] = round((time.time() - started) * 1000)
     if errors:
-        entry['error'] = errors[-1][:240]
+        entry['error'] = '; '.join(errors)[:300]
+    return entry
+
+
+def _check_provider(pname, provider):
+    """Probe a provider once, and if it reads "down" retry once on a fresh cache."""
+    _clear_provider_caches(provider)
+    entry = _check_provider_once(pname, provider)
+    if entry['status'] == 'down':
+        time.sleep(_RETRY_DELAY)
+        _clear_provider_caches(provider)
+        entry = _check_provider_once(pname, provider)
+        entry['retried'] = True
     return entry
 
 

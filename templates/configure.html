@@ -12,8 +12,7 @@
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  /* AniBox theme — Resonance indigo on dark neutrals (typeui color budget:
-     indigo is reserved for the primary action and the active-nav accent) */
+  /* AniBox theme — Resonance indigo on dark neutrals */
   :root{
     --bg:#05050b; --surface:#0a0a12; --surface-2:#0e0e18; --surface-3:#14141f;
     --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.16);
@@ -23,7 +22,6 @@
     --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
     --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
     --r:10px; --r-lg:14px;
-    --sidebar-w:272px; --sidebar-collapsed:72px;
     --shadow:0 18px 50px rgba(0,0,0,.34);
   }
   html.light{
@@ -37,7 +35,7 @@
   html{font-size:16px;color-scheme:dark}
   html.light{color-scheme:light}
   body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.6 var(--sans);
-    -webkit-font-smoothing:antialiased;overflow:hidden}
+    -webkit-font-smoothing:antialiased;min-height:100vh}
   button{font:inherit;cursor:pointer}
   a{color:inherit;text-decoration:none}
   :focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
@@ -45,82 +43,46 @@
   .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
     clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
-  .app{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);height:100vh;background:var(--bg)}
-  .app.sidebar-collapsed{grid-template-columns:var(--sidebar-collapsed) minmax(0,1fr)}
+  /* ---------- floating pill top nav (nuvio-style, AniBox theme) ---------- */
+  .navbar{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:40;
+    width:max-content;max-width:calc(100% - 24px)}
+  .nav-inner{display:flex;align-items:center;gap:6px;padding:6px;
+    background:rgba(10,10,18,.9);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+    border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow)}
+  html.light .nav-inner{background:rgba(255,255,255,.88)}
 
-  /* ---------- sidebar ---------- */
-  .sidebar{background:var(--surface);border-right:1px solid var(--line);display:flex;
-    flex-direction:column;min-width:0;overflow:hidden}
-  .sidebar-head{height:64px;padding:10px 16px;display:flex;align-items:center;border-bottom:1px solid var(--line);
-    gap:10px;flex-shrink:0}
-  .sidebar-brand{display:flex;align-items:center;gap:12px;min-width:0}
-  .sidebar-brand img{width:38px;height:38px;flex:none;border-radius:10px;border:1px solid var(--line);
-    background:var(--surface-2);object-fit:contain}
-  .brand-text{display:grid;gap:1px;min-width:0}
-  .brand-text b{font-size:.95rem;font-weight:800;letter-spacing:-.01em;line-height:1.2}
-  .brand-text small{color:var(--mut);font-size:.7rem;font-weight:600;white-space:nowrap}
+  .brand{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;flex:none}
+  .brand img{width:26px;height:26px;object-fit:contain;display:block}
+  .brand b{font-size:.9rem;font-weight:800;letter-spacing:-.01em;white-space:nowrap}
 
-  .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:6px;padding:14px 10px;overflow-y:auto;
-    scrollbar-width:thin}
-  .nav-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-    color:var(--sub);padding:10px 10px 4px;white-space:nowrap}
-  .nav-item{display:flex;align-items:center;gap:12px;height:42px;padding:0 12px 0 14px;border:0;
-    border-radius:10px;background:transparent;color:var(--mut);font-size:.88rem;font-weight:600;
-    text-align:left;cursor:pointer;position:relative;transition:background .14s,color .14s;flex-shrink:0}
-  .nav-item:hover{background:rgba(255,255,255,.04);color:var(--tx)}
-  html.light .nav-item:hover{background:rgba(10,10,20,.05)}
-  .nav-item svg{width:18px;height:18px;flex:none}
-  .nav-item .label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .nav-item.on{background:var(--surface-3);color:var(--tx)}
-  .nav-item.on::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:2px;border-radius:2px;
-    background:var(--accent)}
-  .nav-badge{background:var(--surface-3);color:var(--sub);font-size:.72rem;font-weight:700;
-    border-radius:999px;padding:0 6px;line-height:20px;font-variant-numeric:tabular-nums;flex:none}
+  .nav-tabs{display:flex;gap:2px;min-width:0}
+  .nav-tab{display:inline-flex;align-items:center;gap:.4rem;height:40px;padding:0 14px;
+    border:0;border-radius:999px;background:transparent;color:var(--mut);font-size:.875rem;
+    font-weight:600;white-space:nowrap;transition:background .14s,color .14s}
+  .nav-tab:hover{background:rgba(255,255,255,.05);color:var(--tx)}
+  html.light .nav-tab:hover{background:rgba(10,10,20,.05)}
+  .nav-tab.on{background:rgba(109,94,252,.18);color:var(--accent-soft)}
+  html.light .nav-tab.on{background:rgba(91,75,219,.14);color:var(--accent)}
+  .nav-count{font-size:.7rem;font-weight:700;color:var(--sub);background:var(--surface-3);
+    border-radius:999px;padding:0 6px;line-height:18px;font-variant-numeric:tabular-nums}
+  .nav-tab.on .nav-count{color:var(--accent-soft);background:rgba(255,255,255,.08)}
 
-  .sidebar-foot{padding:12px 10px 16px;border-top:1px solid var(--line);display:grid;gap:8px;flex-shrink:0}
-
-  /* ---------- collapsed sidebar ---------- */
-  .app.sidebar-collapsed .brand-text,
-  .app.sidebar-collapsed .nav-label,
-  .app.sidebar-collapsed .nav-item .label,
-  .app.sidebar-collapsed .nav-badge,
-  .app.sidebar-collapsed .foot-text{display:none}
-  .app.sidebar-collapsed .sidebar-head{justify-content:center;padding:0}
-  .app.sidebar-collapsed .sidebar-brand{gap:0}
-  .app.sidebar-collapsed .nav-item{justify-content:center;padding:0}
-  .app.sidebar-collapsed .nav-item.on::before{left:-10px}
-
-  /* ---------- main column ---------- */
-  .main-col{display:flex;flex-direction:column;min-width:0;height:100vh}
-
-  .topbar{position:sticky;top:0;z-index:20;height:64px;display:flex;align-items:center;gap:12px;
-    padding:10px 16px;background:rgba(5,5,11,.82);backdrop-filter:blur(18px);
-    border-bottom:1px solid var(--line);flex-shrink:0}
-  html.light .topbar{background:rgba(255,255,255,.82)}
-  .topbar-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
-  .topbar-hamburger{width:40px;height:40px;display:grid;place-items:center;border:0;background:transparent;
-    color:var(--mut);border-radius:8px;flex-shrink:0;transition:background .14s,color .14s}
-  .topbar-hamburger:hover{background:rgba(255,255,255,.06);color:var(--tx)}
-  .topbar-hamburger svg{width:20px;height:20px}
-  .topbar-title{display:grid;gap:1px;min-width:0}
-  .topbar-title h1{font-size:1.05rem;font-weight:800;line-height:1.2;margin:0;letter-spacing:-.01em}
-  .topbar-title p{font-size:.78rem;color:var(--mut);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .top-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
-
-  .pill{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .6rem;border-radius:999px;
+  .nav-actions{display:flex;align-items:center;gap:6px;flex:none;padding-left:2px}
+  .pill{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .6rem;border-radius:999px;
     border:1px solid var(--line);background:rgba(255,255,255,.03);font-size:.6875rem;font-weight:600;
-    letter-spacing:.04em;color:var(--mut);text-transform:uppercase;white-space:nowrap}
-  .pill i{width:6px;height:6px;border-radius:50%;background:var(--sub)}
-  .pill.ok i{background:var(--ok)}
-
-  .iconbtn{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line);
-    border-radius:8px;background:var(--surface);color:var(--tx);transition:border-color .14s,transform .14s}
-  .iconbtn:hover{border-color:var(--line-strong);transform:translateY(-1px)}
-  .iconbtn svg{width:17px;height:17px}
+    letter-spacing:.03em;color:var(--mut);text-transform:uppercase;white-space:nowrap}
+  .pill i{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+  .iconbtn{width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:999px;
+    background:transparent;color:var(--mut);transition:background .14s,color .14s;flex:none}
+  .iconbtn:hover{background:rgba(255,255,255,.06);color:var(--tx)}
+  .iconbtn svg{width:18px;height:18px}
 
   /* ---------- content ---------- */
-  .content{overflow-y:auto;min-width:0;padding:20px;flex:1}
-  .wrap{width:100%;max-width:1080px;margin:0 auto}
+  .content{max-width:1080px;margin:0 auto;padding:104px 20px 64px}
+  .wrap{width:100%}
+  .page-head{margin-bottom:1.4rem}
+  h1{font-size:1.7rem;line-height:1.2;letter-spacing:-.03em;font-weight:800;margin:0 0 .3rem}
+  .lede{color:var(--mut);font-size:.9rem;margin:0;max-width:58ch}
 
   .sechead{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.75rem;flex-wrap:wrap}
   .sechead h2{font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin:0}
@@ -129,7 +91,7 @@
 
   .cols{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:1.5rem;align-items:start}
   .col-main{min-width:0}
-  .side{display:grid;gap:.9rem;position:sticky;top:0}
+  .side{display:grid;gap:.9rem}
 
   /* ---------- option rows ---------- */
   .optlist{display:grid;gap:.5rem}
@@ -211,7 +173,7 @@
   .step b{display:block;font-size:.83rem;font-weight:600}
   .step small{display:block;font-size:.75rem;color:var(--mut);margin-top:.05rem}
 
-  /* ---------- status (inline) ---------- */
+  /* ---------- status ---------- */
   .status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin-bottom:1rem}
   .smetric{border:1px solid var(--line);border-radius:var(--r);padding:.9rem 1rem;background:var(--surface)}
   .smetric-label{font-size:.6875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
@@ -221,8 +183,7 @@
   .smetric-value.sm{font-size:1rem;line-height:1.6}
 
   .status-toolbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}
-  .status-filters{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:8px;
-    background:var(--surface)}
+  .status-filters{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
   .sfilter{border:0;background:transparent;color:var(--mut);font-size:.75rem;font-weight:600;
     padding:.3rem .65rem;border-radius:6px;transition:.14s}
   .sfilter:hover{color:var(--tx)}
@@ -269,217 +230,183 @@
     .side{position:static}
   }
 
-  /* ---------- mobile: drawer sidebar (Pengu pattern) ---------- */
+  /* ---------- mobile top nav ---------- */
   @media (max-width:760px){
-    body{overflow:hidden}
-    .app{grid-template-columns:1fr}
-    .sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);z-index:50;
-      transform:translateX(-100%);transition:transform .2s ease;box-shadow:none}
-    .app.nav-open .sidebar{transform:translateX(0);box-shadow:var(--shadow)}
-    .scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:45;opacity:0;pointer-events:none;transition:opacity .2s}
-    .app.nav-open .scrim{opacity:1;pointer-events:auto}
-    .app.sidebar-collapsed .brand-text,
-    .app.sidebar-collapsed .nav-label,
-    .app.sidebar-collapsed .nav-item .label,
-    .app.sidebar-collapsed .nav-badge,
-    .app.sidebar-collapsed .foot-text{display:unset}
-    .content{padding:16px}
-    .topbar-title p{display:none}
+    .nav-inner{flex-wrap:wrap;border-radius:20px;padding:8px;gap:6px;justify-content:space-between}
+    .brand{padding:4px 6px}
+    .brand b{font-size:.85rem}
+    .nav-actions{padding-left:0}
+    .nav-tabs{order:3;flex-basis:100%;justify-content:space-between;gap:2px;overflow-x:auto}
+    .nav-tab{flex:1;justify-content:center;padding:0 6px;height:36px;font-size:.75rem}
+    .nav-count{display:none}
+    .content{padding:132px 16px 56px}
+    h1{font-size:1.45rem}
     .status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .linkrow{grid-template-columns:minmax(0,1fr)}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="app" id="app">
-  <aside class="sidebar" aria-label="Sections">
-    <div class="sidebar-head">
-      <a class="sidebar-brand" href="#providers" aria-label="AniBox home">
-        <img src="/static/anibox-icon-512.png" alt="AniBox">
-        <span class="brand-text"><b>AniBox</b><small>Stremio / Nuvio</small></span>
-      </a>
-    </div>
+<header class="navbar">
+  <div class="nav-inner">
+    <a class="brand" href="#providers" aria-label="AniBox home">
+      <img src="/static/anibox-icon-512.png" alt="AniBox">
+      <b>AniBox</b>
+    </a>
 
-    <nav class="sidebar-nav" role="tablist" aria-orientation="vertical" aria-label="Sections">
-      <div class="nav-label">Configure</div>
-      <button class="nav-item on" role="tab" data-tab="providers" aria-selected="true" aria-controls="panel-providers" title="Providers">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-        <span class="label">Providers</span>
-        <span class="nav-badge" id="nav-prov-count">6</span>
+    <nav class="nav-tabs" role="tablist" aria-label="Sections">
+      <button class="nav-tab on" role="tab" data-tab="providers" aria-selected="true" aria-controls="panel-providers">
+        Providers <span class="nav-count" id="nav-prov-count">4</span>
       </button>
-      <button class="nav-item" role="tab" data-tab="labels" aria-selected="false" aria-controls="panel-labels" title="Stream labels">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41 12 22l-9-9V3h10l7.59 7.59a2 2 0 0 1 0 2.82Z"/><circle cx="7.5" cy="7.5" r="1"/></svg>
-        <span class="label">Labels</span>
-      </button>
-      <button class="nav-item" role="tab" data-tab="install" aria-selected="false" aria-controls="panel-install" title="Install">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-        <span class="label">Install</span>
-      </button>
-      <button class="nav-item" role="tab" data-tab="status" aria-selected="false" aria-controls="panel-status" title="Status">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3.34 19a10 10 0 1 1 17.32 0"/><path d="M12 14 8 10"/><circle cx="12" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg>
-        <span class="label">Status</span>
-      </button>
+      <button class="nav-tab" role="tab" data-tab="labels" aria-selected="false" aria-controls="panel-labels">Labels</button>
+      <button class="nav-tab" role="tab" data-tab="install" aria-selected="false" aria-controls="panel-install">Install</button>
+      <button class="nav-tab" role="tab" data-tab="status" aria-selected="false" aria-controls="panel-status">Status</button>
     </nav>
 
-    <div class="sidebar-foot">
-      <button class="nav-item" id="theme" title="Toggle theme">
+    <div class="nav-actions">
+      <span class="pill" role="status" aria-live="polite"><i aria-hidden="true"></i><span id="count">4/4</span></span>
+      <button class="iconbtn" id="theme" type="button" aria-label="Toggle theme" title="Toggle theme">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        <span class="label foot-text">Theme</span>
       </button>
     </div>
-  </aside>
-
-  <div class="main-col">
-    <header class="topbar">
-      <div class="topbar-left">
-        <button class="topbar-hamburger" id="hamburger" aria-label="Toggle sidebar" title="Toggle sidebar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-        </button>
-        <div class="topbar-title">
-          <h1 id="page-title">Providers</h1>
-          <p id="page-desc">Choose which sources AniBox scrapes.</p>
-        </div>
-      </div>
-      <div class="top-actions">
-        <span class="pill ok" role="status" aria-live="polite"><i aria-hidden="true"></i><span id="count">6/6 providers</span></span>
-      </div>
-    </header>
-
-    <div class="content">
-     <div class="wrap">
-      <section id="panel-providers" class="panel" role="tabpanel">
-        <div class="cols">
-          <div class="col-main">
-            <div class="sechead">
-              <h2>Sources</h2>
-              <span class="count" id="prov-count">6/6</span>
-              <div class="sechead-actions">
-                <button class="btn sm" id="all-on">Enable all</button>
-                <button class="btn sm" id="all-off">Disable all</button>
-              </div>
-            </div>
-            <div class="optlist" id="providers-list"></div>
-          </div>
-
-          <aside class="side">
-            <div>
-              <div class="cap">Selection</div>
-              <div class="pv">
-                <div class="ph"><i id="pv-dot"></i><b id="pv-status">Manifest ready</b></div>
-                <div class="line"><span>Enabled</span><span class="sum-providers">6/6</span></div>
-                <div class="line"><span>Label</span><span class="sum-style">Rich</span></div>
-                <div class="line"><span>Duplicates</span><span>Merged</span></div>
-                <div class="line"><span>Details</span><span>From source</span></div>
-              </div>
-              <p class="pvhint">Turn off sources you don't use to load results faster. Duplicate mirrors are merged automatically.</p>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <section id="panel-labels" class="panel" role="tabpanel" hidden>
-        <div class="cols">
-          <div class="col-main">
-            <div class="sechead"><h2>Stream labels</h2></div>
-            <div class="optlist" id="styles" role="radiogroup" aria-label="Stream label style"></div>
-          </div>
-
-          <aside class="side">
-            <div>
-              <div class="cap">Preview</div>
-              <div class="pv">
-                <div class="ph"><i></i><b id="preview-name">Rich</b></div>
-                <pre class="previewtext" id="preview"></pre>
-              </div>
-              <p class="pvhint">Rich and AIOStreams expose provider, player, resolution, codec, audio, languages and size.</p>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <section id="panel-install" class="panel" role="tabpanel" hidden>
-        <div class="cols">
-          <div class="col-main">
-            <div class="linkcard">
-              <div class="cap">Manifest URL <em>auto-updates</em></div>
-              <div class="linkrow">
-                <code id="url"></code>
-                <button class="btn sm" id="copy">Copy</button>
-              </div>
-              <p class="linkhint">Paste this into Stremio, Nuvio or any Stremio-compatible app.</p>
-              <div class="actions">
-                <button class="btn primary" id="go">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-                  Install in Stremio
-                </button>
-              </div>
-            </div>
-
-            <div class="steps">
-              <div class="step"><span class="n">1</span><div><b>Copy the manifest URL</b><small>Use the copy button above, or select the URL manually.</small></div></div>
-              <div class="step"><span class="n">2</span><div><b>Open your app's addon screen</b><small>Stremio: Addons → Install from URL. Nuvio: Addons → Add repository.</small></div></div>
-              <div class="step"><span class="n">3</span><div><b>Paste and install</b><small>AniBox appears as a catalog and a stream source.</small></div></div>
-            </div>
-          </div>
-
-          <aside class="side">
-            <div>
-              <div class="cap">Summary</div>
-              <div class="pv">
-                <div class="ph"><i></i><b>Ready to install</b></div>
-                <div class="line"><span>Enabled</span><span class="sum-providers">6/6</span></div>
-                <div class="line"><span>Label</span><span class="sum-style">Rich</span></div>
-                <div class="line"><span>Duplicates</span><span>Merged</span></div>
-                <div class="line"><span>Details</span><span>From source</span></div>
-              </div>
-              <p class="pvhint">The URL updates automatically whenever you change providers or labels. No account or sign-in required.</p>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <section id="panel-status" class="panel" role="tabpanel" hidden>
-        <div class="status-grid">
-          <div class="smetric"><div class="smetric-label">Up</div><div class="smetric-value ok" id="st-up">—</div></div>
-          <div class="smetric"><div class="smetric-label">Down</div><div class="smetric-value bad" id="st-down">—</div></div>
-          <div class="smetric"><div class="smetric-label">Streams</div><div class="smetric-value" id="st-streams">—</div></div>
-          <div class="smetric"><div class="smetric-label">Last check</div><div class="smetric-value sm" id="st-updated">—</div></div>
-        </div>
-        <div class="status-toolbar">
-          <div class="status-filters" role="group" aria-label="Filter providers">
-            <button class="sfilter on" data-f="all" aria-pressed="true">All</button>
-            <button class="sfilter" data-f="up" aria-pressed="false">Up</button>
-            <button class="sfilter" data-f="down" aria-pressed="false">Down</button>
-          </div>
-          <button class="btn sm" id="status-refresh">Refresh</button>
-          <span class="st-updated" id="status-updated">Checking…</span>
-        </div>
-        <div class="providers" id="status-list">
-          <div class="status-empty"><b><span class="spinner" aria-hidden="true"></span>Checking providers…</b>The first check can take a few minutes.</div>
-        </div>
-      </section>
-
-      <footer class="pagefoot">
-        <span>AniBox · Stremio / Nuvio addon</span>
-        <span>metadata from the source · nothing guessed</span>
-      </footer>
-     </div>
-    </div>
   </div>
+</header>
 
-  <div class="scrim" id="scrim"></div>
-</div>
+<main class="content">
+  <div class="wrap">
+    <div class="page-head">
+      <h1 id="page-title">Providers</h1>
+      <p class="lede" id="page-desc">Choose which sources AniBox scrapes.</p>
+    </div>
+
+    <section id="panel-providers" class="panel" role="tabpanel">
+      <div class="cols">
+        <div class="col-main">
+          <div class="sechead">
+            <h2>Sources</h2>
+            <span class="count" id="prov-count">4/4</span>
+            <div class="sechead-actions">
+              <button class="btn sm" id="all-on">Enable all</button>
+              <button class="btn sm" id="all-off">Disable all</button>
+            </div>
+          </div>
+          <div class="optlist" id="providers-list"></div>
+        </div>
+
+        <aside class="side">
+          <div>
+            <div class="cap">Selection</div>
+            <div class="pv">
+              <div class="ph"><i id="pv-dot"></i><b id="pv-status">Manifest ready</b></div>
+              <div class="line"><span>Enabled</span><span class="sum-providers">4/4</span></div>
+              <div class="line"><span>Label</span><span class="sum-style">Rich</span></div>
+              <div class="line"><span>Duplicates</span><span>Merged</span></div>
+              <div class="line"><span>Details</span><span>From source</span></div>
+            </div>
+            <p class="pvhint">Turn off sources you don't use to load results faster. Duplicate mirrors are merged automatically.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="panel-labels" class="panel" role="tabpanel" hidden>
+      <div class="cols">
+        <div class="col-main">
+          <div class="sechead"><h2>Stream labels</h2></div>
+          <div class="optlist" id="styles" role="radiogroup" aria-label="Stream label style"></div>
+        </div>
+
+        <aside class="side">
+          <div>
+            <div class="cap">Preview</div>
+            <div class="pv">
+              <div class="ph"><i></i><b id="preview-name">Rich</b></div>
+              <pre class="previewtext" id="preview"></pre>
+            </div>
+            <p class="pvhint">Rich and AIOStreams show provider, player, resolution, codec, audio, languages and file size.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="panel-install" class="panel" role="tabpanel" hidden>
+      <div class="cols">
+        <div class="col-main">
+          <div class="linkcard">
+            <div class="cap">Manifest URL <em>auto-updates</em></div>
+            <div class="linkrow">
+              <code id="url"></code>
+              <button class="btn sm" id="copy">Copy</button>
+            </div>
+            <p class="linkhint">Paste this into Stremio, Nuvio or any Stremio-compatible app.</p>
+            <div class="actions">
+              <button class="btn primary" id="go">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                Install in Stremio
+              </button>
+            </div>
+          </div>
+
+          <div class="steps">
+            <div class="step"><span class="n">1</span><div><b>Copy the manifest URL</b><small>Use the copy button above, or select the URL manually.</small></div></div>
+            <div class="step"><span class="n">2</span><div><b>Open your app's addon screen</b><small>Stremio: Addons → Install from URL. Nuvio: Addons → Add repository.</small></div></div>
+            <div class="step"><span class="n">3</span><div><b>Paste and install</b><small>AniBox appears as a catalog and a stream source.</small></div></div>
+          </div>
+        </div>
+
+        <aside class="side">
+          <div>
+            <div class="cap">Summary</div>
+            <div class="pv">
+              <div class="ph"><i></i><b>Ready to install</b></div>
+              <div class="line"><span>Enabled</span><span class="sum-providers">4/4</span></div>
+              <div class="line"><span>Label</span><span class="sum-style">Rich</span></div>
+              <div class="line"><span>Duplicates</span><span>Merged</span></div>
+              <div class="line"><span>Details</span><span>From source</span></div>
+            </div>
+            <p class="pvhint">The URL updates automatically whenever you change providers or labels. No account or sign-in required.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="panel-status" class="panel" role="tabpanel" hidden>
+      <div class="status-grid">
+        <div class="smetric"><div class="smetric-label">Up</div><div class="smetric-value ok" id="st-up">—</div></div>
+        <div class="smetric"><div class="smetric-label">Down</div><div class="smetric-value bad" id="st-down">—</div></div>
+        <div class="smetric"><div class="smetric-label">Streams</div><div class="smetric-value" id="st-streams">—</div></div>
+        <div class="smetric"><div class="smetric-label">Last check</div><div class="smetric-value sm" id="st-updated">—</div></div>
+      </div>
+      <div class="status-toolbar">
+        <div class="status-filters" role="group" aria-label="Filter providers">
+          <button class="sfilter on" data-f="all" aria-pressed="true">All</button>
+          <button class="sfilter" data-f="up" aria-pressed="false">Up</button>
+          <button class="sfilter" data-f="down" aria-pressed="false">Down</button>
+        </div>
+        <button class="btn sm" id="status-refresh">Refresh</button>
+        <span class="st-updated" id="status-updated">Checking…</span>
+      </div>
+      <div class="providers" id="status-list">
+        <div class="status-empty"><b><span class="spinner" aria-hidden="true"></span>Checking providers…</b>The first check can take a few minutes.</div>
+      </div>
+    </section>
+
+    <footer class="pagefoot">
+      <span>AniBox · Stremio / Nuvio addon</span>
+      <span>metadata from the source · nothing guessed</span>
+    </footer>
+  </div>
+</main>
 
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 const PROVIDERS = [
   {key:'source_multimovies',     name:'MultiMovies',   desc:'Movies + Hindi series', icon:'film',    def:true},
-  {key:'source_nxsha',           name:'NxSha',         desc:'Movies + series',       icon:'layers',  def:true},
   {key:'source_watchanimeworld', name:'AnimeWorld',    desc:'Hindi dub series',      icon:'globe',   def:true},
   {key:'source_toonstream',      name:'ToonStream',    desc:'Anime + cartoon',       icon:'tv',      def:true},
   {key:'source_piratexplay',     name:'PirateXPlay',   desc:'Multi-language anime',  icon:'play',    def:true},
-  {key:'source_screenscape',     name:'ScreenScape',   desc:'Movies + series',       icon:'monitor', def:true},
 ];
 const STYLES = [
   {key:'rich', name:'Rich', desc:'Full multi-line provider, player, codec, languages and size.', icon:'sparkles',
@@ -494,11 +421,9 @@ const STYLES = [
 
 const ICONS = {
   film: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2.2"/><path d="M7 3v18M17 3v18M3 8h4M3 16h4M17 8h4M17 16h4"/></svg>',
-  layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>',
   globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg>',
   tv: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2.5" y="7" width="19" height="13.5" rx="2"/><path d="m8 3 4 4 4-4"/></svg>',
   play: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5.5 3.5-5.5 3.5V8.5Z" fill="currentColor" stroke="none"/></svg>',
-  monitor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2.5" y="3.5" width="19" height="13" rx="2"/><path d="M8.5 21h7M12 16.5V21"/></svg>',
   sparkles: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3Z"/></svg>',
   package: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>',
   list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>',
@@ -526,7 +451,7 @@ function update(){
   const on = PROVIDERS.filter(p => state[p.key] === 'on').length;
   const total = PROVIDERS.length;
   const style = currentStyle();
-  $('#count').textContent = on + '/' + total + ' providers';
+  $('#count').textContent = on + '/' + total;
   $('#prov-count').textContent = on + '/' + total;
   $('#nav-prov-count').textContent = on;
   $('#url').textContent = getAddonUrl();
@@ -601,7 +526,6 @@ function setTab(name){
   $('#page-desc').textContent = TABS[name].desc;
   document.title = 'AniBox — ' + TABS[name].title;
   try { if (location.hash !== '#' + name) history.pushState(null, '', '#' + name); } catch(e){}
-  if (matchMedia('(max-width:760px)').matches) closeDrawer();
 }
 
 function toast(msg, actionLabel, onAction){
@@ -663,7 +587,7 @@ function renderStatus(){
   const list = $('#status-list'); list.innerHTML = '';
 
   if (!providers.length) {
-      list.innerHTML = '<div class="status-empty">' + (statusData && statusData.checking
+    list.innerHTML = '<div class="status-empty">' + (statusData && statusData.checking
       ? '<b><span class="spinner" aria-hidden="true"></span>Checking providers…</b>The first check can take a few minutes.'
       : '<b>No status yet</b>The monitor starts on the first request.') + '</div>';
     return;
@@ -709,18 +633,6 @@ async function loadStatus(force){
   finally { statusLoading = false; if (btn) btn.disabled = false; }
 }
 
-/* ---------- sidebar collapse / drawer ---------- */
-const app = $('#app');
-function closeDrawer(){ app.classList.remove('nav-open'); }
-$('#hamburger').addEventListener('click', () => {
-  if (matchMedia('(max-width:760px)').matches) {
-    app.classList.toggle('nav-open');
-  } else {
-    app.classList.toggle('sidebar-collapsed');
-  }
-});
-$('#scrim').addEventListener('click', closeDrawer);
-
 function applyTheme(mode){
   document.documentElement.classList.toggle('light', mode === 'light');
   document.documentElement.classList.toggle('dark', mode !== 'light');
@@ -730,15 +642,16 @@ const savedTheme = (() => { try { return localStorage.getItem('anibox-theme') ||
 applyTheme(savedTheme);
 
 $$('[role="tab"]').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
-$('.sidebar-nav').addEventListener('keydown', e => {
+$('.nav-tabs').addEventListener('keydown', e => {
   const tabs = [...$$('[role="tab"]')];
   const i = tabs.findIndex(t => t.classList.contains('on'));
-  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
     e.preventDefault(); const n = tabs[(i + 1) % tabs.length]; n.focus(); n.click();
-  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
     e.preventDefault(); const n = tabs[(i - 1 + tabs.length) % tabs.length]; n.focus(); n.click();
   }
 });
+window.addEventListener('popstate', () => setTab((location.hash || '').replace('#','') || 'providers'));
 
 $('#theme').addEventListener('click', () => applyTheme(document.documentElement.classList.contains('light') ? 'dark' : 'light'));
 $('#copy').addEventListener('click', copyUrl);
@@ -751,8 +664,6 @@ $('#all-off').addEventListener('click', () => {
     prev.forEach(k => state[k] = 'on'); renderProviders(); update();
   });
 });
-
-window.addEventListener('popstate', () => setTab((location.hash || '').replace('#','') || 'providers'));
 
 $('#status-refresh').addEventListener('click', () => loadStatus(true));
 $$('.sfilter').forEach(btn => btn.addEventListener('click', () => {

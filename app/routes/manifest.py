@@ -27,11 +27,9 @@ BASE_MANIFEST = {
     'config': [
         # Provider sources
         {'key': 'source_multimovies', 'type': 'checkbox', 'title': 'MultiMovies (movies + Hindi series)', 'default': 'checked'},
-        {'key': 'source_nxsha', 'type': 'checkbox', 'title': 'NxSha (movies + series)', 'default': 'checked'},
         {'key': 'source_watchanimeworld', 'type': 'checkbox', 'title': 'AnimeWorld (Hindi dub series)', 'default': 'checked'},
         {'key': 'source_toonstream', 'type': 'checkbox', 'title': 'ToonStream (anime + cartoon)', 'default': 'checked'},
         {'key': 'source_piratexplay', 'type': 'checkbox', 'title': 'PirateXPlay (multi-language anime)', 'default': 'checked'},
-        {'key': 'source_screenscape', 'type': 'checkbox', 'title': 'ScreenScape (movies + series)', 'default': 'checked'},
         {'key': 'formatter_style', 'type': 'select', 'title': 'Stream label style', 'default': 'rich',
          'options': ['rich', 'aiostreams', 'compact', 'plain']},
     ],
