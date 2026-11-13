@@ -12,235 +12,250 @@
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  /* AniBox theme — Resonance indigo on dark neutrals */
+  /* AniBox × Chole Bhature — Apple-dark system (public/index.html tokens) */
   :root{
-    --bg:#05050b; --surface:#0a0a12; --surface-2:#0e0e18; --surface-3:#14141f;
-    --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.16);
-    --tx:#f1f1f6; --mut:#8a8a99; --sub:#7f8897;
-    --accent:#6d5efc; --accent-2:#9b7cff; --accent-soft:#c9c1ff;
-    --ok:#31d39a; --bad:#f4707f; --warn:#e5a153;
+    --app-bg:#121212; --surface:#191919; --surface-2:#222222; --surface-3:#2a2a2a;
+    --ink:#f6f7f9; --ink-muted:rgba(246,247,249,.55); --ink-faint:rgba(246,247,249,.28);
+    --border:rgba(255,255,255,.1); --border-hover:rgba(255,255,255,.18);
+    --accent:#f6f7f9; --accent-fg:#121212;
+    --blue:#2997ff; --blue-glow:rgba(41,151,255,.12);
+    --green:#30d158; --red:#ff453a; --amber:#ffd60a;
+    --sp-1:.25rem; --sp-2:.5rem; --sp-3:.75rem; --sp-4:1rem; --sp-5:1.25rem;
+    --sp-6:1.5rem; --sp-8:2rem; --sp-10:2.5rem; --sp-12:3rem;
+    --r-sm:.5rem; --r-md:.75rem; --r-lg:.875rem; --r-xl:1rem; --r-full:9999px;
+    --font:"Inter",system-ui,-apple-system,'Segoe UI',sans-serif;
     --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-    --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
-    --r:10px; --r-lg:14px;
-    --shadow:0 18px 50px rgba(0,0,0,.34);
+    --text-xs:.75rem; --text-sm:.8125rem; --text-base:.875rem; --text-md:.9375rem;
+    --text-lg:1rem; --text-xl:1.25rem; --text-2xl:1.5rem; --text-3xl:2.25rem;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.25); --shadow-md:0 2px 8px rgba(0,0,0,.3); --shadow-lg:0 8px 24px rgba(0,0,0,.4);
   }
   html.light{
-    --bg:#f6f6fa; --surface:#ffffff; --surface-2:#f0f0f6; --surface-3:#e9e9f1;
-    --line:rgba(10,10,20,.10); --line-strong:rgba(10,10,20,.2);
-    --tx:#16161f; --mut:#5c5c6e; --sub:#6b6b7a;
-    --accent:#5b4bdb; --accent-2:#7c5cff; --accent-soft:#8d7bff;
-    --ok:#16a34a; --bad:#dc2626; --warn:#b57420;
-    --shadow:0 18px 44px rgba(38,50,76,.12);
+    --app-bg:#f5f5f7; --surface:#ffffff; --surface-2:#f0f0f2; --surface-3:#e5e5ea;
+    --ink:#1d1d1f; --ink-muted:rgba(29,29,31,.55); --ink-faint:rgba(29,29,31,.28);
+    --border:rgba(0,0,0,.1); --border-hover:rgba(0,0,0,.18);
+    --accent:#1d1d1f; --accent-fg:#f5f5f7;
+    --blue:#007aff; --blue-glow:rgba(0,122,255,.12);
+    --green:#248a3d; --red:#d70015; --amber:#b25000;
   }
   html{font-size:16px;color-scheme:dark}
   html.light{color-scheme:light}
-  body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.6 var(--sans);
+  body{margin:0;background:var(--app-bg);color:var(--ink);font:var(--text-md)/1.55 var(--font);
     -webkit-font-smoothing:antialiased;min-height:100vh}
   button{font:inherit;cursor:pointer}
   a{color:inherit;text-decoration:none}
-  :focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
   [hidden]{display:none!important}
   .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
     clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
-  /* ---------- floating pill top nav (nuvio-style, AniBox theme) ---------- */
-  .navbar{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:40;
-    width:max-content;max-width:calc(100% - 24px)}
-  .nav-inner{display:flex;align-items:center;gap:6px;padding:6px;
-    background:rgba(10,10,18,.9);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
-    border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow)}
-  html.light .nav-inner{background:rgba(255,255,255,.88)}
+  /* ---------- floating pill top nav ---------- */
+  .navbar{position:fixed;top:0;left:0;right:0;z-index:40;padding:.875rem clamp(.75rem,2vw,2rem);pointer-events:none}
+  .nav-inner{position:relative;display:flex;align-items:center;gap:var(--sp-1);width:max-content;max-width:100%;
+    min-height:3.625rem;margin:0 auto;padding:.375rem;color:var(--ink);
+    background:rgba(30,30,35,.55);
+    border:1px solid rgba(255,255,255,.15);border-radius:var(--r-full);
+    box-shadow:0 2px 4px rgba(0,0,0,.4),0 8px 32px -8px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);
+    -webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);
+    pointer-events:auto}
+  html.light .nav-inner{background:rgba(255,255,255,.72);border-color:rgba(0,0,0,.1);
+    box-shadow:0 2px 4px rgba(0,0,0,.08),0 8px 32px -8px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.6)}
 
-  .brand{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;flex:none}
-  .brand img{width:26px;height:26px;object-fit:contain;display:block}
-  .brand b{font-size:.9rem;font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+  .brand{display:inline-flex;align-items:center;gap:var(--sp-2);min-height:2.75rem;padding:var(--sp-2) var(--sp-3);
+    border-radius:var(--r-full);font-weight:600;font-size:var(--text-md);letter-spacing:-.01em;flex:none;
+    transition:background-color .16s ease}
+  .brand:hover{background:rgba(255,255,255,.06)}
+  .brand img{width:1.875rem;height:1.875rem;border-radius:var(--r-sm);object-fit:contain;display:block}
 
-  .nav-tabs{display:flex;gap:2px;min-width:0}
-  .nav-tab{display:inline-flex;align-items:center;gap:.4rem;height:40px;padding:0 14px;
-    border:0;border-radius:999px;background:transparent;color:var(--mut);font-size:.875rem;
-    font-weight:600;white-space:nowrap;transition:background .14s,color .14s}
-  .nav-tab:hover{background:rgba(255,255,255,.05);color:var(--tx)}
-  html.light .nav-tab:hover{background:rgba(10,10,20,.05)}
-  .nav-tab.on{background:rgba(109,94,252,.18);color:var(--accent-soft)}
-  html.light .nav-tab.on{background:rgba(91,75,219,.14);color:var(--accent)}
-  .nav-count{font-size:.7rem;font-weight:700;color:var(--sub);background:var(--surface-3);
-    border-radius:999px;padding:0 6px;line-height:18px;font-variant-numeric:tabular-nums}
-  .nav-tab.on .nav-count{color:var(--accent-soft);background:rgba(255,255,255,.08)}
+  .nav-tabs{display:flex;gap:var(--sp-1);align-items:center;justify-content:center;min-width:0}
+  .nav-tab{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:2.5rem;
+    padding:0 var(--sp-4);border:0;border-radius:var(--r-full);background:transparent;
+    color:rgba(246,247,249,.64);font-size:var(--text-base);font-weight:600;letter-spacing:-.01em;
+    white-space:nowrap;transition:color .16s ease,background-color .16s ease}
+  html.light .nav-tab{color:rgba(29,29,31,.6)}
+  .nav-tab:hover{color:var(--ink);background:rgba(255,255,255,.08)}
+  html.light .nav-tab:hover{background:rgba(0,0,0,.06)}
+  .nav-tab.on{color:var(--accent-fg);background:var(--accent)}
+  .nav-count{font-size:var(--text-xs);font-weight:600;color:var(--ink-muted);
+    background:rgba(255,255,255,.05);border-radius:var(--r-full);padding:0 var(--sp-2);line-height:18px;
+    font-variant-numeric:tabular-nums}
+  .nav-tab.on .nav-count{color:var(--accent-fg);background:rgba(0,0,0,.12)}
+  html.light .nav-count{background:rgba(0,0,0,.06)}
 
-  .nav-actions{display:flex;align-items:center;gap:6px;flex:none;padding-left:2px}
-  .pill{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .6rem;border-radius:999px;
-    border:1px solid var(--line);background:rgba(255,255,255,.03);font-size:.6875rem;font-weight:600;
-    letter-spacing:.03em;color:var(--mut);text-transform:uppercase;white-space:nowrap}
-  .pill i{width:6px;height:6px;border-radius:50%;background:var(--ok)}
-  .iconbtn{width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:999px;
-    background:transparent;color:var(--mut);transition:background .14s,color .14s;flex:none}
-  .iconbtn:hover{background:rgba(255,255,255,.06);color:var(--tx)}
+  .nav-actions{display:flex;align-items:center;gap:var(--sp-2);flex:none;padding-left:var(--sp-1)}
+  .pill{display:inline-flex;align-items:center;gap:var(--sp-1);padding:var(--sp-1) var(--sp-2);
+    border-radius:var(--r-full);background:rgba(255,255,255,.05);font-size:var(--text-xs);
+    font-weight:600;color:var(--ink-muted);letter-spacing:.02em;white-space:nowrap}
+  .pill i{width:8px;height:8px;border-radius:50%;background:var(--green)}
+  .iconbtn{width:2.5rem;height:2.5rem;display:grid;place-items:center;border:0;border-radius:var(--r-full);
+    background:transparent;color:var(--ink-muted);transition:background .16s,color .16s;flex:none}
+  .iconbtn:hover{background:rgba(255,255,255,.08);color:var(--ink)}
   .iconbtn svg{width:18px;height:18px}
 
   /* ---------- content ---------- */
-  .content{max-width:1080px;margin:0 auto;padding:104px 20px 64px}
-  .wrap{width:100%}
-  .page-head{margin-bottom:1.4rem}
-  h1{font-size:1.7rem;line-height:1.2;letter-spacing:-.03em;font-weight:800;margin:0 0 .3rem}
-  .lede{color:var(--mut);font-size:.9rem;margin:0;max-width:58ch}
+  .content{width:100%;max-width:62rem;margin:0 auto;padding:7.5rem clamp(1rem,3vw,2rem) var(--sp-12)}
+  .page-head{margin-bottom:var(--sp-6)}
+  h1{font-size:var(--text-2xl);line-height:1.2;letter-spacing:-.02em;font-weight:700;margin:0 0 var(--sp-1)}
+  .lede{color:var(--ink-muted);font-size:var(--text-base);margin:0;max-width:60ch}
 
-  .sechead{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.75rem;flex-wrap:wrap}
-  .sechead h2{font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin:0}
-  .sechead .count{font-size:.75rem;color:var(--mut)}
-  .sechead-actions{margin-left:auto;display:flex;gap:.4rem}
+  .sechead{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .sechead h2{font-size:var(--text-xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);margin:0}
+  .sechead .count{font-size:var(--text-xs);color:var(--ink-faint)}
+  .sechead-actions{margin-left:auto;display:flex;gap:var(--sp-2)}
 
-  .cols{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:1.5rem;align-items:start}
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) 18.5rem;gap:var(--sp-6);align-items:start}
   .col-main{min-width:0}
-  .side{display:grid;gap:.9rem}
+  .side{display:grid;gap:var(--sp-3)}
 
-  /* ---------- option rows ---------- */
-  .optlist{display:grid;gap:.5rem}
-  .opt{display:flex;align-items:center;gap:.75rem;padding:.8rem .9rem;border-radius:var(--r);
-    border:1px solid var(--line);background:var(--surface);transition:.14s;cursor:pointer}
-  .opt:hover{border-color:var(--line-strong)}
-  .opt .ico{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex:none;
-    background:rgba(109,94,252,.13);border:1px solid rgba(109,94,252,.28);color:var(--accent-soft)}
-  html.light .opt .ico{background:rgba(91,75,219,.1);color:var(--accent)}
-  .opt .ico svg{width:16px;height:16px}
+  /* ---------- card + rows ---------- */
+  .optlist{display:block;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--r-lg);padding:0 var(--sp-5);overflow:hidden}
+  .opt{display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-4) 0;
+    border-top:1px solid rgba(255,255,255,.06);background:transparent;cursor:pointer;transition:background .14s}
+  html.light .opt{border-top-color:rgba(0,0,0,.06)}
+  .opt:first-child{border-top:0}
+  .opt:hover{background:rgba(255,255,255,.02)}
+  .opt .ico{width:2.25rem;height:2.25rem;border-radius:var(--r-md);display:grid;place-items:center;flex:none;
+    background:rgba(255,255,255,.05);color:var(--ink)}
+  html.light .opt .ico{background:rgba(0,0,0,.05)}
+  .opt .ico svg{width:1.125rem;height:1.125rem}
   .opt .txt{min-width:0;flex:1}
-  .opt b{display:block;font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .opt small{display:block;font-size:.75rem;color:var(--mut);margin-top:.05rem;
+  .opt b{display:block;font-size:var(--text-md);font-weight:600;letter-spacing:-.01em;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .opt:has(input:focus-visible){outline:2px solid var(--accent-2);outline-offset:2px}
-  .opt[data-selected="true"]{border-color:rgba(109,94,252,.55)}
-  html.light .opt[data-selected="true"]{border-color:rgba(91,75,219,.45)}
+  .opt small{display:block;font-size:var(--text-sm);color:var(--ink-muted);margin-top:var(--sp-1);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .opt:has(input:focus-visible){outline:2px solid var(--blue);outline-offset:-2px;border-radius:var(--r-sm)}
+  .opt[data-selected="true"]{background:var(--blue-glow)}
 
-  .swwrap{position:relative;width:34px;height:19px;flex:none}
+  /* toggle */
+  .swwrap{position:relative;width:2.75rem;height:1.625rem;flex:none;cursor:pointer}
   .swwrap input{position:absolute;opacity:0;width:0;height:0}
-  .sw{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.14);transition:background .15s}
-  html.light .sw{background:rgba(10,10,20,.16)}
-  .sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
-    background:#fff;transition:transform .15s}
-  .swwrap input:checked + .sw{background:var(--accent)}
-  .swwrap input:checked + .sw::after{transform:translateX(15px)}
-  .swwrap input:focus-visible + .sw{outline:2px solid var(--accent-2);outline-offset:2px}
+  .sw{position:absolute;inset:0;border-radius:var(--r-full);background:var(--surface-3);transition:background .2s}
+  .sw::after{content:"";position:absolute;top:var(--sp-1);left:var(--sp-1);width:1.375rem;height:1.375rem;
+    border-radius:50%;background:#fff;transition:transform .2s;box-shadow:var(--shadow-sm)}
+  .swwrap input:checked + .sw{background:var(--blue)}
+  .swwrap input:checked + .sw::after{transform:translateX(1.125rem)}
+  .swwrap input:focus-visible + .sw{outline:2px solid var(--blue);outline-offset:2px}
 
-  .radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);flex:none;
-    display:grid;place-items:center}
-  .opt[data-selected="true"] .radio{border-color:var(--accent)}
-  .opt[data-selected="true"] .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+  /* radio */
+  .radio{width:1.25rem;height:1.25rem;border-radius:50%;border:2px solid var(--border-hover);flex:none;
+    display:grid;place-items:center;transition:border-color .14s}
+  .opt[data-selected="true"] .radio{border-color:var(--blue)}
+  .opt[data-selected="true"] .radio::after{content:"";width:.625rem;height:.625rem;border-radius:50%;background:var(--blue)}
 
   /* ---------- side panels ---------- */
-  .cap{font-size:.6875rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);
-    margin-bottom:.55rem;display:flex;align-items:center;gap:.5rem}
-  .cap em{font-style:normal;margin-left:auto;letter-spacing:0;text-transform:none;font-weight:500;
-    color:var(--mut);font-size:.72rem}
-  .pv{border:1px solid var(--line);border-radius:var(--r);padding:.9rem;background:var(--surface)}
-  .pv .ph{display:flex;align-items:center;gap:.5rem;margin-bottom:.55rem}
-  .pv .ph i{width:6px;height:6px;border-radius:50%;background:var(--ok);flex:none}
-  .pv .ph b{font-size:.79rem;font-weight:600}
-  .pv .line{display:flex;justify-content:space-between;gap:1rem;font-size:.75rem;color:var(--mut);padding:.2rem 0}
-  .pv .line span:last-child{color:var(--tx);font-family:var(--mono);font-size:.71rem}
-  .pvhint{font-size:.75rem;color:var(--sub);line-height:1.6;margin-top:.55rem}
-  .previewtext{font-family:var(--mono);font-size:.72rem;line-height:1.6;color:var(--mut);
+  .cap{font-size:var(--text-xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--ink-muted);margin-bottom:var(--sp-2);display:flex;align-items:center;gap:var(--sp-2)}
+  .cap em{font-style:normal;margin-left:auto;letter-spacing:0;text-transform:none;font-weight:500;color:var(--ink-faint);font-size:var(--text-xs)}
+  .pv{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-5)}
+  .pv .ph{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+  .pv .ph i{width:8px;height:8px;border-radius:50%;background:var(--green);flex:none}
+  .pv .ph b{font-size:var(--text-md);font-weight:600}
+  .pv .line{display:flex;justify-content:space-between;gap:var(--sp-4);font-size:var(--text-sm);color:var(--ink-muted);padding:var(--sp-1) 0}
+  .pv .line span:last-child{color:var(--ink);font-family:var(--mono);font-size:var(--text-xs)}
+  .pvhint{font-size:var(--text-sm);color:var(--ink-faint);line-height:1.6;margin-top:var(--sp-3)}
+  .previewtext{font-family:var(--mono);font-size:var(--text-xs);line-height:1.6;color:var(--ink-muted);
     white-space:pre-wrap;margin:0;word-break:break-word}
 
   /* ---------- install ---------- */
-  .linkcard{border:1px solid var(--line);border-radius:var(--r-lg);padding:1rem 1.05rem;background:var(--surface)}
-  .linkrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5rem}
-  .linkrow code{font-family:var(--mono);font-size:.78rem;color:var(--accent-soft);background:rgba(0,0,0,.5);
-    border:1px solid var(--line);border-radius:8px;padding:.6rem .7rem;white-space:nowrap;
+  .linkcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-5)}
+  .linkrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-2)}
+  .linkrow code{font-family:var(--mono);font-size:var(--text-xs);color:var(--ink);background:var(--app-bg);
+    border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-3);white-space:nowrap;
     overflow-x:auto;scrollbar-width:none;min-width:0;display:flex;align-items:center}
-  html.light .linkrow code{background:rgba(10,10,20,.05);color:var(--tx)}
-  .linkhint{margin:.7rem 0 0;font-size:.76rem;color:var(--mut);line-height:1.55}
+  .linkhint{margin:var(--sp-3) 0 0;font-size:var(--text-sm);color:var(--ink-muted);line-height:1.55}
 
-  .btn{border:1px solid var(--line);cursor:pointer;font:inherit;font-weight:600;border-radius:8px;
-    padding:.55rem .9rem;font-size:.8125rem;background:var(--surface-2);color:var(--tx);
-    display:inline-flex;align-items:center;justify-content:center;gap:.45rem;white-space:nowrap;flex-shrink:0;
-    transition:background .14s,border-color .14s,transform .08s}
-  .btn:hover{background:var(--surface-3);border-color:var(--line-strong)}
-  html.light .btn{background:rgba(10,10,20,.04)}
-  html.light .btn:hover{background:rgba(10,10,20,.08)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);border-radius:var(--r-full);
+    border:1px solid var(--border);background:var(--surface);color:var(--ink);font-family:var(--font);
+    font-size:var(--text-base);font-weight:600;line-height:1;padding:var(--sp-3) var(--sp-5);white-space:nowrap;
+    flex-shrink:0;transition:background-color .18s,color .18s,border-color .18s}
+  .btn:hover{background:var(--surface-2);border-color:var(--border-hover)}
   .btn:active{transform:translateY(1px)}
-  .btn.sm{padding:.35rem .65rem;font-size:.75rem;min-height:30px}
-  .btn.primary{background:var(--accent);color:#fff;border:0;border-radius:999px}
-  .btn.primary:hover{background:var(--accent);filter:brightness(.9);border:0}
+  .btn.sm{padding:var(--sp-1) var(--sp-2);font-size:var(--text-xs);border-radius:var(--r-sm)}
+  .btn.primary{background:var(--accent);color:var(--accent-fg);border:1px solid var(--accent)}
+  .btn.primary:hover{background:#fff}
+  html.light .btn.primary:hover{background:#000}
   .btn svg{width:15px;height:15px;flex:0 0 auto}
-  .actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
+  .actions{display:flex;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-4)}
 
-  .steps{display:grid;gap:.5rem;margin-top:1.5rem}
-  .step{display:flex;align-items:flex-start;gap:.7rem;padding:.8rem .9rem;border-radius:var(--r);
-    border:1px solid var(--line);background:var(--surface)}
-  .step .n{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;flex:none;
-    font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--accent-soft);
-    background:rgba(109,94,252,.14);border:1px solid rgba(109,94,252,.3)}
-  html.light .step .n{color:var(--accent)}
-  .step b{display:block;font-size:.83rem;font-weight:600}
-  .step small{display:block;font-size:.75rem;color:var(--mut);margin-top:.05rem}
+  .steps{display:grid;gap:var(--sp-2);margin-top:var(--sp-6)}
+  .step{display:flex;align-items:flex-start;gap:var(--sp-3);padding:var(--sp-4);border-radius:var(--r-lg);
+    background:var(--surface);border:1px solid var(--border)}
+  .step .n{width:1.5rem;height:1.5rem;border-radius:var(--r-sm);display:grid;place-items:center;flex:none;
+    font-family:var(--mono);font-size:var(--text-xs);font-weight:700;color:var(--ink);
+    background:rgba(255,255,255,.07);border:1px solid var(--border)}
+  .step b{display:block;font-size:var(--text-base);font-weight:600}
+  .step small{display:block;font-size:var(--text-sm);color:var(--ink-muted);margin-top:var(--sp-1)}
 
   /* ---------- status ---------- */
-  .status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin-bottom:1rem}
-  .smetric{border:1px solid var(--line);border-radius:var(--r);padding:.9rem 1rem;background:var(--surface)}
-  .smetric-label{font-size:.6875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
-  .smetric-value{font-size:1.5rem;font-weight:800;margin-top:.15rem;font-variant-numeric:tabular-nums;line-height:1.2}
-  .smetric-value.ok{color:var(--ok)}
-  .smetric-value.bad{color:var(--bad)}
-  .smetric-value.sm{font-size:1rem;line-height:1.6}
+  .status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-2);margin-bottom:var(--sp-4)}
+  .smetric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5)}
+  .smetric-label{font-size:var(--text-xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted)}
+  .smetric-value{font-size:1.5rem;font-weight:700;margin-top:var(--sp-1);font-variant-numeric:tabular-nums;line-height:1.2}
+  .smetric-value.ok{color:var(--green)}
+  .smetric-value.bad{color:var(--red)}
+  .smetric-value.sm{font-size:var(--text-lg);line-height:1.6}
 
-  .status-toolbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}
-  .status-filters{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
-  .sfilter{border:0;background:transparent;color:var(--mut);font-size:.75rem;font-weight:600;
-    padding:.3rem .65rem;border-radius:6px;transition:.14s}
-  .sfilter:hover{color:var(--tx)}
-  .sfilter.on{background:var(--surface-3);color:var(--tx)}
-  .st-updated{margin-left:auto;color:var(--sub);font-size:.75rem;font-family:var(--mono)}
+  .status-toolbar{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
+  .status-filters{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--border);border-radius:var(--r-full);background:var(--surface)}
+  .sfilter{border:0;background:transparent;color:var(--ink-muted);font-size:var(--text-xs);font-weight:600;
+    padding:var(--sp-1) var(--sp-3);border-radius:var(--r-full);transition:.14s}
+  .sfilter:hover{color:var(--ink)}
+  .sfilter.on{background:var(--surface-3);color:var(--ink)}
+  .st-updated{margin-left:auto;color:var(--ink-faint);font-size:var(--text-xs);font-family:var(--mono)}
 
-  .providers{display:grid;gap:.5rem}
-  .prow{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:.75rem .9rem}
-  .prow-head{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
-  .ppill{display:inline-flex;align-items:center;gap:.4rem;font-size:.6875rem;font-weight:700;letter-spacing:.06em;
-    text-transform:uppercase;padding:.18rem .45rem;border-radius:999px;border:1px solid var(--line);color:var(--sub)}
+  .providers{display:grid;gap:var(--sp-2)}
+  .prow{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-4)}
+  .prow-head{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
+  .ppill{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--text-xs);font-weight:600;
+    letter-spacing:.04em;text-transform:uppercase;padding:var(--sp-1) var(--sp-2);border-radius:var(--r-full);
+    border:1px solid var(--border);color:var(--ink-muted)}
   .ppill i{width:6px;height:6px;border-radius:50%;background:currentColor}
-  .ppill.up{color:var(--ok);border-color:rgba(49,211,154,.35);background:rgba(49,211,154,.08)}
-  .ppill.down{color:var(--bad);border-color:rgba(244,112,127,.35);background:rgba(244,112,127,.08)}
-  .pname{font-weight:600;font-size:.9rem}
-  .pmeta{color:var(--mut);font-size:.74rem;font-family:var(--mono)}
-  .ptime{margin-left:auto;color:var(--sub);font-size:.72rem;font-family:var(--mono)}
-  .ptitles{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.55rem;padding-top:.55rem;
-    border-top:1px solid var(--line)}
-  .ptlabel{font-size:.6875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);margin-right:.2rem}
-  .pchip{font-size:.72rem;color:var(--tx);background:var(--surface-2);border:1px solid var(--line);
-    border-radius:6px;padding:.15rem .45rem}
-  .pnone{font-size:.74rem;color:var(--sub)}
-  .perr{font-size:.72rem;color:var(--bad);font-family:var(--mono);margin-top:.4rem;word-break:break-word}
-  .status-empty{border:1px dashed var(--line-strong);border-radius:var(--r);padding:2rem 1.5rem;text-align:center;color:var(--mut)}
-  .status-empty b{display:block;color:var(--tx);margin-bottom:.25rem}
-  .spinner{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;
-    display:inline-block;vertical-align:-3px;margin-right:.5rem;animation:spin .7s linear infinite}
+  .ppill.up{color:var(--green);border-color:rgba(48,209,88,.35);background:rgba(48,209,88,.1)}
+  .ppill.down{color:var(--red);border-color:rgba(255,69,58,.35);background:rgba(255,69,58,.1)}
+  .pname{font-weight:600;font-size:var(--text-base)}
+  .pmeta{color:var(--ink-muted);font-size:var(--text-xs);font-family:var(--mono)}
+  .ptime{margin-left:auto;color:var(--ink-faint);font-size:var(--text-xs);font-family:var(--mono)}
+  .ptitles{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3);padding-top:var(--sp-3);
+    border-top:1px solid rgba(255,255,255,.06)}
+  .ptlabel{font-size:var(--text-xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-right:var(--sp-1)}
+  .pchip{font-size:var(--text-xs);color:var(--ink);background:var(--surface-2);border:1px solid var(--border);
+    border-radius:var(--r-sm);padding:var(--sp-1) var(--sp-2)}
+  .pnone{font-size:var(--text-xs);color:var(--ink-faint)}
+  .perr{font-size:var(--text-xs);color:var(--red);font-family:var(--mono);margin-top:var(--sp-2);word-break:break-word}
+  .status-empty{border:1px dashed var(--border-hover);border-radius:var(--r-lg);padding:var(--sp-8) var(--sp-6);
+    text-align:center;color:var(--ink-muted)}
+  .status-empty b{display:block;color:var(--ink);margin-bottom:var(--sp-1)}
+  .spinner{width:16px;height:16px;border:2px solid var(--border-hover);border-top-color:var(--blue);border-radius:50%;
+    display:inline-block;vertical-align:-3px;margin-right:var(--sp-2);animation:spin .7s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  .pagefoot{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:var(--sub);
-    font-size:.74rem;padding-top:1.6rem;margin-top:1.6rem;border-top:1px solid var(--line)}
+  .pagefoot{display:flex;justify-content:space-between;gap:var(--sp-4);flex-wrap:wrap;color:var(--ink-faint);
+    font-size:var(--text-xs);padding-top:var(--sp-6);margin-top:var(--sp-8);border-top:1px solid var(--border)}
 
-  .toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%) translateY(1rem);
-    background:var(--surface-3);border:1px solid var(--line);border-radius:999px;
-    padding:.55rem 1rem;font-size:.84rem;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:60;
-    display:flex;align-items:center;gap:.7rem;max-width:min(90vw,520px);text-align:left}
+  .toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%) translateY(1rem);
+    background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-full);
+    padding:var(--sp-3) var(--sp-5);font-size:var(--text-base);font-weight:600;opacity:0;pointer-events:none;
+    transition:.2s;z-index:60;display:flex;align-items:center;gap:var(--sp-3);max-width:min(90vw,32rem);text-align:left;
+    box-shadow:var(--shadow-lg)}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
-  .toast-action{border:0;background:transparent;color:var(--accent-soft);font:inherit;font-weight:700;
+  .toast-action{border:0;background:transparent;color:var(--blue);font:inherit;font-weight:700;
     cursor:pointer;text-decoration:underline;text-underline-offset:2px;flex:none}
 
   @media (max-width:1080px){
     .cols{grid-template-columns:minmax(0,1fr)}
     .side{position:static}
   }
-
-  /* ---------- mobile top nav ---------- */
   @media (max-width:760px){
-    .nav-inner{flex-wrap:wrap;border-radius:20px;padding:8px;gap:6px;justify-content:space-between}
-    .brand{padding:4px 6px}
-    .brand b{font-size:.85rem}
+    .nav-inner{flex-wrap:wrap;border-radius:var(--r-xl);padding:var(--sp-2);gap:var(--sp-2);
+      justify-content:space-between;width:calc(100vw - 1.5rem)}
+    .brand{min-height:auto;padding:var(--sp-1) var(--sp-2)}
+    .brand b{font-size:var(--text-base)}
     .nav-actions{padding-left:0}
     .nav-tabs{order:3;flex-basis:100%;justify-content:space-between;gap:2px;overflow-x:auto}
-    .nav-tab{flex:1;justify-content:center;padding:0 6px;height:36px;font-size:.75rem}
+    .nav-tab{flex:1;justify-content:center;padding:0 var(--sp-2);min-height:2.25rem;font-size:var(--text-sm)}
     .nav-count{display:none}
-    .content{padding:132px 16px 56px}
-    h1{font-size:1.45rem}
+    .content{padding:8.5rem var(--sp-4) var(--sp-10)}
+    h1{font-size:var(--text-xl)}
     .status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     .linkrow{grid-template-columns:minmax(0,1fr)}
   }
@@ -274,129 +289,127 @@
 </header>
 
 <main class="content">
-  <div class="wrap">
-    <div class="page-head">
-      <h1 id="page-title">Providers</h1>
-      <p class="lede" id="page-desc">Choose which sources AniBox scrapes.</p>
-    </div>
-
-    <section id="panel-providers" class="panel" role="tabpanel">
-      <div class="cols">
-        <div class="col-main">
-          <div class="sechead">
-            <h2>Sources</h2>
-            <span class="count" id="prov-count">4/4</span>
-            <div class="sechead-actions">
-              <button class="btn sm" id="all-on">Enable all</button>
-              <button class="btn sm" id="all-off">Disable all</button>
-            </div>
-          </div>
-          <div class="optlist" id="providers-list"></div>
-        </div>
-
-        <aside class="side">
-          <div>
-            <div class="cap">Selection</div>
-            <div class="pv">
-              <div class="ph"><i id="pv-dot"></i><b id="pv-status">Manifest ready</b></div>
-              <div class="line"><span>Enabled</span><span class="sum-providers">4/4</span></div>
-              <div class="line"><span>Label</span><span class="sum-style">Rich</span></div>
-              <div class="line"><span>Duplicates</span><span>Merged</span></div>
-              <div class="line"><span>Details</span><span>From source</span></div>
-            </div>
-            <p class="pvhint">Turn off sources you don't use to load results faster. Duplicate mirrors are merged automatically.</p>
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <section id="panel-labels" class="panel" role="tabpanel" hidden>
-      <div class="cols">
-        <div class="col-main">
-          <div class="sechead"><h2>Stream labels</h2></div>
-          <div class="optlist" id="styles" role="radiogroup" aria-label="Stream label style"></div>
-        </div>
-
-        <aside class="side">
-          <div>
-            <div class="cap">Preview</div>
-            <div class="pv">
-              <div class="ph"><i></i><b id="preview-name">Rich</b></div>
-              <pre class="previewtext" id="preview"></pre>
-            </div>
-            <p class="pvhint">Rich and AIOStreams show provider, player, resolution, codec, audio, languages and file size.</p>
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <section id="panel-install" class="panel" role="tabpanel" hidden>
-      <div class="cols">
-        <div class="col-main">
-          <div class="linkcard">
-            <div class="cap">Manifest URL <em>auto-updates</em></div>
-            <div class="linkrow">
-              <code id="url"></code>
-              <button class="btn sm" id="copy">Copy</button>
-            </div>
-            <p class="linkhint">Paste this into Stremio, Nuvio or any Stremio-compatible app.</p>
-            <div class="actions">
-              <button class="btn primary" id="go">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-                Install in Stremio
-              </button>
-            </div>
-          </div>
-
-          <div class="steps">
-            <div class="step"><span class="n">1</span><div><b>Copy the manifest URL</b><small>Use the copy button above, or select the URL manually.</small></div></div>
-            <div class="step"><span class="n">2</span><div><b>Open your app's addon screen</b><small>Stremio: Addons → Install from URL. Nuvio: Addons → Add repository.</small></div></div>
-            <div class="step"><span class="n">3</span><div><b>Paste and install</b><small>AniBox appears as a catalog and a stream source.</small></div></div>
-          </div>
-        </div>
-
-        <aside class="side">
-          <div>
-            <div class="cap">Summary</div>
-            <div class="pv">
-              <div class="ph"><i></i><b>Ready to install</b></div>
-              <div class="line"><span>Enabled</span><span class="sum-providers">4/4</span></div>
-              <div class="line"><span>Label</span><span class="sum-style">Rich</span></div>
-              <div class="line"><span>Duplicates</span><span>Merged</span></div>
-              <div class="line"><span>Details</span><span>From source</span></div>
-            </div>
-            <p class="pvhint">The URL updates automatically whenever you change providers or labels. No account or sign-in required.</p>
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <section id="panel-status" class="panel" role="tabpanel" hidden>
-      <div class="status-grid">
-        <div class="smetric"><div class="smetric-label">Up</div><div class="smetric-value ok" id="st-up">—</div></div>
-        <div class="smetric"><div class="smetric-label">Down</div><div class="smetric-value bad" id="st-down">—</div></div>
-        <div class="smetric"><div class="smetric-label">Streams</div><div class="smetric-value" id="st-streams">—</div></div>
-        <div class="smetric"><div class="smetric-label">Last check</div><div class="smetric-value sm" id="st-updated">—</div></div>
-      </div>
-      <div class="status-toolbar">
-        <div class="status-filters" role="group" aria-label="Filter providers">
-          <button class="sfilter on" data-f="all" aria-pressed="true">All</button>
-          <button class="sfilter" data-f="up" aria-pressed="false">Up</button>
-          <button class="sfilter" data-f="down" aria-pressed="false">Down</button>
-        </div>
-        <button class="btn sm" id="status-refresh">Refresh</button>
-        <span class="st-updated" id="status-updated">Checking…</span>
-      </div>
-      <div class="providers" id="status-list">
-        <div class="status-empty"><b><span class="spinner" aria-hidden="true"></span>Checking providers…</b>The first check can take a few minutes.</div>
-      </div>
-    </section>
-
-    <footer class="pagefoot">
-      <span>AniBox · Stremio / Nuvio addon</span>
-      <span>metadata from the source · nothing guessed</span>
-    </footer>
+  <div class="page-head">
+    <h1 id="page-title">Providers</h1>
+    <p class="lede" id="page-desc">Choose which sources AniBox scrapes.</p>
   </div>
+
+  <section id="panel-providers" class="panel" role="tabpanel">
+    <div class="cols">
+      <div class="col-main">
+        <div class="sechead">
+          <h2>Sources</h2>
+          <span class="count" id="prov-count">4/4</span>
+          <div class="sechead-actions">
+            <button class="btn sm" id="all-on">Enable all</button>
+            <button class="btn sm" id="all-off">Disable all</button>
+          </div>
+        </div>
+        <div class="optlist" id="providers-list"></div>
+      </div>
+
+      <aside class="side">
+        <div>
+          <div class="cap">Selection</div>
+          <div class="pv">
+            <div class="ph"><i id="pv-dot"></i><b id="pv-status">Manifest ready</b></div>
+            <div class="line"><span>Enabled</span><span class="sum-providers">4/4</span></div>
+            <div class="line"><span>Label</span><span class="sum-style">Rich</span></div>
+            <div class="line"><span>Duplicates</span><span>Merged</span></div>
+            <div class="line"><span>Details</span><span>From source</span></div>
+          </div>
+          <p class="pvhint">Turn off sources you don't use to load results faster. Duplicate mirrors are merged automatically.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="panel-labels" class="panel" role="tabpanel" hidden>
+    <div class="cols">
+      <div class="col-main">
+        <div class="sechead"><h2>Stream labels</h2></div>
+        <div class="optlist" id="styles" role="radiogroup" aria-label="Stream label style"></div>
+      </div>
+
+      <aside class="side">
+        <div>
+          <div class="cap">Preview</div>
+          <div class="pv">
+            <div class="ph"><i></i><b id="preview-name">Rich</b></div>
+            <pre class="previewtext" id="preview"></pre>
+          </div>
+          <p class="pvhint">Rich and AIOStreams show provider, player, resolution, codec, audio, languages and file size.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="panel-install" class="panel" role="tabpanel" hidden>
+    <div class="cols">
+      <div class="col-main">
+        <div class="linkcard">
+          <div class="cap">Manifest URL <em>auto-updates</em></div>
+          <div class="linkrow">
+            <code id="url"></code>
+            <button class="btn sm" id="copy">Copy</button>
+          </div>
+          <p class="linkhint">Paste this into Stremio, Nuvio or any Stremio-compatible app.</p>
+          <div class="actions">
+            <button class="btn primary" id="go">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+              Install in Stremio
+            </button>
+          </div>
+        </div>
+
+        <div class="steps">
+          <div class="step"><span class="n">1</span><div><b>Copy the manifest URL</b><small>Use the copy button above, or select the URL manually.</small></div></div>
+          <div class="step"><span class="n">2</span><div><b>Open your app's addon screen</b><small>Stremio: Addons → Install from URL. Nuvio: Addons → Add repository.</small></div></div>
+          <div class="step"><span class="n">3</span><div><b>Paste and install</b><small>AniBox appears as a catalog and a stream source.</small></div></div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div>
+          <div class="cap">Summary</div>
+          <div class="pv">
+            <div class="ph"><i></i><b>Ready to install</b></div>
+            <div class="line"><span>Enabled</span><span class="sum-providers">4/4</span></div>
+            <div class="line"><span>Label</span><span class="sum-style">Rich</span></div>
+            <div class="line"><span>Duplicates</span><span>Merged</span></div>
+            <div class="line"><span>Details</span><span>From source</span></div>
+          </div>
+          <p class="pvhint">The URL updates automatically whenever you change providers or labels. No account or sign-in required.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="panel-status" class="panel" role="tabpanel" hidden>
+    <div class="status-grid">
+      <div class="smetric"><div class="smetric-label">Up</div><div class="smetric-value ok" id="st-up">—</div></div>
+      <div class="smetric"><div class="smetric-label">Down</div><div class="smetric-value bad" id="st-down">—</div></div>
+      <div class="smetric"><div class="smetric-label">Streams</div><div class="smetric-value" id="st-streams">—</div></div>
+      <div class="smetric"><div class="smetric-label">Last check</div><div class="smetric-value sm" id="st-updated">—</div></div>
+    </div>
+    <div class="status-toolbar">
+      <div class="status-filters" role="group" aria-label="Filter providers">
+        <button class="sfilter on" data-f="all" aria-pressed="true">All</button>
+        <button class="sfilter" data-f="up" aria-pressed="false">Up</button>
+        <button class="sfilter" data-f="down" aria-pressed="false">Down</button>
+      </div>
+      <button class="btn sm" id="status-refresh">Refresh</button>
+      <span class="st-updated" id="status-updated">Checking…</span>
+    </div>
+    <div class="providers" id="status-list">
+      <div class="status-empty"><b><span class="spinner" aria-hidden="true"></span>Checking providers…</b>The first check can take a few minutes.</div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>AniBox · Stremio / Nuvio addon</span>
+    <span>metadata from the source · nothing guessed</span>
+  </footer>
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -464,7 +477,7 @@ function update(){
     if (inp) inp.checked = sel;
   });
   const dot = $('#pv-dot'), pvStatus = $('#pv-status');
-  if (dot) dot.style.background = on ? 'var(--ok)' : 'var(--warn)';
+  if (dot) dot.style.background = on ? 'var(--green)' : 'var(--amber)';
   if (pvStatus) pvStatus.textContent = on ? 'Manifest ready' : 'No sources enabled';
   $('#preview-name').textContent = style.name;
   $('#preview').textContent = style.preview;
