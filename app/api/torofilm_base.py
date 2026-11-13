@@ -73,29 +73,46 @@ class TorofilmAPI:
             return []
 
     def get_home_catalog(self) -> list:
-        try:
-            resp = self._get(self.BASE_URL)
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            results = []
-            for article in soup.select('article'):
-                link = article.select_one('a[href]')
-                img = article.find('img')
-                title = article.select_one('h2, h3, .entry-title')
-                if link:
+        results = []
+        seen = set()
+        pages = ('', 'series', 'movies')
+        for path in pages:
+            try:
+                url = f'{self.BASE_URL}/{path}' if path else self.BASE_URL
+                resp = self._get(url)
+                if resp.status_code != 200:
+                    continue
+                soup = BeautifulSoup(resp.text, 'html.parser')
+                for article in soup.select('article, .item, .post'):
+                    link = article.select_one('a[href]')
+                    if not link:
+                        continue
                     href = link.get('href', '')
                     parts = href.rstrip('/').split('/')
                     slug = parts[-1] if parts else ''
+                    if not slug or slug in seen:
+                        continue
+                    seen.add(slug)
+                    img = article.find('img')
+                    title = article.select_one('h2, h3, .entry-title, .title')
+                    poster_url = ''
+                    if img:
+                        p = img.get('src') or img.get('data-src') or ''
+                        if p.startswith('//'):
+                            poster_url = 'https:' + p
+                        elif p.startswith('http'):
+                            poster_url = p
                     results.append({
-                        'title': title.text.strip() if title else (img.get('alt', '') if img else slug),
+                        'title': title.text.strip() if title else (img.get('alt', '') if img else slug.replace('-', ' ').title()),
                         'slug': slug,
-                        'poster': img.get('src', '').replace('//', 'https://') if img else None,
-                        'type': 'movie' if '/movies/' in href else 'series',
+                        'poster': poster_url,
+                        'type': 'movie' if '/movies/' in href or '/movie/' in href else 'series',
                         'provider': self.NAME,
                     })
-            return results
-        except Exception as e:
-            print(f'[{self.NAME}] home error: {e}')
-            return []
+            except Exception as e:
+                print(f'[{self.NAME}] home error for {path}: {e}')
+                continue
+        return results
 
     @cached(details_cache)
     def get_anime_details(self, slug: str) -> dict:

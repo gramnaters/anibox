@@ -140,39 +140,73 @@ class MultiMoviesProvider:
         return results
 
     def get_home_catalog(self) -> list:
-        """Home rows from the site's genre/category pages — the same sections
-        the CloudStream MultiMovies extension browses."""
+        """Home rows from the live site homepage (Featured, Recently updated Series,
+        Recently updated movies) and category pages."""
         results, seen = [], set()
-        sections = (('Anime Series', 'genre/anime-series'),
-                    ('Anime Movies', 'genre/anime-movies'),
-                    ('Bollywood Movies', 'genre/bollywood-movies'),
-                    ('Latest Series', 'series'),
-                    ('Latest Movies', 'movies'))
+        sections = (
+            ('Homepage', ''),
+            ('Latest Series', 'series'),
+            ('Latest Movies', 'movies'),
+            ('Anime Series', 'genre/anime-series'),
+            ('Anime Movies', 'genre/anime-movies'),
+        )
         dom = _live_domain()
         for _label, path in sections:
             try:
-                r = self.session.get(f'{dom}/{path}', timeout=TIMEOUT, verify=False)
+                url = f'{dom}/{path}' if path else dom
+                r = self.session.get(url, timeout=TIMEOUT, verify=False)
                 if r.status_code != 200:
                     continue
                 soup = BeautifulSoup(r.text, 'html.parser')
-                for a in soup.select("a[href*='/series/'], a[href*='/movies/'], "
-                                     "a[href*='/movie/'], a[href*='/tvshows/']"):
+                # 1. Check article.poster-card on the live Cinema theme
+                for card in soup.select('article.poster-card, .poster-card'):
+                    a = card.select_one('a.poster-art[href]') or card.select_one('a[href]')
+                    if not a:
+                        continue
+                    href = a.get('href', '').strip()
+                    img = card.find('img')
+                    poster = (img.get('src') or img.get('data-src') or '') if img else ''
+                    title = (a.get('aria-label') or (img.get('alt') if img else '')).strip()
+                    if not title:
+                        t_el = card.select_one('h2, h3, .poster-title')
+                        title = t_el.get_text(strip=True) if t_el else ''
+                    slug = href.strip('/')
+                    if slug.startswith('movie/') or slug.startswith('series/'):
+                        if slug not in seen:
+                            seen.add(slug)
+                            kind = 'movie' if slug.startswith('movie') else 'series'
+                            results.append({
+                                'title': title or slug.split('/')[-1].replace('-', ' ').title(),
+                                'slug': slug,
+                                'poster': poster,
+                                'type': kind,
+                                'provider': self.NAME,
+                            })
+
+                # 2. Also check any standard links on subpages
+                for a in soup.select("a[href*='/series/'], a[href*='/movies/'], a[href*='/movie/']"):
                     href = a.get('href', '')
                     if not href:
                         continue
                     slug = urlparse(urljoin(dom + '/', href)).path.strip('/')
-                    kind = slug.split('/', 1)[0]
                     if '/' not in slug or slug in seen:
+                        continue
+                    kind = slug.split('/', 1)[0]
+                    if not (kind.startswith('movie') or kind.startswith('series')):
                         continue
                     seen.add(slug)
                     img = a.find('img')
                     card = a.find_parent(['article', 'div']) or a
                     t = card.select_one('h2, h3, .title, .entry-title') if card else None
                     title = t.text.strip() if t else ((img.get('alt') if img else '') or slug.split('/')[-1])
-                    results.append({'title': title, 'slug': slug,
-                                    'poster': (img.get('src') if img else '') or '',
-                                    'type': 'movie' if kind.startswith('movie') else 'series',
-                                    'provider': self.NAME})
+                    poster = (img.get('src') or img.get('data-src') or '') if img else ''
+                    results.append({
+                        'title': title,
+                        'slug': slug,
+                        'poster': poster,
+                        'type': 'movie' if kind.startswith('movie') else 'series',
+                        'provider': self.NAME,
+                    })
             except Exception:
                 continue
         return results

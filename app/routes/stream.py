@@ -534,21 +534,12 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         # for a proxy URL, so dedupe compares files rather than labels.
         file_key = cdn_file_key(url)
 
-        # These CDNs reject browser Origin headers (Abyss: 404) or need the
-        # Referer on every sub-playlist/segment (StreamRuby), which Stremio's
-        # streaming server does not forward. Serve them through our HLS proxy.
-        if any(h in url for h in _PROXY_MEDIA_HOSTS):
+        # Bandwidth optimization: Never proxy large direct files (MP4/MKV)
+        # through Render (free tier has 4GB bandwidth cap). Only proxy HLS playlists.
+        if (is_hls or (meta.get('container') == 'm3u8')) and any(h in url for h in _PROXY_MEDIA_HOSTS):
             try:
                 from app.routes.proxy import register_proxy_url
-                container = meta.get('container') or ''
-                if is_hls or container == 'm3u8':
-                    kind = 'm3u8'
-                else:
-                    # Direct file: keep the real container extension so mpv and
-                    # ExoPlayer demux it correctly (extensionless MP4 etc.).
-                    kind = None
-                url = register_proxy_url(url, headers, base_url=_proxy_base,
-                                         kind=kind, ext=container or None)
+                url = register_proxy_url(url, headers, base_url=_proxy_base, kind='m3u8')
             except Exception as e:
                 print(f'[stream] proxy register failed: {e}', flush=True)
 

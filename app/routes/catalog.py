@@ -131,11 +131,16 @@ def _provider_catalog(pname, want_type, search, skip=None):
         if mid in seen:
             continue
         seen.add(mid)
+        poster = it.get('poster') or ''
+        if poster.startswith('//'):
+            poster = 'https:' + poster
+        elif poster and not poster.startswith('http'):
+            poster = ''
         metas.append({
             'id': mid,
             'type': want_type,
             'name': it.get('title') or str(slug).replace('-', ' ').title(),
-            'poster': it.get('poster') or '',
+            'poster': poster,
             'description': '',
         })
     if skip:

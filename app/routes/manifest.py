@@ -50,10 +50,11 @@ def _catalogs_for(cfg):
             continue
         name = _PROVIDER_NAMES.get(pname, pname)
         for ctype in ('series', 'movie'):
+            cat_label = f"{name} Series" if ctype == 'series' else f"{name} Movies"
             cats.append({
                 'type': ctype,
                 'id': f'{pname}_{ctype}',
-                'name': name,
+                'name': cat_label,
                 'extra': [
                     {'name': 'search', 'isRequired': False},
                     {'name': 'skip', 'isRequired': False},

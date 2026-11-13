@@ -38,6 +38,13 @@ DEFAULT_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
               '(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
 
 _IMAGE_MAGIC = (b'\x89PNG', b'\xff\xd8\xff', b'GIF8', b'RIFF', b'\x00\x00\x00\x0cftypwebp')
+_BYTE_PATCH_HOSTS = ('hanerix.com', 'smoothpre', 'vidhide', 'tiktokcdn.com', 'p16-ad-site-sign')
+
+
+def _needs_byte_patching(url: str) -> bool:
+    """Return True only for hosts whose video segments contain an image wrapper header (e.g. StreamHG PNG)."""
+    low = (url or '').lower()
+    return any(h in low for h in _BYTE_PATCH_HOSTS)
 
 
 def _find_media_offset(data: bytes) -> int:
@@ -218,11 +225,13 @@ def _rewrite_m3u8_urls(content, base_url, headers):
         absu = _resolve_url(base_url, stripped)
         if _is_playlist_url(absu) or prev_tag == 'playlist':
             out.append(_register(absu, 'm3u8'))
-        else:
-            # Subtitle segments (.vtt/.srt) land here too: /seg/<id>.vtt gives
-            # them a real extension and text/vtt content-type, which players
-            # require inside subtitle playlists.
+        elif _needs_byte_patching(absu):
+            # Only proxy segments that have PNG headers or corrupt wrappers
             out.append(_register(absu, 'segment'))
+        else:
+            # Direct CDN URL for video segment: ExoPlayer/mpv downloads directly,
+            # saving Render bandwidth (free tier 4GB cap)!
+            out.append(absu)
         prev_tag = ''
 
     return '\n'.join(out)
@@ -265,6 +274,13 @@ def proxy_segment(segment_id):
     )
     if not mapping:
         abort(404, description='Segment mapping expired or not found')
+
+    # Bandwidth optimization: If this segment does not require byte stripping
+    # (not StreamHG), redirect the client directly to the CDN so Render's
+    # 4GB monthly bandwidth is never exhausted by video data.
+    if not _needs_byte_patching(mapping.get('url', '')):
+        from flask import redirect
+        return redirect(mapping['url'], code=302)
 
     upstream_headers = dict(mapping.get('headers') or {})
     # Forward the client's Range header so seeking works for direct files.

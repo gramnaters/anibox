@@ -94,10 +94,9 @@ class PirateXPlayProvider:
         return results
 
     def get_home_catalog(self) -> list:
-        """Home rows from the site's category pages — the same sections the
-        CloudStream Piratexplay extension browses (#movies-a ul li)."""
-        sections = ('category/popular', 'category/ongoing', 'category/series',
-                    'category/anime', 'category/top-airing')
+        """Home rows from the live site homepage (/home: Latest Series, Latest Movie)
+        and category pages."""
+        sections = ('home', 'category/series', 'category/movie', 'category/popular', 'category/ongoing')
         results, seen = [], set()
         for path in sections:
             try:
@@ -105,23 +104,33 @@ class PirateXPlayProvider:
                 if r.status_code != 200:
                     continue
                 soup = BeautifulSoup(r.text, 'html.parser')
-                for li in soup.select('#movies-a ul li'):
-                    a = li.select_one('a')
+                for li in soup.select('#movies-a ul li, li, article, .item'):
+                    a = li.select_one('a[href]')
                     href = a.get('href', '') if a else ''
-                    if not href:
+                    if not href or ('/series/' not in href and '/movies/' not in href and '/movie/' not in href):
                         continue
                     slug = href.rstrip('/').strip('/')
-                    kind = 'movie' if slug.startswith('movies/') else 'series'
-                    if kind == 'movie':
+                    if slug.startswith('http'):
+                        slug = urlparse(slug).path.strip('/')
+                    basename = slug.split('/')[-1]
+                    if not basename or basename in ('series', 'movies', 'movie', 'home', 'category', 'episodes', 'popular', 'latest'):
+                        continue
+                    kind = 'movie' if (slug.startswith('movies/') or slug.startswith('movie/')) else 'series'
+                    if kind == 'movie' and slug.startswith('movies/'):
                         slug = 'movie/' + slug.split('/', 1)[1]
-                    if not slug or slug in seen:
+                    elif kind == 'series' and not slug.startswith('series/'):
+                        slug = 'series/' + basename
+                    if not slug or slug in seen or slug.startswith('category/'):
                         continue
                     seen.add(slug)
                     img = li.find('img')
                     t = li.select_one('h2, h3, .title, .entry-title')
-                    title = t.text.strip() if t else ((img.get('alt') if img else '') or slug.split('/')[-1])
+                    title = t.text.strip() if t else ((img.get('alt') if img else '') or basename.replace('-', ' ').title())
+                    if title.lower() in ('movies', 'series', 'home', 'popular', 'latest', 'ongoing'):
+                        continue
+                    poster = (img.get('src') or img.get('data-src') or '') if img else ''
                     results.append({'title': title, 'slug': slug,
-                                    'poster': (img.get('src') if img else '') or '',
+                                    'poster': poster,
                                     'type': kind, 'provider': self.NAME})
             except Exception:
                 continue
