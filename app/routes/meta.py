@@ -3,6 +3,7 @@ import requests
 from flask import Blueprint
 from cachetools import TTLCache
 from app.routes.utils import respond_with, log_error
+from app.api import ALL_PROVIDERS
 
 meta_bp = Blueprint('meta', __name__)
 TMDB = 'https://api.themoviedb.org/3'
@@ -67,12 +68,52 @@ def _get_season_episodes(tmdb_id, season_num):
     except: return []
 
 
+def _provider_meta(pname, slug, meta_id):
+    """Meta for a provider-scoped id (hd:<provider>:<slug>) from a per-provider catalog."""
+    provider = ALL_PROVIDERS.get(pname)
+    if not provider:
+        return respond_with({'meta': {}})
+    try:
+        detail = provider.get_anime_details(slug) or {}
+    except Exception as e:
+        print(f'[meta] {pname} detail error: {e}')
+        detail = {}
+    name = detail.get('title') or str(slug).replace('-', ' ').title()
+    meta = {
+        'id': meta_id, 'type': 'series',
+        'name': name,
+        'poster': detail.get('poster') or '',
+        'description': detail.get('description') or '',
+        'genres': detail.get('genres') or [],
+        'releaseInfo': '',
+    }
+    eps = detail.get('episodes') or []
+    videos = []
+    if eps:
+        for e in eps:
+            s = e.get('season', 1) or 1
+            ep = e.get('episode', 1) or 1
+            videos.append({'id': f'{meta_id}:{s}:{ep}', 'title': e.get('title') or f'Episode {ep}',
+                           'season': s, 'episode': ep})
+    if not videos:
+        for i in range(1, 13):
+            videos.append({'id': f'{meta_id}:1:{i}', 'title': f'Episode {i}', 'season': 1, 'episode': i})
+    meta['videos'] = videos
+    return respond_with({'meta': meta}, 86400)
+
+
 @meta_bp.route('/meta/<meta_type>/<meta_id>.json')
 @meta_bp.route('/<lang>/meta/<meta_type>/<meta_id>.json')
 @meta_bp.route('/<config_data>/meta/<meta_type>/<meta_id>.json')
 @meta_bp.route('/<config_data>/<lang>/meta/<meta_type>/<meta_id>.json')
 def addon_meta(meta_type, meta_id, lang=None, config_data=None):
     meta_id = unquote(meta_id)
+
+    # Provider-scoped meta from a per-provider catalog: hd:<provider>:<slug>
+    if meta_id.startswith('hd:') and not meta_id.startswith('hd:tmdb:'):
+        _p = meta_id.split(':', 2)
+        if len(_p) == 3 and _p[1] in ALL_PROVIDERS:
+            return _provider_meta(_p[1], _p[2].replace('~', '/'), meta_id)
 
     tmdb_id = None
     if meta_id.startswith('tmdb:'):

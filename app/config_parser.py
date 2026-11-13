@@ -30,6 +30,7 @@ def _default_config():
         'source_toonstream': 'on',
         'source_piratexplay': 'on',
         'formatter_style': 'rich',
+        'catalogs': 'on',
     }
 
 

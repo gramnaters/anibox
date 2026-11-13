@@ -317,6 +317,20 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
     config = parse_config(config_data or '')
     enabled_providers = get_provider_from_config(config)
 
+    # Provider-scoped stream from a per-provider catalog: hd:<provider>:<slug>[:s:e]
+    direct = None
+    if content_id.startswith('hd:') and not content_id.startswith('hd:tmdb:'):
+        _p = content_id.split(':')
+        if len(_p) >= 3 and _p[1] in ALL_PROVIDERS:
+            _rest = _p[2:]
+            if len(_rest) >= 3 and _rest[-2].isdigit() and _rest[-1].isdigit():
+                _season, _episode = int(_rest[-2]), int(_rest[-1])
+                _slug = ':'.join(_rest[:-2]).replace('~', '/')
+            else:
+                _slug = ':'.join(_rest).replace('~', '/')
+                _season, _episode = 1, 1
+            direct = (_p[1], _slug, _season, _episode)
+
     cache_key = (content_type, content_id, tuple(sorted(enabled_providers)),
                  str(config.get('formatter_style') or 'rich').lower())
     cached = _stream_cache.get(cache_key)
@@ -324,46 +338,51 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         print(f'[stream] cache hit {content_id} ({len(cached)} streams)')
         return respond_with({'streams': cached})
 
-    parts = content_id.split(':')
-    season, episode = 1, 1
-
-    if len(parts) >= 3 and parts[-2].isdigit() and parts[-1].isdigit():
-        season = int(parts[-2])
-        episode = int(parts[-1])
-        base_id_parts = parts[:-2]
+    if direct:
+        pname_d, slug_d, season, episode = direct
+        title = str(slug_d).replace('-', ' ').replace('/', ' ').strip().title() or str(slug_d)
+        provider_slugs = [(pname_d, slug_d)]
     else:
-        base_id_parts = parts
+        parts = content_id.split(':')
+        season, episode = 1, 1
 
-    base_id = ':'.join(base_id_parts)
+        if len(parts) >= 3 and parts[-2].isdigit() and parts[-1].isdigit():
+            season = int(parts[-2])
+            episode = int(parts[-1])
+            base_id_parts = parts[:-2]
+        else:
+            base_id_parts = parts
 
-    tmdb_id = None
-    if base_id.startswith('tmdb:'):
-        tmdb_id = base_id.replace('tmdb:', '')
-    elif base_id.startswith('hd:tmdb:'):
-        tmdb_id = base_id.replace('hd:tmdb:', '')
-    elif base_id.startswith('tt'):
-        try:
-            r = requests.get('https://api.themoviedb.org/3/find/' + base_id,
-                            params={'api_key': _tmdb_key(), 'external_source': 'imdb_id'}, timeout=10)
-            data = r.json()
-            results = data.get('tv_results', []) or data.get('movie_results', [])
-            if results:
-                tmdb_id = str(results[0]['id'])
-        except: pass
-    elif base_id.isdigit():
-        # Bare numeric TMDB id (some clients strip the catalog prefix).
-        tmdb_id = base_id
+        base_id = ':'.join(base_id_parts)
 
-    if not tmdb_id:
-        return respond_with({'streams': []})
+        tmdb_id = None
+        if base_id.startswith('tmdb:'):
+            tmdb_id = base_id.replace('tmdb:', '')
+        elif base_id.startswith('hd:tmdb:'):
+            tmdb_id = base_id.replace('hd:tmdb:', '')
+        elif base_id.startswith('tt'):
+            try:
+                r = requests.get('https://api.themoviedb.org/3/find/' + base_id,
+                                params={'api_key': _tmdb_key(), 'external_source': 'imdb_id'}, timeout=10)
+                data = r.json()
+                results = data.get('tv_results', []) or data.get('movie_results', [])
+                if results:
+                    tmdb_id = str(results[0]['id'])
+            except: pass
+        elif base_id.isdigit():
+            # Bare numeric TMDB id (some clients strip the catalog prefix).
+            tmdb_id = base_id
 
-    title = _get_title_from_tmdb(tmdb_id, content_type)
-    if not title:
-        return respond_with({'streams': []})
+        if not tmdb_id:
+            return respond_with({'streams': []})
 
-    provider_slugs = _search_providers_for_title(title, enabled_providers, content_type, season)
-    if not provider_slugs:
-        return respond_with({'streams': []})
+        title = _get_title_from_tmdb(tmdb_id, content_type)
+        if not title:
+            return respond_with({'streams': []})
+
+        provider_slugs = _search_providers_for_title(title, enabled_providers, content_type, season)
+        if not provider_slugs:
+            return respond_with({'streams': []})
 
     # Collect streams from providers in parallel. Each provider makes several
     # HTTP calls; doing them sequentially is what made cold requests take

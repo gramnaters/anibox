@@ -4,6 +4,7 @@ from cachetools import TTLCache
 from app.routes.utils import respond_with, log_error
 from app.config_parser import parse_config, get_provider_from_config
 from app.mapper import make_custom_id
+from app.api import ALL_PROVIDERS
 
 catalog_bp = Blueprint('catalog', __name__)
 TMDB = 'https://api.themoviedb.org/3'
@@ -99,6 +100,42 @@ def _discover_anime(page=1):
         return []
 
 
+def _provider_catalog(pname, search):
+    """Serve one provider's own catalog: search when queried, else its home rows."""
+    provider = ALL_PROVIDERS.get(pname)
+    if not provider:
+        return respond_with({'metas': []}, 3600)
+    try:
+        if search:
+            items = provider.search_anime(urllib.parse.unquote(search))
+        else:
+            items = provider.get_home_catalog()
+    except Exception as e:
+        log_error(e)
+        items = []
+    metas = []
+    seen = set()
+    for it in items or []:
+        slug = it.get('slug')
+        if not slug:
+            continue
+        if (it.get('type') or 'series') == 'movie':
+            continue  # series catalog only
+        mid = f'hd:{pname}:{str(slug).replace("/", "~")}'
+        if mid in seen:
+            continue
+        seen.add(mid)
+        metas.append({
+            'id': mid,
+            'type': 'series',
+            'name': it.get('title') or str(slug).replace('-', ' ').title(),
+            'poster': it.get('poster') or '',
+            'description': '',
+        })
+    print(f'[catalog] {pname}: {len(metas)} metas (search={search})')
+    return respond_with({'metas': metas}, 3600)
+
+
 @catalog_bp.route('/catalog/<catalog_type>/<catalog_id>.json')
 @catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
 @catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
@@ -116,6 +153,8 @@ def _discover_anime(page=1):
 @catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
 @catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
 def addon_catalog(catalog_type, catalog_id, search=None, skip=None, lang=None, config_data=None):
+    if catalog_id.endswith('_series') and catalog_id[:-len('_series')] in ALL_PROVIDERS:
+        return _provider_catalog(catalog_id[:-len('_series')], search)
     if catalog_id not in ['hd_all', 'hd_latest']:
         abort(404)
 
