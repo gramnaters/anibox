@@ -53,9 +53,9 @@ def _classify_embed(url):
         return 'streamtape'
     if 'turbovid' in u or 'emturbovid' in u:
         return 'turbovid'
-    if ('byse' in u or 'alapuix' in u) and '/e/' in u:
+    if ('byse' in u or 'alapuix' in u or 'bysetayico' in u or 'byseze' in u) and '/e/' in u:
         return 'byse'
-    if 'filemoon' in u or 'bysetayico' in u or 'byseze' in u:
+    if 'filemoon' in u:
         return 'filemoon'
     if 'strmup' in u or 'streamwish' in u:
         return 'filemoon'

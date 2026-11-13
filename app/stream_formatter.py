@@ -424,12 +424,13 @@ def build_filename(title, content_type, season, episode, meta, languages, source
         parts.append(_dot(title))
     if content_type != 'movie' and season and episode:
         parts.append(f'S{int(season):02d}E{int(episode):02d}')
-    quality = meta.get('quality') or 'Auto'
-    # AIOStreams normalises '4K' to '2160p'; emit the numeric form in the
-    # release filename so its resolution parser matches unambiguously.
-    filename_quality = '2160p' if quality == '4K' else quality
-    parts.append(_dot(filename_quality))
-    parts.append(_dot(meta.get('quality_tag') or 'WEB-DL'))
+    quality = meta.get('quality') or ''
+    if quality:
+        filename_quality = '2160p' if quality == '4K' else quality
+        parts.append(_dot(filename_quality))
+    quality_tag = meta.get('quality_tag') or ''
+    if quality_tag:
+        parts.append(_dot(quality_tag))
     for lang in languages:
         parts.append(_dot('Multi' if lang == 'Multi Audio' else lang))
     if meta.get('audio'):
@@ -459,7 +460,7 @@ def format_stream(*, style, plain_title, provider_display, player_label,
                   quality, meta, languages, subtitles, title, content_type,
                   season, episode, source_url):
     """Return label/description/behaviorHints additions for one stream."""
-    quality_tag = meta.get('quality_tag') or 'WEB-DL'
+    quality_tag = meta.get('quality_tag') or ''
     encode = meta.get('encode') or ''
     audio = meta.get('audio') or ''
     bitrate = meta.get('bitrate') or 0
@@ -485,22 +486,24 @@ def format_stream(*, style, plain_title, provider_display, player_label,
             'behaviorHints': hints,
         }
 
+    quality_display = quality or ''
     if style == 'compact':
-        name = f'{provider_display} · {quality or "Auto"}'
-        title_text = f'{player_label} · {quality or "Auto"}'
+        name = f'{provider_display} · {quality_display}' if quality_display else provider_display
+        title_text = f'{player_label} · {quality_display}' if quality_display else player_label
         return {
             'name': name,
             'title': title_text,
             'behaviorHints': hints,
         }
 
-    name = f'AniBox · {quality or "Auto"}'
+    name = f'AniBox · {quality_display}' if quality_display else 'AniBox'
     lines = [
         f'\U0001F3AC {provider_display}',
         f'\U0001F4E1 {player_label}',
     ]
-    video_bits = [b for b in (quality or 'Auto', quality_tag, encode) if b]
-    lines.append('\U0001F4FA ' + ' · '.join(video_bits))
+    video_bits = [b for b in (quality_display, quality_tag, encode) if b]
+    if video_bits:
+        lines.append('\U0001F4FA ' + ' · '.join(video_bits))
     if languages:
         lines.append('\U0001F3A7 ' + _language_line(languages))
     if audio or bitrate:

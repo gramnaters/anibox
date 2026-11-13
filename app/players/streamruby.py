@@ -126,7 +126,7 @@ def _unpack_packed(script):
     def repl(mm):
         tok = mm.group(1)
         idx = int(tok, radix)
-        return words[idx] if idx < len(words) else tok
+        return words[idx] if idx < len(words) and words[idx] else tok
 
     return token_re.sub(repl, payload)
 

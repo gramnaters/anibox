@@ -50,7 +50,8 @@ PLAYER_MAP = {
     'playmogo.com': 'playmogo',
     'hanerix.com': 'streamhg', 'streamhg': 'streamhg',
     'smoothpre': 'streamhg', 'vidhide': 'streamhg',
-    'filemoon': 'filemoon', 'bysetayico': 'filemoon',
+    'filemoon': 'filemoon',
+    'bysetayico': 'byse',
     'af0': 'direct_m3u8', 'anvod': 'direct_m3u8',
     'vault-0': 'direct_m3u8', 'uwucdn': 'direct_m3u8',
     'cloud.desidubanime.me': 'cloud', '.upns': 'upnshare',
@@ -74,8 +75,12 @@ def resolve_stream(stream_data: dict) -> list:
     url = stream_data.get('url', '')
     name = stream_data.get('name', '')
 
-    if not player and url:
-        player = classify_url(url)
+    if (not player or player == 'filemoon') and url:
+        detected = classify_url(url)
+        if detected != 'generic_embed':
+            player = detected
+        elif not player:
+            player = detected
     if not url:
         return []
 

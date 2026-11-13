@@ -31,9 +31,9 @@ def _classify_embed(url):
         return 'turbovid'
     if 'abyssplayer' in u:
         return 'abyss'
-    if 'byseze' in u or 'bysevepoin' in u or 'n1mwq' in u or 'byse' in u:
+    if 'byseze' in u or 'bysevepoin' in u or 'n1mwq' in u or 'byse' in u or 'bysetayico' in u:
         return 'byse'
-    if 'bysetayico' in u or 'filemoon' in u:
+    if 'filemoon' in u:
         return 'filemoon'
     if 'strmup' in u or 'streamwish' in u or 'pixdrive' in u:
         return 'filemoon'

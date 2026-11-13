@@ -37,6 +37,32 @@ _cookie_jar = requests.cookies.RequestsCookieJar()
 DEFAULT_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
               '(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
 
+_IMAGE_MAGIC = (b'\x89PNG', b'\xff\xd8\xff', b'GIF8', b'RIFF', b'\x00\x00\x00\x0cftypwebp')
+
+
+def _find_media_offset(data: bytes) -> int:
+    """Find byte offset where real media (MPEG-TS or MP4) begins, skipping any image wrapper."""
+    is_img = len(data) >= 4 and any(data[:len(m)] == m for m in _IMAGE_MAGIC)
+    # Direct MPEG-TS check (3 sync bytes at stride 188)
+    if len(data) >= 188 * 3 and data[0] == 0x47 and data[188] == 0x47 and data[376] == 0x47:
+        return 0
+    # Direct MP4 box check
+    if b'ftyp' in data[:32] or b'moof' in data[:32] or b'mdat' in data[:32]:
+        return 0
+    # Check after PNG IEND chunk (common StreamHG / TikTok CDN wrapper)
+    iend = data.find(b'IEND')
+    if iend != -1 and iend + 8 + 188 * 2 < len(data):
+        pos = iend + 8
+        if data[pos] == 0x47 and data[pos + 188] == 0x47:
+            return pos
+    # General scan in first 1024 bytes for 3 consecutive TS sync bytes
+    if len(data) >= 188 * 3:
+        limit = min(1024, len(data) - 188 * 3)
+        for pos in range(limit):
+            if data[pos] == 0x47 and data[pos + 188] == 0x47 and data[pos + 376] == 0x47:
+                return pos
+    return -1 if is_img else 0
+
 
 def _fetch_upstream(url, headers, max_retries=4, stream=False, timeout=25):
     """Fetch a URL from the CDN with retry on 403/5xx and timeout backoff."""
@@ -56,6 +82,9 @@ def _fetch_upstream(url, headers, max_retries=4, stream=False, timeout=25):
             return r
         except Exception as e:
             last = e
+            err_str = str(e).lower()
+            if 'nameresolutionerror' in err_str or 'getaddrinfo failed' in err_str or 'connection refused' in err_str:
+                break
             time.sleep(1.5 * (attempt + 1))
     if isinstance(last, Exception):
         raise last
@@ -264,13 +293,25 @@ def proxy_segment(segment_id):
             else:
                 ctype = 'video/MP2T'
 
-        response = Response(
-            stream_with_context(r.iter_content(chunk_size=65536)),
-            status=r.status_code,
-            content_type=ctype,
-        )
-        for header in ('Content-Length', 'Content-Range', 'Accept-Ranges', 'ETag', 'Last-Modified'):
-            if header in r.headers:
+        length = r.headers.get('Content-Length')
+        is_large = length and length.isdigit() and int(length) > 10_000_000 and not client_range
+        if is_large:
+            response = Response(
+                stream_with_context(r.iter_content(chunk_size=65536)),
+                status=r.status_code,
+                content_type=ctype,
+            )
+        else:
+            content = r.content
+            offset = _find_media_offset(content)
+            if offset > 0:
+                content = content[offset:]
+                ctype = 'video/MP2T'
+            response = Response(content, status=r.status_code, content_type=ctype)
+            response.headers['Content-Length'] = str(len(content))
+
+        for header in ('Content-Range', 'Accept-Ranges', 'ETag', 'Last-Modified'):
+            if header in r.headers and header not in response.headers:
                 response.headers[header] = r.headers[header]
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'

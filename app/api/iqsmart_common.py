@@ -122,7 +122,7 @@ HOST_PLAYER = (
     ('smoothpre', 'streamhg'),
     ('vidhide', 'streamhg'),
     ('filemoon', 'filemoon'),
-    ('byse', 'filemoon'),
+    ('byse', 'byse'),
     ('dood', 'dood'),
     ('streamtape', 'streamtape'),
     ('vidmoly', 'vidmoly'),

@@ -4,7 +4,7 @@ from flask import Blueprint, abort, request
 from cachetools import TTLCache
 from app.api import ALL_PROVIDERS
 from app.routes.utils import respond_with, log_error
-from app.routes.proxy import _fetch_upstream
+from app.routes.proxy import _fetch_upstream, _find_media_offset
 from app.players import resolve_stream, PLAYER_NAMES
 from app.config_parser import parse_config, get_provider_from_config
 from app.cdn import cdn_file_key
@@ -18,7 +18,7 @@ _stream_cache = TTLCache(maxsize=1000, ttl=600)
 
 # Image magic bytes -> a "video" segment that is really an ad image (pollution).
 _IMAGE_MAGIC = (b'\x89PNG', b'\xff\xd8\xff', b'GIF8', b'RIFF', b'\x00\x00\x00\x0cftypwebp')
-_AD_CDN_MARKERS = ('tiktokcdn', 'ibyteimg', 'ad-site')
+_AD_CDN_MARKERS = ('adservice.google', 'doubleclick.net', 'googlesyndication', 'adnxs.com')
 _IP_BLOCK_MARKERS = ('ip blocked', 'access denied', 'forbidden', 'your ip has been',
                      'rate limit', 'too many requests', 'captcha', 'attention required',
                      'unusual traffic', 'verify you are human')
@@ -39,7 +39,7 @@ def _inspect_m3u8(url, referer=''):
             return cached
         return cached, {}  # legacy bool entry
 
-    from app.stream_formatter import _merge_meta
+    from app.stream_formatter import _merge_meta, _playlist_from_text
 
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'}
     if referer:
@@ -60,11 +60,10 @@ def _inspect_m3u8(url, referer=''):
 
     try:
         # Master playlist
-        r = _fetch_upstream(url, headers, timeout=10)
-        if r is None or r.status_code != 200:
-            # Transient 403/timeout: don't hard-fail, the proxy retries during
-            # playback. Only fail when we actually see bad content.
-            return False, meta
+        r = _fetch_upstream(url, headers, timeout=8)
+        if r is None or r.status_code != 200 or not _playlist_from_text(r.text):
+            _pollution_cache[url] = (True, meta)
+            return True, meta
         master = r.text
         if _bad(master):
             _pollution_cache[url] = (True, meta)
@@ -72,14 +71,16 @@ def _inspect_m3u8(url, referer=''):
 
         uris = [l.strip() for l in master.splitlines() if l.strip() and not l.startswith('#') and not l.startswith('data:')]
         if not uris:
-            return False, meta
+            _pollution_cache[url] = (True, meta)
+            return True, meta
 
         if '#EXT-X-STREAM-INF' in master:
             first = uris[0]
-            variant_url = first if first.startswith('http') else url.rsplit('/', 1)[0] + '/' + first
-            rv = _fetch_upstream(variant_url, headers, timeout=10)
-            if rv is None or rv.status_code != 200:
-                return False, meta
+            variant_url = urllib.parse.urljoin(url, first)
+            rv = _fetch_upstream(variant_url, headers, timeout=8)
+            if rv is None or rv.status_code != 200 or not _playlist_from_text(rv.text):
+                _pollution_cache[url] = (True, meta)
+                return True, meta
             variant = rv.text
         else:
             # A media playlist: the master already lists the segments.
@@ -95,9 +96,10 @@ def _inspect_m3u8(url, referer=''):
         # First segment could be directly in variant, or variant is another playlist
         segs = [l.strip() for l in variant.splitlines() if l.strip() and not l.startswith('#') and not l.startswith('data:')]
         if not segs:
-            return False, meta
+            _pollution_cache[url] = (True, meta)
+            return True, meta
         seg = segs[0]
-        seg_url = seg if seg.startswith('http') else variant_url.rsplit('/', 1)[0] + '/' + seg
+        seg_url = urllib.parse.urljoin(variant_url, seg)
 
         path = urllib.parse.urlparse(seg_url).path.lower()
         if path.endswith('.ts'):
@@ -108,19 +110,26 @@ def _inspect_m3u8(url, referer=''):
         # First segment: only need the first bytes (magic + size check)
         seg_headers = dict(headers)
         seg_headers['Range'] = 'bytes=0-16383'
-        rs = _fetch_upstream(seg_url, seg_headers, timeout=12)
-        if rs is None or rs.status_code != 200:
-            return False, meta
-        data = rs.content
-        if _is_image(data):
+        rs = _fetch_upstream(seg_url, seg_headers, timeout=10)
+        code = getattr(rs, 'status_code', None)
+        if rs is None or code not in (200, 206):
             _pollution_cache[url] = (True, meta)
             return True, meta
+        data = rs.content
+        if _is_image(data):
+            if _find_media_offset(data) >= 0:
+                meta.setdefault('container', 'ts')
+            else:
+                _pollution_cache[url] = (True, meta)
+                return True, meta
         if len(data) < 100:
-            return False, meta
+            _pollution_cache[url] = (True, meta)
+            return True, meta
         _pollution_cache[url] = (False, meta)
         return False, meta
     except Exception:
-        return False, meta
+        _pollution_cache[url] = (True, meta)
+        return True, meta
 
 
 PROVIDER_DISPLAY = {
@@ -185,19 +194,21 @@ def _match_title(query, candidates, content_type=None, season=None):
     if not q:
         return candidates[0] if candidates else None
 
+    q_words = set(q.split()) - _TITLE_STOPWORDS
     best, best_key = None, None
     for item in candidates:
         t = _norm_title(item.get('title', ''))
         if not t:
             continue
+        t_words = set(t.split()) - _TITLE_STOPWORDS
         pos = t.find(q)
         if pos < 0:
-            # Allow the reverse ("Naruto Shippuden" vs query "Naruto").
-            rev = q.find(t)
-            if rev < 0:
+            # Candidate must contain all meaningful query words (never match
+            # "Dragon Ball" when user asked for "Dragon Ball GT").
+            if q_words - t_words:
                 continue
             pos = 0
-        extra = len(set(t.split()) - set(q.split()) - _TITLE_STOPWORDS)
+        extra = len(t_words - q_words)
         itype = item.get('type')
         type_mismatch = 0 if (not content_type or not itype or itype == content_type) else 1
         # Some providers' slugs carry the season ("...-season-5-46260").
@@ -229,11 +240,12 @@ def _search_providers_for_title(title, enabled_providers, content_type=None, sea
 
 def _quality_from_name(name):
     name_lower = name.lower()
-    if '2160' in name_lower or '4k' in name_lower: return '4K'
-    if '1080' in name_lower: return '1080p'
-    if '720' in name_lower: return '720p'
-    if '480' in name_lower: return '480p'
-    if '360' in name_lower: return '360p'
+    if re.search(r'\b(2160p?|4k)\b', name_lower): return '4K'
+    if re.search(r'\b1080p?\b', name_lower): return '1080p'
+    if re.search(r'\b720p?\b', name_lower): return '720p'
+    if re.search(r'\b480p?\b', name_lower): return '480p'
+    if re.search(r'\b360p?\b', name_lower): return '360p'
+    if re.search(r'\b240p?\b', name_lower): return '240p'
     return ''
 
 
@@ -488,11 +500,9 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
             meta['encode'] = resolved_encode
 
         hint_quality = (resolved_quality
-                        or _quality_from_name(sd.get('name') or '')
-                        or _quality_from_name(url))
+                        or _quality_from_name(sd.get('name') or ''))
         quality = meta.get('quality') or hint_quality
         meta['quality'] = quality
-        meta.setdefault('quality_tag', 'WEB-DL')
 
         languages = infer_languages(sd, pname, meta, url)
         sd_name = (sd.get('name') or '').strip()
