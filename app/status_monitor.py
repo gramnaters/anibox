@@ -127,7 +127,13 @@ def _run():
             items = list(ALL_PROVIDERS.items())
             with ThreadPoolExecutor(max_workers=WORKERS) as ex:
                 results = list(ex.map(lambda it: _check_provider(*it), items))
-            providers = {r['id']: r for r in results}
+            with _lock:
+                prev = dict(_state.get('providers') or {})
+            providers = {}
+            for r in results:
+                old = (prev.get(r['id']) or {}).get('history') or []
+                r['history'] = (list(old) + [r['status']])[-24:]
+                providers[r['id']] = r
             with _lock:
                 _state['providers'] = providers
                 _state['updatedAt'] = _now()
