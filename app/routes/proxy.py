@@ -40,11 +40,26 @@ DEFAULT_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
 _IMAGE_MAGIC = (b'\x89PNG', b'\xff\xd8\xff', b'GIF8', b'RIFF', b'\x00\x00\x00\x0cftypwebp')
 _BYTE_PATCH_HOSTS = ('hanerix.com', 'smoothpre', 'vidhide', 'tiktokcdn.com', 'p16-ad-site-sign')
 
+# Hosts whose segments MUST pass through Render:
+# 1. Byte-patching hosts (StreamHG PNG headers on TikTok CDN)
+# 2. IP/ASN-locked hosts (Byse / SprintCDN / StreamRuby rotating edges where the signed token is tied to Render's IP)
+_MUST_PROXY_SEGMENT_HOSTS = (
+    'hanerix.com', 'smoothpre', 'vidhide', 'tiktokcdn.com', 'p16-ad-site-sign',
+    'sprintcdn', 'r66nv9ed.com', 'marketforecasting.cfd', 'streamruby.net',
+    'vmnow.online', 'vmpx.online', 'owphbf24.com', 'byse', 'bysetayico',
+)
+
 
 def _needs_byte_patching(url: str) -> bool:
     """Return True only for hosts whose video segments contain an image wrapper header (e.g. StreamHG PNG)."""
     low = (url or '').lower()
     return any(h in low for h in _BYTE_PATCH_HOSTS)
+
+
+def _needs_proxy_segment(url: str) -> bool:
+    """Return True for hosts whose segments must pass through Render (IP-bound tokens or byte-patching)."""
+    low = (url or '').lower()
+    return any(h in low for h in _MUST_PROXY_SEGMENT_HOSTS)
 
 
 def _find_media_offset(data: bytes) -> int:
@@ -225,11 +240,11 @@ def _rewrite_m3u8_urls(content, base_url, headers):
         absu = _resolve_url(base_url, stripped)
         if _is_playlist_url(absu) or prev_tag == 'playlist':
             out.append(_register(absu, 'm3u8'))
-        elif _needs_byte_patching(absu):
-            # Only proxy segments that have PNG headers or corrupt wrappers
+        elif _needs_proxy_segment(absu):
+            # Proxy segments that need byte stripping or are IP/ASN bound
             out.append(_register(absu, 'segment'))
         else:
-            # Direct CDN URL for video segment: ExoPlayer/mpv downloads directly,
+            # Safe direct CDN URL for video segment: ExoPlayer/mpv downloads directly,
             # saving Render bandwidth (free tier 4GB cap)!
             out.append(absu)
         prev_tag = ''
@@ -275,10 +290,9 @@ def proxy_segment(segment_id):
     if not mapping:
         abort(404, description='Segment mapping expired or not found')
 
-    # Bandwidth optimization: If this segment does not require byte stripping
-    # (not StreamHG), redirect the client directly to the CDN so Render's
-    # 4GB monthly bandwidth is never exhausted by video data.
-    if not _needs_byte_patching(mapping.get('url', '')):
+    # Bandwidth optimization: If this segment does not require proxying
+    # (not StreamHG / Byse / StreamRuby IP-locked), redirect the client directly to the CDN.
+    if not _needs_proxy_segment(mapping.get('url', '')):
         from flask import redirect
         return redirect(mapping['url'], code=302)
 
@@ -311,7 +325,10 @@ def proxy_segment(segment_id):
 
         length = r.headers.get('Content-Length')
         is_large = length and length.isdigit() and int(length) > 10_000_000 and not client_range
-        if is_large:
+        needs_patch = _needs_byte_patching(mapping.get('url', ''))
+        if is_large or (not needs_patch and not client_range):
+            # For non-patching segments (e.g. Byse/SprintCDN), stream directly in chunks
+            # with minimal buffering overhead on Render's RAM!
             response = Response(
                 stream_with_context(r.iter_content(chunk_size=65536)),
                 status=r.status_code,
@@ -319,10 +336,11 @@ def proxy_segment(segment_id):
             )
         else:
             content = r.content
-            offset = _find_media_offset(content)
-            if offset > 0:
-                content = content[offset:]
-                ctype = 'video/MP2T'
+            if needs_patch:
+                offset = _find_media_offset(content)
+                if offset > 0:
+                    content = content[offset:]
+                    ctype = 'video/MP2T'
             response = Response(content, status=r.status_code, content_type=ctype)
             response.headers['Content-Length'] = str(len(content))
 
