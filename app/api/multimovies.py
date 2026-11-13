@@ -171,7 +171,7 @@ class MultiMoviesProvider:
                     title = t.text.strip() if t else ((img.get('alt') if img else '') or slug.split('/')[-1])
                     results.append({'title': title, 'slug': slug,
                                     'poster': (img.get('src') if img else '') or '',
-                                    'type': 'movie' if kind.startswith(('movie', 'tvshow')) else 'series',
+                                    'type': 'movie' if kind.startswith('movie') else 'series',
                                     'provider': self.NAME})
             except Exception:
                 continue

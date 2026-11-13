@@ -42,20 +42,23 @@ BASE_MANIFEST = {
 
 
 def _catalogs_for(cfg):
-    """One search catalog per enabled provider, so each site lists separately."""
+    """Series + movie catalogs per enabled provider, so each site lists
+    separately and both content types are browsable."""
     cats = []
     for pname in get_provider_from_config(cfg):
         if pname not in ALL_PROVIDERS:
             continue
-        cats.append({
-            'type': 'series',
-            'id': f'{pname}_series',
-            'name': _PROVIDER_NAMES.get(pname, pname),
-            'extra': [
-                {'name': 'search', 'isRequired': False},
-                {'name': 'skip', 'isRequired': False},
-            ],
-        })
+        name = _PROVIDER_NAMES.get(pname, pname)
+        for ctype in ('series', 'movie'):
+            cats.append({
+                'type': ctype,
+                'id': f'{pname}_{ctype}',
+                'name': name,
+                'extra': [
+                    {'name': 'search', 'isRequired': False},
+                    {'name': 'skip', 'isRequired': False},
+                ],
+            })
     return cats
 
 

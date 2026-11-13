@@ -16,7 +16,7 @@ def _tmdb_key():
 
 
 def _get_tmdb_details(tmdb_id, content_type='tv'):
-    cache_key = f'detail:{tmdb_id}'
+    cache_key = f'detail:{content_type}:{tmdb_id}'
     if cache_key in meta_cache: return meta_cache[cache_key]
     try:
         r = requests.get(f'{TMDB}/{content_type}/{tmdb_id}', params={
@@ -29,12 +29,12 @@ def _get_tmdb_details(tmdb_id, content_type='tv'):
         result = {
             'id': imdb_id or f"hd:tmdb:{tmdb_id}",
             'tmdb_id': str(tmdb_id),
-            'type': 'series',
+            'type': 'movie' if content_type == 'movie' else 'series',
             'name': data.get('name', '') or data.get('title', ''),
             'poster': f"https://image.tmdb.org/t/p/w500{data['poster_path']}" if data.get('poster_path') else '',
             'description': (data.get('overview', '') or '')[:300],
             'genres': [g['name'] for g in data.get('genres', [])],
-            'year': (data.get('first_air_date', '') or '')[:4],
+            'year': (data.get('first_air_date', '') or data.get('release_date', '') or '')[:4],
             'rating': str(data.get('vote_average', '')),
             'seasons': [],
         }
@@ -68,7 +68,7 @@ def _get_season_episodes(tmdb_id, season_num):
     except: return []
 
 
-def _provider_meta(pname, slug, meta_id):
+def _provider_meta(pname, slug, meta_id, meta_type=None):
     """Meta for a provider-scoped id (hd:<provider>:<slug>) from a per-provider catalog."""
     provider = ALL_PROVIDERS.get(pname)
     if not provider:
@@ -79,14 +79,31 @@ def _provider_meta(pname, slug, meta_id):
         print(f'[meta] {pname} detail error: {e}')
         detail = {}
     name = detail.get('title') or str(slug).replace('-', ' ').title()
+
+    is_movie = False
+    if meta_type == 'movie':
+        is_movie = True
+    elif (detail.get('type') or '') == 'movie':
+        is_movie = True
+    elif str(slug).startswith('movie/'):
+        is_movie = True
+
+    c_type = 'movie' if is_movie else 'series'
     meta = {
-        'id': meta_id, 'type': 'series',
+        'id': meta_id,
+        'type': c_type,
         'name': name,
         'poster': detail.get('poster') or '',
         'description': detail.get('description') or '',
         'genres': detail.get('genres') or [],
         'releaseInfo': '',
     }
+
+    if is_movie:
+        meta['behaviorHints'] = {'defaultVideoId': meta_id, 'hasScheduledVideos': False}
+        meta['videos'] = []
+        return respond_with({'meta': meta}, 86400)
+
     eps = detail.get('episodes') or []
     videos = []
     if eps:
@@ -113,7 +130,7 @@ def addon_meta(meta_type, meta_id, lang=None, config_data=None):
     if meta_id.startswith('hd:') and not meta_id.startswith('hd:tmdb:'):
         _p = meta_id.split(':', 2)
         if len(_p) == 3 and _p[1] in ALL_PROVIDERS:
-            return _provider_meta(_p[1], _p[2].replace('~', '/'), meta_id)
+            return _provider_meta(_p[1], _p[2].replace('~', '/'), meta_id, meta_type=meta_type)
 
     tmdb_id = None
     if meta_id.startswith('tmdb:'):
@@ -127,7 +144,7 @@ def addon_meta(meta_type, meta_id, lang=None, config_data=None):
                 'api_key': _tmdb_key(), 'external_source': 'imdb_id'
             }, timeout=10)
             data = r.json()
-            results = data.get('tv_results', []) or data.get('movie_results', [])
+            results = (data.get('movie_results', []) if meta_type == 'movie' else data.get('tv_results', [])) or data.get('tv_results', []) or data.get('movie_results', [])
             if results:
                 tmdb_id = str(results[0]['id'])
         except: pass
@@ -135,12 +152,14 @@ def addon_meta(meta_type, meta_id, lang=None, config_data=None):
     if not tmdb_id:
         return respond_with({'meta': {}})
 
-    details = _get_tmdb_details(tmdb_id)
+    details = _get_tmdb_details(tmdb_id, content_type='movie' if meta_type == 'movie' else 'tv')
     if not details:
         return respond_with({'meta': {}})
 
+    is_movie = (meta_type == 'movie' or details.get('type') == 'movie')
     meta = {
-        'id': meta_id, 'type': 'series',
+        'id': meta_id,
+        'type': 'movie' if is_movie else 'series',
         'name': details['name'],
         'poster': details.get('poster', ''),
         'description': details.get('description', ''),
@@ -148,7 +167,12 @@ def addon_meta(meta_type, meta_id, lang=None, config_data=None):
         'releaseInfo': details.get('year', ''),
     }
 
-    # Build video list from seasons
+    if is_movie:
+        meta['behaviorHints'] = {'defaultVideoId': meta_id, 'hasScheduledVideos': False}
+        meta['videos'] = []
+        return respond_with({'meta': meta}, 86400)
+
+    # Build video list from seasons (for series)
     videos = []
     for s in details.get('seasons', [])[:5]:
         episodes = _get_season_episodes(tmdb_id, s['season'])

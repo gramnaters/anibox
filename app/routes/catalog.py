@@ -100,8 +100,9 @@ def _discover_anime(page=1):
         return []
 
 
-def _provider_catalog(pname, search):
-    """Serve one provider's own catalog: search when queried, else its home rows."""
+def _provider_catalog(pname, want_type, search, skip=None):
+    """Serve one provider's catalog for a content type (series|movie):
+    search when queried, else its home rows, filtered to that type."""
     provider = ALL_PROVIDERS.get(pname)
     if not provider:
         return respond_with({'metas': []}, 3600)
@@ -119,42 +120,59 @@ def _provider_catalog(pname, search):
         slug = it.get('slug')
         if not slug:
             continue
-        if (it.get('type') or 'series') == 'movie':
-            continue  # series catalog only
+        item_type = it.get('type') or 'series'
+        if want_type == 'movie':
+            if item_type != 'movie':
+                continue
+        elif want_type == 'series':
+            if item_type == 'movie':
+                continue
         mid = f'hd:{pname}:{str(slug).replace("/", "~")}'
         if mid in seen:
             continue
         seen.add(mid)
         metas.append({
             'id': mid,
-            'type': 'series',
+            'type': want_type,
             'name': it.get('title') or str(slug).replace('-', ' ').title(),
             'poster': it.get('poster') or '',
             'description': '',
         })
-    print(f'[catalog] {pname}: {len(metas)} metas (search={search})')
+    if skip:
+        try:
+            s = int(skip)
+            metas = metas[s:s + 100]
+        except Exception:
+            pass
+    print(f'[catalog] {pname} {want_type}: {len(metas)} metas (search={search})')
     return respond_with({'metas': metas}, 3600)
 
 
 @catalog_bp.route('/catalog/<catalog_type>/<catalog_id>.json')
+@catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/skip=<skip>.json')
 @catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
 @catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
 @catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
 @catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>.json')
+@catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>.json')
 @catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
 @catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
 @catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
 @catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>.json')
+@catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/skip=<skip>.json')
 @catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
 @catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
 @catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
 @catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>.json')
+@catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>.json')
 @catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
 @catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
 @catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
 def addon_catalog(catalog_type, catalog_id, search=None, skip=None, lang=None, config_data=None):
-    if catalog_id.endswith('_series') and catalog_id[:-len('_series')] in ALL_PROVIDERS:
-        return _provider_catalog(catalog_id[:-len('_series')], search)
+    for suffix, ctype in (('_series', 'series'), ('_movies', 'movie'), ('_movie', 'movie')):
+        if catalog_id.endswith(suffix) and catalog_id[:-len(suffix)] in ALL_PROVIDERS:
+            want_type = catalog_type if catalog_type in ('movie', 'series') else ctype
+            return _provider_catalog(catalog_id[:-len(suffix)], want_type, search, skip=skip)
     if catalog_id not in ['hd_all', 'hd_latest']:
         abort(404)
 
