@@ -17,7 +17,7 @@
   :root{
     --bg:#05050b; --surface:#0a0a12; --surface-2:#0e0e18; --surface-3:#14141f;
     --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.16);
-    --tx:#f1f1f6; --mut:#8a8a99; --sub:#585866;
+    --tx:#f1f1f6; --mut:#8a8a99; --sub:#7f8897;
     --accent:#6d5efc; --accent-2:#9b7cff; --accent-soft:#c9c1ff;
     --ok:#31d39a; --bad:#f4707f; --warn:#e5a153;
     --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -29,8 +29,8 @@
   html.light{
     --bg:#f6f6fa; --surface:#ffffff; --surface-2:#f0f0f6; --surface-3:#e9e9f1;
     --line:rgba(10,10,20,.10); --line-strong:rgba(10,10,20,.2);
-    --tx:#16161f; --mut:#5c5c6e; --sub:#8a8a99;
-    --accent:#5b4bdb; --accent-2:#7c5cff; --accent-soft:#5b4bdb;
+    --tx:#16161f; --mut:#5c5c6e; --sub:#6b6b7a;
+    --accent:#5b4bdb; --accent-2:#7c5cff; --accent-soft:#8d7bff;
     --ok:#16a34a; --bad:#dc2626; --warn:#b57420;
     --shadow:0 18px 44px rgba(38,50,76,.12);
   }
@@ -42,6 +42,8 @@
   a{color:inherit;text-decoration:none}
   :focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
   [hidden]{display:none!important}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
   .app{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);height:100vh;background:var(--bg)}
   .app.sidebar-collapsed{grid-template-columns:var(--sidebar-collapsed) minmax(0,1fr)}
@@ -49,7 +51,7 @@
   /* ---------- sidebar ---------- */
   .sidebar{background:var(--surface);border-right:1px solid var(--line);display:flex;
     flex-direction:column;min-width:0;overflow:hidden}
-  .sidebar-head{height:64px;padding:0 16px;display:flex;align-items:center;border-bottom:1px solid var(--line);
+  .sidebar-head{height:64px;padding:10px 16px;display:flex;align-items:center;border-bottom:1px solid var(--line);
     gap:10px;flex-shrink:0}
   .sidebar-brand{display:flex;align-items:center;gap:12px;min-width:0}
   .sidebar-brand img{width:38px;height:38px;flex:none;border-radius:10px;border:1px solid var(--line);
@@ -60,7 +62,7 @@
 
   .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:6px;padding:14px 10px;overflow-y:auto;
     scrollbar-width:thin}
-  .nav-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  .nav-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
     color:var(--sub);padding:10px 10px 4px;white-space:nowrap}
   .nav-item{display:flex;align-items:center;gap:12px;height:42px;padding:0 12px 0 14px;border:0;
     border-radius:10px;background:transparent;color:var(--mut);font-size:.88rem;font-weight:600;
@@ -142,10 +144,7 @@
   .opt b{display:block;font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .opt small{display:block;font-size:.75rem;color:var(--mut);margin-top:.05rem;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .opt .st{flex:none;font-family:var(--mono);font-size:.5625rem;font-weight:700;letter-spacing:.08em;
-    text-transform:uppercase;padding:.22rem .45rem;border-radius:6px;border:1px solid var(--line);
-    color:var(--sub);background:rgba(255,255,255,.03);white-space:nowrap}
-  .opt[data-on="true"] .st{color:var(--ok);border-color:rgba(49,211,154,.35);background:rgba(49,211,154,.08)}
+  .opt:has(input:focus-visible){outline:2px solid var(--accent-2);outline-offset:2px}
   .opt[data-selected="true"]{border-color:rgba(109,94,252,.55)}
   html.light .opt[data-selected="true"]{border-color:rgba(91,75,219,.45)}
 
@@ -165,7 +164,7 @@
   .opt[data-selected="true"] .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
 
   /* ---------- side panels ---------- */
-  .cap{font-size:.625rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);
+  .cap{font-size:.6875rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);
     margin-bottom:.55rem;display:flex;align-items:center;gap:.5rem}
   .cap em{font-style:normal;margin-left:auto;letter-spacing:0;text-transform:none;font-weight:500;
     color:var(--mut);font-size:.72rem}
@@ -175,7 +174,7 @@
   .pv .ph b{font-size:.79rem;font-weight:600}
   .pv .line{display:flex;justify-content:space-between;gap:1rem;font-size:.75rem;color:var(--mut);padding:.2rem 0}
   .pv .line span:last-child{color:var(--tx);font-family:var(--mono);font-size:.71rem}
-  .pvhint{font-size:.72rem;color:var(--sub);line-height:1.6;margin-top:.55rem}
+  .pvhint{font-size:.75rem;color:var(--sub);line-height:1.6;margin-top:.55rem}
   .previewtext{font-family:var(--mono);font-size:.72rem;line-height:1.6;color:var(--mut);
     white-space:pre-wrap;margin:0;word-break:break-word}
 
@@ -198,7 +197,7 @@
   .btn:active{transform:translateY(1px)}
   .btn.sm{padding:.35rem .65rem;font-size:.75rem;min-height:30px}
   .btn.primary{background:var(--accent);color:#fff;border:0;border-radius:999px}
-  .btn.primary:hover{background:var(--accent-2);border:0}
+  .btn.primary:hover{background:var(--accent);filter:brightness(.9);border:0}
   .btn svg{width:15px;height:15px;flex:0 0 auto}
   .actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
 
@@ -215,7 +214,7 @@
   /* ---------- status (inline) ---------- */
   .status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin-bottom:1rem}
   .smetric{border:1px solid var(--line);border-radius:var(--r);padding:.9rem 1rem;background:var(--surface)}
-  .smetric-label{font-size:.625rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
+  .smetric-label{font-size:.6875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
   .smetric-value{font-size:1.5rem;font-weight:800;margin-top:.15rem;font-variant-numeric:tabular-nums;line-height:1.2}
   .smetric-value.ok{color:var(--ok)}
   .smetric-value.bad{color:var(--bad)}
@@ -233,7 +232,7 @@
   .providers{display:grid;gap:.5rem}
   .prow{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:.75rem .9rem}
   .prow-head{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
-  .ppill{display:inline-flex;align-items:center;gap:.4rem;font-size:.625rem;font-weight:700;letter-spacing:.06em;
+  .ppill{display:inline-flex;align-items:center;gap:.4rem;font-size:.6875rem;font-weight:700;letter-spacing:.06em;
     text-transform:uppercase;padding:.18rem .45rem;border-radius:999px;border:1px solid var(--line);color:var(--sub)}
   .ppill i{width:6px;height:6px;border-radius:50%;background:currentColor}
   .ppill.up{color:var(--ok);border-color:rgba(49,211,154,.35);background:rgba(49,211,154,.08)}
@@ -243,7 +242,7 @@
   .ptime{margin-left:auto;color:var(--sub);font-size:.72rem;font-family:var(--mono)}
   .ptitles{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.55rem;padding-top:.55rem;
     border-top:1px solid var(--line)}
-  .ptlabel{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);margin-right:.2rem}
+  .ptlabel{font-size:.6875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);margin-right:.2rem}
   .pchip{font-size:.72rem;color:var(--tx);background:var(--surface-2);border:1px solid var(--line);
     border-radius:6px;padding:.15rem .45rem}
   .pnone{font-size:.74rem;color:var(--sub)}
@@ -259,8 +258,11 @@
 
   .toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%) translateY(1rem);
     background:var(--surface-3);border:1px solid var(--line);border-radius:999px;
-    padding:.55rem 1rem;font-size:.84rem;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:60}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    padding:.55rem 1rem;font-size:.84rem;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:60;
+    display:flex;align-items:center;gap:.7rem;max-width:min(90vw,520px);text-align:left}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+  .toast-action{border:0;background:transparent;color:var(--accent-soft);font:inherit;font-weight:700;
+    cursor:pointer;text-decoration:underline;text-underline-offset:2px;flex:none}
 
   @media (max-width:1080px){
     .cols{grid-template-columns:minmax(0,1fr)}
@@ -339,7 +341,7 @@
         </div>
       </div>
       <div class="top-actions">
-        <span class="pill ok"><i></i><span id="count">6/6 providers</span></span>
+        <span class="pill ok" role="status" aria-live="polite"><i aria-hidden="true"></i><span id="count">6/6 providers</span></span>
       </div>
     </header>
 
@@ -363,13 +365,13 @@
             <div>
               <div class="cap">Selection</div>
               <div class="pv">
-                <div class="ph"><i></i><b>Manifest ready</b></div>
+                <div class="ph"><i id="pv-dot"></i><b id="pv-status">Manifest ready</b></div>
                 <div class="line"><span>Enabled</span><span class="sum-providers">6/6</span></div>
                 <div class="line"><span>Label</span><span class="sum-style">Rich</span></div>
-                <div class="line"><span>Dedup</span><span>CDN identity</span></div>
-                <div class="line"><span>Metadata</span><span>Source only</span></div>
+                <div class="line"><span>Duplicates</span><span>Merged</span></div>
+                <div class="line"><span>Details</span><span>From source</span></div>
               </div>
-              <p class="pvhint">Disable sources you don't watch to shorten scraping time. Mirror duplicates are removed by CDN file identity.</p>
+              <p class="pvhint">Turn off sources you don't use to load results faster. Duplicate mirrors are merged automatically.</p>
             </div>
           </aside>
         </div>
@@ -379,7 +381,7 @@
         <div class="cols">
           <div class="col-main">
             <div class="sechead"><h2>Stream labels</h2></div>
-            <div class="optlist" id="styles"></div>
+            <div class="optlist" id="styles" role="radiogroup" aria-label="Stream label style"></div>
           </div>
 
           <aside class="side">
@@ -427,8 +429,8 @@
                 <div class="ph"><i></i><b>Ready to install</b></div>
                 <div class="line"><span>Enabled</span><span class="sum-providers">6/6</span></div>
                 <div class="line"><span>Label</span><span class="sum-style">Rich</span></div>
-                <div class="line"><span>Dedup</span><span>CDN identity</span></div>
-                <div class="line"><span>Metadata</span><span>Source only</span></div>
+                <div class="line"><span>Duplicates</span><span>Merged</span></div>
+                <div class="line"><span>Details</span><span>From source</span></div>
               </div>
               <p class="pvhint">The URL updates automatically whenever you change providers or labels. No account or sign-in required.</p>
             </div>
@@ -453,7 +455,7 @@
           <span class="st-updated" id="status-updated">Checking…</span>
         </div>
         <div class="providers" id="status-list">
-          <div class="status-empty"><b><span class="spinner"></span>Checking providers…</b>The first check can take a few minutes.</div>
+          <div class="status-empty"><b><span class="spinner" aria-hidden="true"></span>Checking providers…</b>The first check can take a few minutes.</div>
         </div>
       </section>
 
@@ -468,7 +470,7 @@
   <div class="scrim" id="scrim"></div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 const PROVIDERS = [
@@ -530,7 +532,15 @@ function update(){
   $('#url').textContent = getAddonUrl();
   $$('.sum-providers').forEach(el => el.textContent = on + '/' + total);
   $$('.sum-style').forEach(el => el.textContent = style.name);
-  $$('.opt[data-style]').forEach(el => el.dataset.selected = String(el.dataset.style === state.formatter_style));
+  $$('.opt[data-style]').forEach(el => {
+    const sel = el.dataset.style === state.formatter_style;
+    el.dataset.selected = String(sel);
+    const inp = el.querySelector('input[type="radio"]');
+    if (inp) inp.checked = sel;
+  });
+  const dot = $('#pv-dot'), pvStatus = $('#pv-status');
+  if (dot) dot.style.background = on ? 'var(--ok)' : 'var(--warn)';
+  if (pvStatus) pvStatus.textContent = on ? 'Manifest ready' : 'No sources enabled';
   $('#preview-name').textContent = style.name;
   $('#preview').textContent = style.preview;
 }
@@ -541,17 +551,14 @@ function renderProviders(){
     const el = document.createElement('label');
     el.className = 'opt';
     el.dataset.on = String(state[p.key] === 'on');
-    el.innerHTML = '<span class="ico">' + (ICONS[p.icon] || '') + '</span>' +
+    el.innerHTML = '<span class="ico" aria-hidden="true">' + (ICONS[p.icon] || '') + '</span>' +
       '<span class="txt"><b></b><small></small></span>' +
-      '<span class="st"></span>' +
       '<span class="swwrap"><input type="checkbox"><span class="sw"></span></span>';
     el.querySelector('b').textContent = p.name;
     el.querySelector('small').textContent = p.desc;
     const input = el.querySelector('input');
-    const tag = el.querySelector('.st');
-    const sync = () => { tag.textContent = state[p.key] === 'on' ? 'ON' : 'OFF'; el.dataset.on = String(state[p.key] === 'on'); };
-    input.checked = state[p.key] === 'on'; sync();
-    input.addEventListener('change', () => { state[p.key] = input.checked ? 'on' : 'off'; sync(); update(); });
+    input.checked = state[p.key] === 'on';
+    input.addEventListener('change', () => { state[p.key] = input.checked ? 'on' : 'off'; el.dataset.on = String(input.checked); update(); });
     list.appendChild(el);
   });
 }
@@ -561,12 +568,16 @@ function renderStyles(){
   STYLES.forEach(s => {
     const el = document.createElement('label');
     el.className = 'opt'; el.dataset.style = s.key;
-    el.innerHTML = '<span class="ico">' + (ICONS[s.icon] || '') + '</span>' +
+    el.dataset.selected = String(s.key === state.formatter_style);
+    el.innerHTML = '<input type="radio" class="visually-hidden" name="formatter_style" value="' + s.key + '">' +
+      '<span class="ico" aria-hidden="true">' + (ICONS[s.icon] || '') + '</span>' +
       '<span class="txt"><b></b><small></small></span>' +
-      '<span class="radio"></span>';
+      '<span class="radio" aria-hidden="true"></span>';
     el.querySelector('b').textContent = s.name;
     el.querySelector('small').textContent = s.desc;
-    el.addEventListener('click', () => { state.formatter_style = s.key; update(); });
+    const input = el.querySelector('input');
+    input.checked = s.key === state.formatter_style;
+    input.addEventListener('change', () => { state.formatter_style = s.key; update(); });
     wrap.appendChild(el);
   });
 }
@@ -589,19 +600,40 @@ function setTab(name){
   $('#page-title').textContent = TABS[name].title;
   $('#page-desc').textContent = TABS[name].desc;
   document.title = 'AniBox — ' + TABS[name].title;
-  try { history.replaceState(null, '', '#' + name); } catch(e){}
+  try { if (location.hash !== '#' + name) history.pushState(null, '', '#' + name); } catch(e){}
   if (matchMedia('(max-width:760px)').matches) closeDrawer();
 }
 
-function toast(msg){
-  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 1600);
+function toast(msg, actionLabel, onAction){
+  const t = $('#toast'); t.innerHTML = '';
+  const span = document.createElement('span'); span.textContent = msg; t.appendChild(span);
+  if (actionLabel && onAction) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'toast-action'; b.textContent = actionLabel;
+    b.addEventListener('click', () => { onAction(); t.classList.remove('show'); });
+    t.appendChild(b);
+  }
+  t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), actionLabel ? 6000 : 1800);
 }
 async function copyUrl(){
   try { await navigator.clipboard.writeText(getAddonUrl()); toast('Manifest URL copied'); }
   catch(e){ toast('Copy failed'); }
 }
-function install(){ setTimeout(() => { location.href = 'stremio://' + getAddonUrl().replace(/^https?:\/\//,''); }, 300); }
+function install(){
+  const url = getAddonUrl();
+  let left = false;
+  const mark = () => { left = true; };
+  window.addEventListener('blur', mark);
+  document.addEventListener('visibilitychange', mark);
+  setTimeout(() => { try { location.href = 'stremio://' + url.replace(/^https?:\/\//,''); } catch(e){} }, 250);
+  setTimeout(async () => {
+    window.removeEventListener('blur', mark);
+    document.removeEventListener('visibilitychange', mark);
+    if (left || document.hidden) return;
+    try { await navigator.clipboard.writeText(url); } catch(e){}
+    toast('Stremio app not detected — manifest URL copied. Paste it in Addons → Install from URL.');
+  }, 1500);
+}
 
 /* ---------- status (inline) ---------- */
 let statusData = null;
@@ -631,8 +663,8 @@ function renderStatus(){
   const list = $('#status-list'); list.innerHTML = '';
 
   if (!providers.length) {
-    list.innerHTML = '<div class="status-empty">' + (statusData && statusData.checking
-      ? '<b><span class="spinner"></span>Checking providers…</b>The first check can take a few minutes.'
+      list.innerHTML = '<div class="status-empty">' + (statusData && statusData.checking
+      ? '<b><span class="spinner" aria-hidden="true"></span>Checking providers…</b>The first check can take a few minutes.'
       : '<b>No status yet</b>The monitor starts on the first request.') + '</div>';
     return;
   }
@@ -712,7 +744,15 @@ $('#theme').addEventListener('click', () => applyTheme(document.documentElement.
 $('#copy').addEventListener('click', copyUrl);
 $('#go').addEventListener('click', install);
 $('#all-on').addEventListener('click', () => setAll(true));
-$('#all-off').addEventListener('click', () => setAll(false));
+$('#all-off').addEventListener('click', () => {
+  const prev = PROVIDERS.filter(p => state[p.key] === 'on').map(p => p.key);
+  setAll(false);
+  if (prev.length) toast('All sources disabled', 'Undo', () => {
+    prev.forEach(k => state[k] = 'on'); renderProviders(); update();
+  });
+});
+
+window.addEventListener('popstate', () => setTab((location.hash || '').replace('#','') || 'providers'));
 
 $('#status-refresh').addEventListener('click', () => loadStatus(true));
 $$('.sfilter').forEach(btn => btn.addEventListener('click', () => {
