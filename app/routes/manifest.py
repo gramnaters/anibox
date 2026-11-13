@@ -43,7 +43,7 @@ BASE_MANIFEST = {
 
 def _catalogs_for(cfg):
     """One search catalog per enabled provider, so each site lists separately."""
-    cats = [{'type': 'series', 'id': 'hd_latest', 'name': 'Latest Releases'}]
+    cats = []
     for pname in get_provider_from_config(cfg):
         if pname not in ALL_PROVIDERS:
             continue
@@ -52,7 +52,7 @@ def _catalogs_for(cfg):
             'id': f'{pname}_series',
             'name': _PROVIDER_NAMES.get(pname, pname),
             'extra': [
-                {'name': 'search', 'isRequired': True},
+                {'name': 'search', 'isRequired': False},
                 {'name': 'skip', 'isRequired': False},
             ],
         })

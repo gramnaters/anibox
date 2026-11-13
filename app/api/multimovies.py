@@ -22,6 +22,7 @@ Each server chip's data-url is dispatched by host:
 import html
 import re
 import time
+from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -139,7 +140,42 @@ class MultiMoviesProvider:
         return results
 
     def get_home_catalog(self) -> list:
-        return []
+        """Home rows from the site's genre/category pages — the same sections
+        the CloudStream MultiMovies extension browses."""
+        results, seen = [], set()
+        sections = (('Anime Series', 'genre/anime-series'),
+                    ('Anime Movies', 'genre/anime-movies'),
+                    ('Bollywood Movies', 'genre/bollywood-movies'),
+                    ('Latest Series', 'series'),
+                    ('Latest Movies', 'movies'))
+        dom = _live_domain()
+        for _label, path in sections:
+            try:
+                r = self.session.get(f'{dom}/{path}', timeout=TIMEOUT, verify=False)
+                if r.status_code != 200:
+                    continue
+                soup = BeautifulSoup(r.text, 'html.parser')
+                for a in soup.select("a[href*='/series/'], a[href*='/movies/'], "
+                                     "a[href*='/movie/'], a[href*='/tvshows/']"):
+                    href = a.get('href', '')
+                    if not href:
+                        continue
+                    slug = urlparse(urljoin(dom + '/', href)).path.strip('/')
+                    kind = slug.split('/', 1)[0]
+                    if '/' not in slug or slug in seen:
+                        continue
+                    seen.add(slug)
+                    img = a.find('img')
+                    card = a.find_parent(['article', 'div']) or a
+                    t = card.select_one('h2, h3, .title, .entry-title') if card else None
+                    title = t.text.strip() if t else ((img.get('alt') if img else '') or slug.split('/')[-1])
+                    results.append({'title': title, 'slug': slug,
+                                    'poster': (img.get('src') if img else '') or '',
+                                    'type': 'movie' if kind.startswith(('movie', 'tvshow')) else 'series',
+                                    'provider': self.NAME})
+            except Exception:
+                continue
+        return results
 
     # ----------------------------------------------------------------- details
     @cached(details_cache)

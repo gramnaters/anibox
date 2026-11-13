@@ -94,7 +94,38 @@ class PirateXPlayProvider:
         return results
 
     def get_home_catalog(self) -> list:
-        return []
+        """Home rows from the site's category pages — the same sections the
+        CloudStream Piratexplay extension browses (#movies-a ul li)."""
+        sections = ('category/popular', 'category/ongoing', 'category/series',
+                    'category/anime', 'category/top-airing')
+        results, seen = [], set()
+        for path in sections:
+            try:
+                r = self.session.get(f'{BASE}/{path}', timeout=TIMEOUT, verify=False)
+                if r.status_code != 200:
+                    continue
+                soup = BeautifulSoup(r.text, 'html.parser')
+                for li in soup.select('#movies-a ul li'):
+                    a = li.select_one('a')
+                    href = a.get('href', '') if a else ''
+                    if not href:
+                        continue
+                    slug = href.rstrip('/').strip('/')
+                    kind = 'movie' if slug.startswith('movies/') else 'series'
+                    if kind == 'movie':
+                        slug = 'movie/' + slug.split('/', 1)[1]
+                    if not slug or slug in seen:
+                        continue
+                    seen.add(slug)
+                    img = li.find('img')
+                    t = li.select_one('h2, h3, .title, .entry-title')
+                    title = t.text.strip() if t else ((img.get('alt') if img else '') or slug.split('/')[-1])
+                    results.append({'title': title, 'slug': slug,
+                                    'poster': (img.get('src') if img else '') or '',
+                                    'type': kind, 'provider': self.NAME})
+            except Exception:
+                continue
+        return results
 
     def _slug_url(self, slug):
         if '/' not in slug:
