@@ -434,6 +434,40 @@
   .tip-q:hover {
     background: rgba(255, 255, 255, 0.25); color: #ffffff; border-color: rgba(255, 255, 255, 0.4);
   }
+  .tip-q-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .tip-q-wrap .tip-bubble {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    transform: translateY(-4px);
+    background: #141518;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    color: #e4e6eb;
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1.45;
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: max-content;
+    max-width: 320px;
+    white-space: normal;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .18s ease, transform .18s ease;
+    z-index: 100;
+  }
+  .tip-q-wrap:hover .tip-bubble,
+  .tip-q-wrap:focus-within .tip-bubble {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
 
   /* Segmented Controls (Full Width) */
   .seg-ctrl {
@@ -922,73 +956,26 @@
   <section id="panel-filters" class="panel" role="tabpanel" hidden>
     <div class="cols">
       <div class="col-main">
-        <!-- Section 1: Preferences (Pengu Settings in AniBox Native Layout) -->
+        <!-- Section 1: Sort Streams By (Pengu Playback Sort Option) -->
         <div class="filter-box sheen-card">
           <div class="filter-box-head">
             <div>
-              <b>Preferences</b>
-              <small>Subtitles, player load timeout, and stream grouping rules.</small>
+              <b style="display:inline-flex;align-items:center;gap:6px">
+                Sort streams by
+                <span class="tip-q-wrap">
+                  <span class="tip-q" tabindex="0" role="tooltip">?</span>
+                  <span class="tip-bubble">Resolutions always stay grouped (4K first, then 1080p, ...). Default keeps the per-provider arrival order inside each group; Size puts the biggest files first inside each group.</span>
+                </span>
+              </b>
+              <small>Resolutions always stay grouped (4K first, then 1080p, ...). Default keeps the per-provider arrival order inside each group; Size puts the biggest files first inside each group.</small>
+            </div>
+            <div class="sechead-actions">
+              <span class="count" id="sort-count" style="font-size:var(--text-xs);color:var(--ink-faint);font-family:var(--mono);text-transform:uppercase">Default</span>
             </div>
           </div>
-
-          <!-- Hide Subtitles Option -->
-          <div style="padding-bottom:var(--sp-3);border-bottom:1px solid rgba(255,255,255,.06)">
-            <label class="opt" style="border:0;padding:var(--sp-2) 0;cursor:pointer">
-              <span class="ico" aria-hidden="true" style="width:2.5rem;height:2.5rem">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="glyph-icon">
-                  <rect x="2" y="4" width="20" height="16" rx="3"/>
-                  <path d="M7 15h4M15 15h2M7 11h2M13 11h4"/>
-                </svg>
-              </span>
-              <span class="txt">
-                <b>Hide subtitles</b>
-                <small>Strip subtitle tracks from returned stream links so your player handles them cleanly.</small>
-              </span>
-              <span class="swwrap"><input type="checkbox" id="hide-subtitles-toggle"><span class="sw"></span></span>
-            </label>
-          </div>
-
-          <!-- Group Streams By -->
-          <div style="margin-top:var(--sp-4);padding-bottom:var(--sp-3);border-bottom:1px solid rgba(255,255,255,.06)">
-            <div class="sechead" style="margin-bottom:var(--sp-1)">
-              <h2>Group Streams By</h2>
-              <span class="count" id="group-count">Quality</span>
-            </div>
-            <small style="color:var(--ink-muted);font-size:var(--text-sm);display:block;margin-bottom:var(--sp-2)">Choose how streams are grouped together in your player list.</small>
-            <div class="chips" id="group-chips">
-              <button type="button" class="chip" data-val="default">Default</button>
-              <button type="button" class="chip" data-val="provider">Provider</button>
-              <button type="button" class="chip on" data-val="quality">Quality</button>
-            </div>
-          </div>
-
-          <!-- Sort Streams -->
-          <div style="margin-top:var(--sp-4);padding-bottom:var(--sp-3);border-bottom:1px solid rgba(255,255,255,.06)">
-            <div class="sechead" style="margin-bottom:var(--sp-1)">
-              <h2>Sort Streams</h2>
-              <span class="count" id="sort-count">Default</span>
-            </div>
-            <small style="color:var(--ink-muted);font-size:var(--text-sm);display:block;margin-bottom:var(--sp-2)">Choose stream ordering within each group.</small>
-            <div class="chips" id="sort-chips">
-              <button type="button" class="chip on" data-val="default">Default</button>
-              <button type="button" class="chip" data-val="size">Size</button>
-            </div>
-          </div>
-
-          <!-- Load Timeout -->
-          <div style="margin-top:var(--sp-4)">
-            <div class="sechead" style="margin-bottom:var(--sp-1)">
-              <h2>Load Timeout</h2>
-              <span class="count" id="timeout-count">15s</span>
-            </div>
-            <small style="color:var(--ink-muted);font-size:var(--text-sm);display:block;margin-bottom:var(--sp-2)">Maximum seconds to wait for source scraping before returning streams.</small>
-            <div class="chips" id="timeout-chips">
-              <button type="button" class="chip" data-val="5">5s</button>
-              <button type="button" class="chip" data-val="10">10s</button>
-              <button type="button" class="chip on" data-val="15">15s</button>
-              <button type="button" class="chip" data-val="30">30s</button>
-              <button type="button" class="chip" data-val="45">45s</button>
-            </div>
+          <div class="chips" id="sort-chips">
+            <button type="button" class="chip on" data-val="default">Default</button>
+            <button type="button" class="chip" data-val="size">Size</button>
           </div>
         </div>
 
@@ -1055,10 +1042,7 @@
               <span class="live-badge">LIVE</span>
             </div>
             <div class="line"><span>Sources</span><span class="sum-providers">4/4</span></div>
-            <div class="line"><span>Grouping</span><span id="sum-group">Quality</span></div>
             <div class="line"><span>Sort</span><span id="sum-sort-mode">Default</span></div>
-            <div class="line"><span>Timeout</span><span id="sum-timeout">15s</span></div>
-            <div class="line"><span>Subtitles</span><span id="sum-subtitles">Shown</span></div>
             <div class="line"><span>Qualities</span><span class="sum-qualities">All</span></div>
             <div class="line"><span>Audio</span><span class="sum-audio">All</span></div>
             <div class="line"><span>Strict Audio</span><span id="sum-strict">Off</span></div>
@@ -1315,7 +1299,7 @@ const STYLES = [
 
 const TABS = {
   providers: {title:'Providers', desc:'Choose which sources AniBox scrapes.'},
-  filters:   {title:'Playback', desc:'Subtitles, grouping and timeout settings for playback.'},
+  filters:   {title:'Playback', desc:'Stream sorting, provider priority, resolution and audio filters.'},
   labels:    {title:'Stream labels', desc:'Choose how results are presented in the picker.'},
   install:   {title:'Install', desc:'Add AniBox to Stremio or Nuvio.'},
   status:    {title:'Status', desc:'Live provider health and working titles.'},
@@ -1329,10 +1313,7 @@ function initState(){
   PROVIDERS.forEach(p => state[p.key] = p.def ? 'on' : 'off');
   state.formatter_style = 'rich';
   state.catalogs = 'on';
-  state.hide_subtitles = 'off';
-  state.group_by = 'quality';
   state.sort_by = 'default';
-  state.load_timeout = '15';
   state.provider_order = ['source_multimovies', 'source_watchanimeworld', 'source_toonstream', 'source_piratexplay'];
   state.filter_qualities = 'all';
   state.filter_languages = '';
@@ -1361,10 +1342,7 @@ function buildConfig(){
   PROVIDERS.forEach(p => { if (state[p.key] === 'on') c[p.key] = 'on'; });
   c.formatter_style = state.formatter_style;
   c.catalogs = state.catalogs;
-  if (state.hide_subtitles === 'on') c.hide_subtitles = 'on';
-  if (state.group_by && state.group_by !== 'quality') c.group_by = state.group_by;
   if (state.sort_by && state.sort_by !== 'default') c.sort_by = state.sort_by;
-  if (state.load_timeout && state.load_timeout !== '15') c.load_timeout = state.load_timeout;
   
   const pShortOrder = (state.provider_order || []).map(k => k.replace('source_', ''));
   const defOrder = ['multimovies', 'watchanimeworld', 'toonstream', 'piratexplay'];
@@ -1413,21 +1391,8 @@ function update(){
   const strictEl = $('#sum-strict');
   if (strictEl) strictEl.textContent = state.filter_audio_strict === 'on' ? 'On' : 'Off';
 
-  // Sync playback preference chips
-  $$('#group-chips .chip').forEach(b => b.classList.toggle('on', b.dataset.val === (state.group_by || 'quality')));
+  // Sync sort chips
   $$('#sort-chips .chip').forEach(b => b.classList.toggle('on', b.dataset.val === (state.sort_by || 'default')));
-  $$('#timeout-chips .chip').forEach(b => b.classList.toggle('on', b.dataset.val === (state.load_timeout || '15')));
-
-  const groupCount = $('#group-count');
-  if (groupCount) {
-    const map = { quality: 'Quality', provider: 'Provider', default: 'Default' };
-    groupCount.textContent = map[state.group_by] || 'Quality';
-  }
-  const timeoutCount = $('#timeout-count');
-  if (timeoutCount) timeoutCount.textContent = (state.load_timeout || '15') + 's';
-
-  const subToggle = $('#hide-subtitles-toggle');
-  if (subToggle) subToggle.checked = state.hide_subtitles === 'on';
 
   const sortCount = $('#sort-count');
   if (sortCount) {
@@ -1436,23 +1401,11 @@ function update(){
   }
 
   // Sync STATUS card in Playback tab
-  const sumGroup = $('#sum-group');
-  if (sumGroup) {
-    const map = { quality: 'Quality', provider: 'Provider', default: 'Default' };
-    sumGroup.textContent = map[state.group_by] || 'Quality';
-  }
-  
   const sumSortMode = $('#sum-sort-mode');
   if (sumSortMode) {
     const map = { default: 'Default', size: 'Size', quality_asc: 'Low to High' };
     sumSortMode.textContent = map[state.sort_by] || 'Default';
   }
-
-  const sumTimeout = $('#sum-timeout');
-  if (sumTimeout) sumTimeout.textContent = (state.load_timeout || '15') + 's';
-
-  const sumSubs = $('#sum-subtitles');
-  if (sumSubs) sumSubs.textContent = state.hide_subtitles === 'on' ? 'Hidden' : 'Shown';
 
   const totalQualities = QUALITIES.length;
   const selQualities = state.filter_qualities === 'all' ? totalQualities : state.filter_qualities.split(',').filter(Boolean).length;
@@ -1552,34 +1505,12 @@ function renderProviderOrder(){
 }
 
 function initPlaybackControls(){
-  $$('#group-chips .chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.group_by = btn.dataset.val;
-      update();
-    });
-  });
-
   $$('#sort-chips .chip').forEach(btn => {
     btn.addEventListener('click', () => {
       state.sort_by = btn.dataset.val;
       update();
     });
   });
-
-  $$('#timeout-chips .chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.load_timeout = btn.dataset.val;
-      update();
-    });
-  });
-
-  const subToggle = $('#hide-subtitles-toggle');
-  if (subToggle) {
-    subToggle.addEventListener('change', (e) => {
-      state.hide_subtitles = e.target.checked ? 'on' : 'off';
-      update();
-    });
-  }
 }
 
 function renderFilters(){
