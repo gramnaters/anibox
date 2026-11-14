@@ -340,7 +340,8 @@ def probe_playlist(url, headers):
 
 
 def probe_direct(url, headers):
-    """Return ``{'size': bytes, 'container': ext}`` for a direct media file."""
+    """Return ``{'size': bytes, 'container': ext}`` for a direct media file.
+    Marks ``dead=True`` if the URL is unreachable or returns 404/403/5xx errors."""
     key = 'file:' + url
     if key in _probe_cache:
         return dict(_probe_cache[key])
@@ -357,6 +358,11 @@ def probe_direct(url, headers):
         if r.status_code >= 400 or not (length or '').isdigit():
             h['Range'] = 'bytes=0-0'
             r = requests.get(url, headers=h, timeout=8, verify=False, stream=True)
+            if r.status_code >= 400:
+                meta['dead'] = True
+                _probe_cache[key] = dict(meta)
+                r.close()
+                return meta
             content_range = r.headers.get('Content-Range') or ''
             total = content_range.rsplit('/', 1)[-1]
             if total.isdigit():
@@ -370,7 +376,7 @@ def probe_direct(url, headers):
             elif 'mpegurl' in ctype:
                 meta['container'] = 'm3u8'
     except Exception:
-        pass
+        meta['dead'] = True
     _probe_cache[key] = dict(meta)
     return meta
 

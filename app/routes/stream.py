@@ -295,6 +295,7 @@ _PROXY_MEDIA_HOSTS = (
     'hanerix.com', 'smoothpre', 'vidhide',                   # StreamHG
     'zephyrix', 'zephyrflick', 'as-cdn',                     # Zephyr / FirePlayer
     'vmpx.online', 'owphbf24.com', 'sprintcdn',              # StreamRuby rotating edges
+    'byse', 'bysetayico', 'bysezejataos',                    # Byse
 )
 
 
@@ -489,6 +490,9 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
             meta.setdefault('is_hls', True)
         else:
             meta.update(probe_direct(url, headers))
+            if meta.get('dead'):
+                print(f'[stream] filtered unplayable/dead direct stream: {url[:80]}')
+                return None
 
         # Apply source-declared values when probing didn't already supply them.
         if resolved_size and not meta.get('size'):

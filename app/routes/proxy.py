@@ -42,11 +42,21 @@ _BYTE_PATCH_HOSTS = ('hanerix.com', 'smoothpre', 'vidhide', 'tiktokcdn.com', 'p1
 
 # Hosts whose segments MUST pass through Render:
 # 1. Byte-patching hosts (StreamHG PNG headers on TikTok CDN)
-# 2. IP/ASN-locked hosts (Byse / SprintCDN / StreamRuby rotating edges where the signed token is tied to Render's IP)
+# 2. IP/ASN-locked hosts (Byse / SprintCDN / StreamRuby / Zephyr rotating
+#    edges where the signed token is tied to Render's IP)
+#
+# IMPORTANT: Keep this in sync with _PROXY_MEDIA_HOSTS in stream.py.
+# Any CDN whose m3u8 is proxied MUST also appear here so the rewritten
+# variant playlists and segments also route through Render; otherwise the
+# IP-bound tokens will 403 when the player fetches from a different IP.
 _MUST_PROXY_SEGMENT_HOSTS = (
+    # StreamHG / TikTok CDN byte-patching
     'hanerix.com', 'smoothpre', 'vidhide', 'tiktokcdn.com', 'p16-ad-site-sign',
+    # Byse / SprintCDN / StreamRuby IP-locked rotating edges
     'sprintcdn', 'r66nv9ed.com', 'marketforecasting.cfd', 'streamruby.net',
     'vmnow.online', 'vmpx.online', 'owphbf24.com', 'byse', 'bysetayico',
+    # Zephyr / FirePlayer IP-signed CDN tokens
+    'zephyrix', 'zephyrflick', 'as-cdn',
 )
 
 

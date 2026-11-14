@@ -136,6 +136,15 @@ def _provider_catalog(pname, want_type, search, skip=None):
             poster = 'https:' + poster
         elif poster and not poster.startswith('http'):
             poster = ''
+        if not poster:
+            try:
+                from app.routes.meta import _search_tmdb_info
+                name_clean = it.get('title') or str(slug).replace('-', ' ').title()
+                info = _search_tmdb_info(name_clean, want_type)
+                if info and info.get('poster_path'):
+                    poster = f"https://image.tmdb.org/t/p/w500{info['poster_path']}"
+            except Exception:
+                pass
         metas.append({
             'id': mid,
             'type': want_type,

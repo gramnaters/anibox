@@ -39,6 +39,7 @@ PLAYER_MAP = {
     'uns.bio': 'upnshare',
     'turbovidhls.com': 'turbovid', 'emturbovid.com': 'turbovid',
     'player.abyssplayer.com': 'abyss', 'play.abyssplayer.com': 'abyss',
+    'sssrr.org': 'abyss',
     'flixcloud.cc': 'flixcloud',
     'megacloud.animanga.fun': 'megacloud', 'upcloud.animanga.fun': 'megacloud',
     'megacloud': 'megacloud', 'mewstream': 'megacloud',
@@ -658,17 +659,20 @@ def extract_abyss(url):
         datas = re.search(r'const\s+datas\s*=\s*"([^"]*)"', html)
         if datas:
             encrypted = datas.group(1)
-            r2 = requests.post('https://enc-dec.app/api/dec-abyss',
-                               headers={'User-Agent': UA, 'Origin': 'https://playhydrax.com',
-                                        'Referer': 'https://playhydrax.com/',
-                                        'Content-Type': 'application/json'},
-                               json={'text': encrypted}, timeout=TIMEOUT, verify=False)
-            if r2.status_code == 200:
-                try:
+            try:
+                r2 = requests.post('https://enc-dec.app/api/dec-abyss',
+                                   headers={'User-Agent': UA, 'Origin': 'https://playhydrax.com',
+                                            'Referer': 'https://playhydrax.com/',
+                                            'Content-Type': 'application/json'},
+                                   json={'text': encrypted}, timeout=TIMEOUT, verify=False)
+                if r2.status_code == 200:
                     data = r2.json()
                     sources = (data.get('result') or {}).get('sources') or []
                     streams = []
                     for s in sources:
+                        # Skip sources that Abyss explicitly flags as ungenerated or disabled
+                        if s.get('status') is False:
+                            continue
                         u = s.get('url') or ''
                         if u.startswith('http'):
                             streams.append({'player': 'direct_m3u8', 'url': u,
@@ -678,8 +682,17 @@ def extract_abyss(url):
                                             'codec': s.get('codec')})
                     if streams:
                         return {'streams': streams}
-                except Exception:
-                    pass
+            except Exception:
+                pass
+
+            # Fallback to local AES-256-CTR decryptor
+            try:
+                from app.players.abyss import get_video_from_abyss_player
+                vu, q, _ = get_video_from_abyss_player(url)
+                if vu and vu.startswith('http'):
+                    return {'streams': [{'player': 'direct_m3u8', 'url': vu, 'name': 'Abyss'}]}
+            except Exception:
+                pass
 
         # iframe redirect fallback
         iframe = re.search(r'iframe[^>]*src=["\']([^"\']+)["\']', html)
