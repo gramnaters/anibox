@@ -852,42 +852,47 @@
   }
   @media (max-width: 760px) {
     .navbar {
-      position: fixed;
-      top: auto;
-      bottom: 1.5rem;
-      left: 0;
-      right: 0;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      pointer-events: none;
-      padding: 0 1rem;
-      margin: 0 auto;
+      position: fixed !important;
+      top: auto !important;
+      bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)) !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      z-index: 9999 !important;
+      pointer-events: none !important;
+      padding: 0 1rem !important;
+      margin: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
     }
     .nav-inner {
-      pointer-events: auto;
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: auto;
-      max-width: calc(100vw - 2rem);
-      height: 52px;
-      min-height: 52px;
-      max-height: 52px;
-      padding: 0 8px;
-      margin: 0 auto;
-      gap: 6px;
-      border-radius: 9999px;
-      background: rgba(18, 19, 24, 0.88);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4);
-      isolation: isolate;
-      overflow: visible;
+      pointer-events: auto !important;
+      position: relative !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: auto !important;
+      max-width: calc(100vw - 2rem) !important;
+      height: 52px !important;
+      min-height: 52px !important;
+      max-height: 52px !important;
+      padding: 4px 8px !important;
+      margin: 0 auto !important;
+      gap: 6px !important;
+      border-radius: 9999px !important;
+      background: rgba(18, 19, 24, 0.92) !important;
+      backdrop-filter: blur(28px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+      isolation: isolate !important;
+      overflow: visible !important;
     }
     .nav-inner::before,
     .nav-inner::after {
@@ -895,75 +900,56 @@
     }
     .brand { display: none !important; }
     .nav-tabs {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      width: auto;
-      height: 100%;
-      margin: 0;
-      padding: 0;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      width: auto !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
     .nav-tab {
-      width: 40px;
-      height: 40px;
-      min-height: 40px;
-      max-height: 40px;
-      padding: 0;
-      margin: 0;
-      border: 0;
+      width: 42px !important;
+      height: 42px !important;
+      min-height: 42px !important;
+      max-height: 42px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 0 !important;
       border-radius: 50% !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      flex: none;
-      background: transparent;
-      color: rgba(255, 255, 255, 0.65);
-      transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
-      transform: none;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      position: relative !important;
+      flex: none !important;
+      background: transparent !important;
+      color: rgba(255, 255, 255, 0.6) !important;
+      transition: all .2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      transform: none !important;
     }
     .nav-tab:hover,
     .nav-tab:focus-visible {
-      background: rgba(255, 255, 255, 0.08);
-      color: #ffffff;
-    }
-    .nav-tab .nav-txt { display: none; }
-    .nav-tab .nav-ico {
-      display: block;
-      width: 20px;
-      height: 20px;
-      stroke: currentColor;
-    }
-    .nav-tab.on {
-      background: rgba(255, 255, 255, 0.16) !important;
+      background: rgba(255, 255, 255, 0.08) !important;
       color: #ffffff !important;
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+    }
+    .nav-tab .nav-txt { display: none !important; }
+    .nav-tab .nav-count { display: none !important; }
+    .nav-tab .nav-ico {
+      display: block !important;
+      width: 20px !important;
+      height: 20px !important;
+      stroke: currentColor !important;
+    }
+    /* Nekowatch-style solid white circular pill for active item */
+    .nav-tab.on {
+      background: #ffffff !important;
+      color: #0b0c10 !important;
+      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.35) !important;
     }
     .nav-tab.on .nav-ico {
-      stroke: #ffffff !important;
-      color: #ffffff !important;
-    }
-    .nav-tab .nav-count,
-    .nav-tab.on .nav-count {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: #ff3b30 !important;
-      color: #ffffff !important;
-      font-size: 9px;
-      font-weight: 800;
-      font-family: var(--mono);
-      min-width: 15px;
-      height: 15px;
-      border-radius: 9999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      line-height: 1;
-      border: 2px solid #101116 !important;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      stroke: #0b0c10 !important;
+      color: #0b0c10 !important;
     }
     .content {
       padding: 2.25rem var(--sp-4) 7rem !important;
@@ -1002,13 +988,13 @@
     </a>
 
     <nav class="nav-tabs" role="tablist" aria-label="Sections">
-      <button class="nav-tab on" role="tab" data-tab="providers" aria-selected="true" aria-controls="panel-providers" aria-label="Providers" title="Providers">
+      <button class="nav-tab on" role="tab" data-tab="providers" aria-selected="true" aria-controls="panel-providers" aria-label="Sources" title="Sources">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-          <polyline points="2 17 12 22 22 17"/>
-          <polyline points="2 12 12 17 22 12"/>
+          <ellipse cx="12" cy="5" rx="9" ry="3"/>
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+          <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
         </svg>
-        <span class="nav-txt">Providers</span>
+        <span class="nav-txt">Sources</span>
         <span class="nav-count" id="nav-prov-count">4</span>
       </button>
       <button class="nav-tab" role="tab" data-tab="filters" aria-selected="false" aria-controls="panel-filters" aria-label="Playback" title="Playback">
