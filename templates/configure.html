@@ -12,26 +12,26 @@
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  /* ─── TypeUI Precision Monochrome System Tokens (mkissa.to & BitChord Glass) ─── */
+  /* ─── TypeUI Precision Monochrome System Tokens (mkissa.to Diffused Fog & Glass) ─── */
   :root {
-    --bg-base: #16171b;
-    --app-bg: #16171b;
-    --surface: rgba(255, 255, 255, 0.055);
+    --bg-base: #5a5d66;
+    --app-bg: #5a5d66;
+    --surface: rgba(18, 20, 26, 0.38);
     --surface-2: rgba(255, 255, 255, 0.08);
-    --surface-3: rgba(255, 255, 255, 0.13);
+    --surface-3: rgba(255, 255, 255, 0.14);
 
     --ink: #ffffff;
-    --ink-muted: #a6a8b1;
-    --ink-faint: #6e707a;
+    --ink-muted: #d6d8e2;
+    --ink-faint: #a2a5b2;
 
-    --border: rgba(255, 255, 255, 0.12);
-    --border-hover: rgba(255, 255, 255, 0.28);
-    --border-active: rgba(255, 255, 255, 0.85);
+    --border: rgba(255, 255, 255, 0.16);
+    --border-hover: rgba(255, 255, 255, 0.35);
+    --border-active: rgba(255, 255, 255, 0.90);
 
     /* Single unified monochrome highlight */
     --accent: #ffffff;
     --accent-fg: #000000;
-    --accent-glow: rgba(255, 255, 255, 0.15);
+    --accent-glow: rgba(255, 255, 255, 0.20);
 
     --green: #22c55e;
     --red: #ef4444;
@@ -50,30 +50,30 @@
     --text-xs: .75rem; --text-sm: .8125rem; --text-base: .875rem; --text-md: .9375rem;
     --text-lg: 1rem; --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 2.25rem;
 
-    --shadow-sm: 0 1px 2px rgba(0,0,0,.35);
-    --shadow-md: 0 4px 14px rgba(0,0,0,.5);
-    --shadow-lg: 0 12px 36px -4px rgba(0,0,0,.7);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.25);
+    --shadow-md: 0 4px 14px rgba(0,0,0,.35);
+    --shadow-lg: 0 12px 36px -4px rgba(0,0,0,.45);
   }
 
   html {
     font-size: 16px;
-    background-color: #16171b !important;
+    background-color: #5a5d66 !important;
     color: #ffffff;
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
   }
 
-  /* ─── mkissa.to Diffused Blur White Glass Screen Backdrop ─── */
+  /* ─── mkissa.to Luminous Diffused Silver-Gray Misty Screen Backdrop ─── */
   body {
     margin: 0;
     min-height: 100vh;
-    background-color: #16171b !important;
+    background-color: #5a5d66 !important;
     background-image: 
-      radial-gradient(ellipse 1100px 580px at 50% 12%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 45%, transparent 72%),
-      radial-gradient(ellipse 950px 520px at 85% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 850px 480px at 15% 65%, rgba(255, 255, 255, 0.06) 0%, transparent 55%),
-      linear-gradient(175deg, #44474f 0%, #2f3137 28%, #1c1d22 65%, #121316 100%) !important;
+      radial-gradient(ellipse 1400px 750px at 50% 26%, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.12) 48%, transparent 75%),
+      radial-gradient(ellipse 950px 520px at 85% 25%, rgba(255, 255, 255, 0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 900px 500px at 15% 65%, rgba(255, 255, 255, 0.10) 0%, transparent 60%),
+      linear-gradient(180deg, #6c6f78 0%, #5a5d66 38%, #4a4d56 78%, #40434b 100%) !important;
     background-attachment: fixed !important;
     background-repeat: no-repeat !important;
     color: #ffffff;
@@ -123,7 +123,7 @@
     100% { background-position: -200% 0; }
   }
 
-  /* ─── BitChord Immersive Liquid Glass Floating Pill Nav ─── */
+  /* ─── Prime Video / BitChord Glass Floating Navbar ─── */
   .navbar {
     position: fixed; top: 0; left: 0; right: 0; z-index: 40;
     padding: .875rem clamp(.75rem, 2vw, 2rem); pointer-events: none;
@@ -138,47 +138,21 @@
     max-width: 100%;
     min-height: 3.5rem;
     margin: 0 auto;
-    padding: .35rem .5rem .35rem .75rem;
+    padding: .35rem .6rem .35rem .85rem;
     border-radius: 9999px;
     isolation: isolate;
     pointer-events: auto;
+    background: rgba(18, 20, 26, 0.72);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
     transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  /* BitChord Glass Fill & Drop Shadow (::before) */
-  .nav-inner::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    z-index: -1;
-    pointer-events: none;
-    background-color: #26262899; /* BitChord glassMaterialBackground */
-    backdrop-filter: saturate(2.2) blur(18px);
-    -webkit-backdrop-filter: saturate(2.2) blur(18px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.32);
-    transition: background-color .2s ease, box-shadow .2s ease;
-  }
-  /* BitChord 0.5px Inner Stroke (::after) */
-  .nav-inner::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    box-shadow:
-      inset 0.5px 0.5px 0 #ffffff,
-      inset 0.5px -0.5px 0 #ffffff,
-      inset -0.5px 0.5px 0 #ffffff,
-      inset -0.5px -0.5px 0 #ffffff;
-    opacity: 0.25;
-    transition: opacity .2s ease;
-  }
-  .nav-inner:hover::before {
-    background-color: #2e2e32b3;
-    box-shadow: 0 14px 48px rgba(0, 0, 0, 0.42);
-  }
-  .nav-inner:hover::after {
-    opacity: 0.38;
+  .nav-inner:hover {
+    background: rgba(22, 24, 32, 0.85);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
   }
 
   .brand {
@@ -193,45 +167,76 @@
   }
   .brand b { font-weight: 800; color: #ffffff; letter-spacing: -.03em; font-size: var(--text-base); }
 
-  .nav-tabs { display: inline-flex; gap: 4px; align-items: center; justify-content: center; min-width: 0; }
+  .nav-tabs { display: inline-flex; gap: 6px; align-items: center; justify-content: center; min-width: 0; }
+  
+  /* Inactive tab: clean flat text like Prime Video ("Home", "Movies", "Free to me") */
   .nav-tab {
     display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2); min-height: 2.5rem;
     padding: 0 var(--sp-4); border: 1px solid transparent; border-radius: 9999px; background: transparent;
-    color: rgba(255, 255, 255, 0.75); font-size: var(--text-sm); font-weight: 700; letter-spacing: -.01em;
+    color: rgba(255, 255, 255, 0.82); font-size: var(--text-sm); font-weight: 700; letter-spacing: -.01em;
     white-space: nowrap; transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
+    position: relative; cursor: pointer;
   }
   .nav-tab:hover { color: #ffffff; background: rgba(255, 255, 255, 0.08); }
 
-  /* Prime Video Active Pill Button: Glossy top highlight, upward white bloom, bold white text */
+  /* Prime Video Active Pill Button: Physical 3D dark capsule, curved top specular gloss, upward white spotlight bloom, bold white text */
   .nav-tab.on {
     color: #ffffff !important;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.10) 36%, rgba(30, 33, 40, 0.95) 75%, rgba(18, 20, 25, 0.98) 100%) !important;
-    font-weight: 800;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    font-weight: 800 !important;
+    border-radius: 9999px !important;
+    padding: 0 1.25rem !important;
+    min-height: 2.45rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    border-top: 1.5px solid rgba(255, 255, 255, 0.95) !important;
+    background: linear-gradient(180deg, 
+      rgba(255, 255, 255, 0.65) 0%, 
+      rgba(255, 255, 255, 0.22) 28%, 
+      rgba(38, 42, 52, 0.95) 55%, 
+      rgba(16, 18, 24, 0.98) 100%) !important;
     box-shadow: 
-      0 -8px 24px -2px rgba(255, 255, 255, 0.42),
-      0 12px 32px rgba(0, 0, 0, 0.65),
-      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.9),
-      inset 0 -1px 0 0 rgba(0, 0, 0, 0.6) !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+      0 -8px 24px -2px rgba(255, 255, 255, 0.55),
+      0 10px 28px rgba(0, 0, 0, 0.6),
+      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.6) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+    position: relative;
+    isolation: isolate;
   }
+  /* Soft upward white spotlight cone shining from top of Prime Video button */
   .nav-tab.on::before {
     content: '';
     position: absolute;
-    top: -5px;
-    left: 20%;
-    right: 20%;
-    height: 7px;
-    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.2) 60%, transparent 100%);
-    filter: blur(4px);
+    top: -10px;
+    left: 15%;
+    right: 15%;
+    height: 14px;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 50%, transparent 80%);
+    filter: blur(5px);
     pointer-events: none;
+    z-index: 1;
+  }
+  /* Specular Curved Gloss Lens across top curve */
+  .nav-tab.on::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 4px;
+    right: 4px;
+    height: 45%;
+    border-radius: 9999px 9999px 50% 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.05) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .nav-tab.on .nav-txt,
+  .nav-tab.on .nav-count {
+    position: relative;
     z-index: 2;
   }
   .nav-tab.on .nav-count {
     color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4);
   }
   .nav-count {
     font-size: 11px; font-weight: 800; color: rgba(255, 255, 255, 0.85);
@@ -876,43 +881,42 @@
     .navbar {
       position: fixed !important;
       top: auto !important;
-      bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)) !important;
+      bottom: 0 !important;
       left: 0 !important;
       right: 0 !important;
       width: 100% !important;
+      height: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
+      padding: 0 0 env(safe-area-inset-bottom, 0px) !important;
+      margin: 0 !important;
       display: flex !important;
       justify-content: center !important;
       align-items: center !important;
       z-index: 9999 !important;
-      pointer-events: none !important;
-      padding: 0 1rem !important;
-      margin: 0 !important;
-      background: transparent !important;
+      background: #000000 !important;
       border: none !important;
-      box-shadow: none !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      pointer-events: auto !important;
     }
     .nav-inner {
       pointer-events: auto !important;
       position: relative !important;
-      display: inline-flex !important;
+      display: flex !important;
       align-items: center !important;
-      justify-content: center !important;
-      width: auto !important;
-      max-width: calc(100vw - 2rem) !important;
-      height: 52px !important;
-      min-height: 52px !important;
-      max-height: 52px !important;
-      padding: 4px 8px !important;
-      margin: 0 auto !important;
-      gap: 6px !important;
-      border-radius: 9999px !important;
-      background: rgba(18, 19, 24, 0.92) !important;
-      backdrop-filter: blur(28px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-      border: 1px solid rgba(255, 255, 255, 0.14) !important;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+      justify-content: space-around !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 58px !important;
+      min-height: 58px !important;
+      max-height: 58px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
       isolation: isolate !important;
       overflow: visible !important;
     }
@@ -922,64 +926,88 @@
     }
     .brand { display: none !important; }
     .nav-tabs {
-      display: flex !important;
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 6px !important;
-      width: auto !important;
+      gap: 0 !important;
+      width: 100% !important;
       height: 100% !important;
       margin: 0 !important;
       padding: 0 !important;
     }
     .nav-tab {
-      width: 42px !important;
-      height: 42px !important;
-      min-height: 42px !important;
-      max-height: 42px !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border: 0 !important;
-      border-radius: 50% !important;
       display: flex !important;
+      flex-direction: column !important;
       align-items: center !important;
       justify-content: center !important;
-      position: relative !important;
-      flex: none !important;
+      gap: 3px !important;
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      padding: 6px 0 4px !important;
+      margin: 0 !important;
+      border: 0 !important;
+      border-radius: 0 !important;
       background: transparent !important;
-      color: rgba(255, 255, 255, 0.6) !important;
-      transition: all .2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-      transform: none !important;
+      box-shadow: none !important;
+      color: rgba(255, 255, 255, 0.45) !important;
+      transition: color .15s ease, transform .15s ease !important;
+      cursor: pointer !important;
     }
     .nav-tab:hover,
     .nav-tab:focus-visible {
-      background: rgba(255, 255, 255, 0.08) !important;
+      background: transparent !important;
       color: #ffffff !important;
     }
-    .nav-tab .nav-txt { display: none !important; }
     .nav-tab .nav-count { display: none !important; }
     .nav-tab .nav-ico {
       display: block !important;
-      width: 20px !important;
-      height: 20px !important;
-      stroke: currentColor !important;
+      width: 22px !important;
+      height: 22px !important;
+      stroke: rgba(255, 255, 255, 0.45) !important;
+      color: rgba(255, 255, 255, 0.45) !important;
+      stroke-width: 1.8 !important;
+      fill: none !important;
+      flex: none !important;
+      transition: stroke .15s ease, color .15s ease, transform .15s ease !important;
     }
-    /* Nekowatch-style solid white circular pill for active item */
+    .nav-tab .nav-txt {
+      display: block !important;
+      font-size: 10px !important;
+      font-weight: 500 !important;
+      line-height: 1.1 !important;
+      letter-spacing: 0.01em !important;
+      color: rgba(255, 255, 255, 0.45) !important;
+      white-space: nowrap !important;
+      text-align: center !important;
+      transition: color .15s ease !important;
+    }
+    /* Mobile Active State matching 2nd screenshot: pure white icon and text, transparent dock item */
     .nav-tab.on {
-      background: #ffffff !important;
-      color: #0b0c10 !important;
+      background: transparent !important;
+      color: #ffffff !important;
       border: 0 !important;
-      border-radius: 50% !important;
-      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.35) !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
     }
-    .nav-tab.on::before {
+    .nav-tab.on::before,
+    .nav-tab.on::after {
       display: none !important;
     }
     .nav-tab.on .nav-ico {
-      stroke: #0b0c10 !important;
-      color: #0b0c10 !important;
+      stroke: #ffffff !important;
+      color: #ffffff !important;
+      transform: translateY(-1px) !important;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.45)) !important;
+    }
+    .nav-tab.on .nav-txt {
+      color: #ffffff !important;
+      font-weight: 700 !important;
     }
     .content {
-      padding: 2.25rem var(--sp-4) 7rem !important;
+      padding: 2.25rem var(--sp-4) calc(5.5rem + env(safe-area-inset-bottom, 0px)) !important;
     }
     .opt {
       padding: var(--sp-3) var(--sp-4);
@@ -1010,7 +1038,7 @@
 <header class="navbar">
   <div class="nav-inner">
     <a class="brand" href="#providers" aria-label="AniBox home">
-      <img src="/static/anibox-icon-512.png" alt="AniBox">
+      <img src="/static/anibox-icon-512.png" alt="AniBox" onerror="this.style.display='none'">
       <b>AniBox</b>
     </a>
 
