@@ -287,7 +287,14 @@ class MultiMoviesProvider:
                 low = url.lower()
                 if 'modiplay' in low:
                     for sd in self._resolve_modiplay(url):
-                        sd.setdefault('name', f'ModiPlay {name}'.strip())
+                        streams.append(sd)
+                        added += 1
+                elif 'vidout' in low:
+                    for sd in self._resolve_vidout(url):
+                        streams.append(sd)
+                        added += 1
+                elif 'vidrift' in low or 'filmu' in low:
+                    for sd in self._resolve_vidrift(url):
                         streams.append(sd)
                         added += 1
                 elif 'iqsmartgames' in low or 'gdmirrorbot' in low:
@@ -300,7 +307,7 @@ class MultiMoviesProvider:
                         sd.setdefault('name', f'NxSha {name}'.strip())
                         streams.append(sd)
                         added += 1
-                elif any(h in low for h in ('vidrift', 'filmu', 'vidout')):
+                else:
                     for sd in self._resolve_direct(url):
                         sd.setdefault('name', name or 'MultiMovies')
                         streams.append(sd)
@@ -342,51 +349,193 @@ class MultiMoviesProvider:
         return out
 
     def _resolve_modiplay(self, embed_url):
-        """rozgarlelo.modiplay.xyz: embed -> proxy.php -> var src (stream_proxy.php)
-        -> m3u8. Verified live: returns a playable #EXTM3U."""
+        """rozgarlelo.modiplay.xyz: multi-server extractor that unpacks EarnVids/VidHide,
+        StreamHG/Vibuxer, VidRift/Vidly, and VidShared into direct HLS streams."""
         out = []
         try:
             if not embed_url.startswith('http'):
                 return out
-            from urllib.parse import urlparse, urljoin
+            from urllib.parse import urlparse, urljoin, unquote
             r = self.session.get(embed_url, timeout=TIMEOUT, verify=False)
             if r.status_code != 200:
                 return out
+
+            # Extract all srv-items
+            pnames = re.findall(r'data-pname=["\']([^"\']+)["\']', r.text)
+            platforms = re.findall(r'data-platform=["\']([^"\']+)["\']', r.text)
+            codes = re.findall(r'data-code=["\']([^"\']+)["\']', r.text)
+            items = list(zip(pnames, platforms, codes))
+
+            for pname, platform, code in items:
+                # 1. EarnVids / VidHide (Direct HLS2 on acek-cdn.com)
+                if platform == 'earnvids' or 'minochinos' in code:
+                    try:
+                        r_m = self.session.get(f"https://minochinos.com/embed/{code}", headers={'Referer': embed_url}, timeout=6, verify=False)
+                        match = re.search(r'eval\(function\(p,a,c,k,e,d\)\{.*?\}\((.*?)\)\s*$', r_m.text, re.DOTALL | re.MULTILINE)
+                        if match:
+                            p_match = re.search(r"'(.*?)',\s*(\d+),\s*(\d+),\s*'(.*?)'\.split\('\|'\)", match.group(1), re.DOTALL)
+                            if p_match:
+                                payload, radix, count, symtab = p_match.group(1), int(p_match.group(2)), int(p_match.group(3)), p_match.group(4).split('|')
+                                def unbase(val, r):
+                                    alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                                    res = 0
+                                    for char in val: res = res * r + alphabet.index(char)
+                                    return res
+                                unpacked = re.sub(r'\b\w+\b', lambda m: symtab[unbase(m.group(0), radix)] if unbase(m.group(0), radix) < len(symtab) and symtab[unbase(m.group(0), radix)] else m.group(0), payload)
+                                hls2 = re.search(r'https?://[^\s"\'<>]+\.acek-cdn\.com/hls2/[^\s"\'<>]+', unpacked)
+                                if hls2:
+                                    out.append({
+                                        'player': 'direct_m3u8',
+                                        'url': hls2.group(0),
+                                        'name': f"VidHide (Acek CDN - {pname})",
+                                        'quality': '1080p',
+                                        'languages': ['Hindi', 'Multi Audio'],
+                                        'referer': 'https://minochinos.com/',
+                                        'behaviorHints': {'notWebReady': True}
+                                    })
+                    except Exception as ex:
+                        print(f'[multimovies/modiplay] vidhide error: {ex}')
+
+                # 2. StreamHG / Vibuxer (Direct HLS on vibuxer.com)
+                elif platform == 'streamhg':
+                    try:
+                        p_url = f"https://rozgarlelo.modiplay.xyz/proxy.php?p=streamhg&c={code}&title=Title&noredirect=1"
+                        rp = self.session.get(p_url, headers={'Referer': embed_url}, timeout=6, verify=False)
+                        mvib = re.search(r'stream_proxy\.php\?url=(https%3A%2F%2Fvibuxer\.com%2Fstream%2F[^&]+)', rp.text)
+                        if mvib:
+                            out.append({
+                                'player': 'direct_m3u8',
+                                'url': unquote(mvib.group(1)),
+                                'name': f"StreamHG (Vibuxer - {pname})",
+                                'quality': '1080p',
+                                'referer': p_url,
+                                'behaviorHints': {'notWebReady': True}
+                            })
+                    except Exception as ex:
+                        print(f'[multimovies/modiplay] streamhg error: {ex}')
+
+                # 3. Vidrift (Direct Vidly / Rousav CDN)
+                elif platform == 'vidrift':
+                    tmdb = code.split(':')[0]
+                    is_show = ':tv:' in code
+                    v_streams = self._resolve_vidrift(f"https://vidly.pro/{'tv' if is_show else 'movie'}/{tmdb}")
+                    out.extend(v_streams)
+
+                # 4. VidShared (Direct HLS on pureharvesthub)
+                elif platform == 'vsembed':
+                    try:
+                        p_url = f"https://rozgarlelo.modiplay.xyz/proxy.php?p=vsembed&c={code}&title=Title&noredirect=1"
+                        rp = self.session.get(p_url, headers={'Referer': embed_url}, timeout=6, verify=False)
+                        msrc = re.search(r'var\s+src\s*=\s*["\']([^"\']+)["\']', rp.text)
+                        if msrc:
+                            out.append({
+                                'player': 'direct_m3u8',
+                                'url': msrc.group(1).replace(r'\/', '/'),
+                                'name': f"VidShared (PureHarvest - {pname})",
+                                'quality': '1080p',
+                                'referer': p_url,
+                                'behaviorHints': {'notWebReady': True}
+                            })
+                    except Exception as ex:
+                        print(f'[multimovies/modiplay] vidshared error: {ex}')
+
+                # 5. Filemoon
+                elif platform == 'filemoon':
+                    try:
+                        from app.players.all_players import extract_filemoon
+                        fm_streams = extract_filemoon(f"https://filemoon.sx/e/{code}")
+                        for fms in fm_streams:
+                            fms['name'] = f"Filemoon ({pname})"
+                            out.append(fms)
+                    except Exception as ex:
+                        print(f'[multimovies/modiplay] filemoon error: {ex}')
+
+            if out:
+                return out
+
+            # Fallback to original proxy extraction if no srv-items resolved
             ifm = re.search(r'<iframe[^>]+src="([^"]+)"', r.text)
-            if not ifm:
-                return out
-            proxy = _unescape(ifm.group(1))
-            proxy = urljoin(embed_url, proxy)
-            rp = self.session.get(proxy, headers={'Referer': embed_url},
-                                  timeout=TIMEOUT, verify=False)
-            if rp.status_code != 200:
-                return out
-            m = re.search(r'var\s+src\s*=\s*"([^"]+)"', rp.text)
-            if m:
-                src = _unescape(m.group(1)).replace('\\/', '/')
-                src = urljoin(proxy, src)
-                out.append({
-                    'player': 'direct_m3u8',
-                    'url': src,
-                    'name': 'ModiPlay',
-                    'referer': proxy,
-                })
-                return out
-            # fallback: any iframe in proxy.php
-            m2 = re.search(r'<iframe[^>]+src="([^"]+)"', rp.text)
-            if m2:
-                out.append({
-                    'player': 'direct_m3u8',
-                    'url': urljoin(proxy, _unescape(m2.group(1))),
-                    'name': 'ModiPlay',
-                    'referer': proxy,
-                })
+            if ifm:
+                proxy = _unescape(ifm.group(1))
+                proxy = urljoin(embed_url, proxy)
+                rp = self.session.get(proxy, headers={'Referer': embed_url}, timeout=TIMEOUT, verify=False)
+                if rp.status_code == 200:
+                    m = re.search(r'var\s+src\s*=\s*"([^"]+)"', rp.text)
+                    if m:
+                        src = _unescape(m.group(1)).replace('\\/', '/')
+                        src = urljoin(proxy, src)
+                        out.append({
+                            'player': 'direct_m3u8',
+                            'url': src,
+                            'name': 'ModiPlay (Proxy)',
+                            'referer': proxy,
+                        })
         except Exception as e:
             print(f'[multimovies] modiplay error: {e}')
         return out
 
+    def _resolve_vidout(self, embed_url):
+        """vidout.pages.dev / watchout2025: direct HLS master playlist via TMDB ID."""
+        out = []
+        try:
+            m = re.search(r'/(movie|tv)/(\d+)', embed_url)
+            if not m:
+                m_num = re.search(r'/(\d+)', embed_url)
+                tmdb_id = m_num.group(1) if m_num else ''
+                kind = 'movie'
+            else:
+                kind, tmdb_id = m.group(1), m.group(2)
+
+            if not tmdb_id:
+                return self._resolve_direct(embed_url)
+
+            path = f"https://raw.githubusercontent.com/Watchout2025/api/refs/heads/main/hls/{kind}/{tmdb_id}"
+            r = self.session.get(path, timeout=6, verify=False)
+            if r.status_code == 200:
+                hls_url = r.text.strip()
+                if hls_url.startswith('http'):
+                    out.append({
+                        'player': 'direct_m3u8',
+                        'url': hls_url,
+                        'name': 'Vidout (Watchout Direct)',
+                        'quality': '1080p',
+                        'languages': ['Hindi', 'Tamil', 'Telugu', 'English'],
+                        'referer': 'https://vidout.pages.dev/',
+                        'behaviorHints': {'notWebReady': True}
+                    })
+                    return out
+        except Exception as e:
+            print(f'[multimovies] vidout error: {e}')
+        return self._resolve_direct(embed_url)
+
+    def _resolve_vidrift(self, embed_url):
+        """vidrift.net / vidly.pro: direct Cloudflare edge HLS from rousav.tech."""
+        out = []
+        try:
+            m = re.search(r'/(movie|tv)/(\d+)', embed_url)
+            if m:
+                kind, tmdb_id = m.group(1), m.group(2)
+                v_url = f"https://vidly.pro/{kind}/{tmdb_id}"
+                r = self.session.get(v_url, headers={'RSC': '1', 'Next-Url': f'/{kind}/{tmdb_id}'}, timeout=6, verify=False)
+                if r.status_code == 200:
+                    m_rousav = re.search(r'https://img\.rousav\.tech/media/[a-f0-9]+/index\.m3u8', r.text)
+                    if m_rousav:
+                        out.append({
+                            'player': 'direct_m3u8',
+                            'url': m_rousav.group(0),
+                            'name': 'Vidly (Rousav CDN)',
+                            'quality': '1080p',
+                            'languages': ['Multi Audio'],
+                            'referer': 'https://vidly.pro/',
+                            'behaviorHints': {'notWebReady': True}
+                        })
+                        return out
+        except Exception as e:
+            print(f'[multimovies] vidrift error: {e}')
+        return self._resolve_direct(embed_url)
+
     def _resolve_direct(self, embed_url):
-        """vidrift / filmu / vidout: the embed page already contains a direct .m3u8."""
+        """Fallback: scan embed page HTML for direct .m3u8 URL."""
         out = []
         try:
             if not embed_url.startswith('http'):
@@ -402,7 +551,7 @@ class MultiMoviesProvider:
             out.append({
                 'player': 'direct_m3u8',
                 'url': _unescape(m3.group(0)),
-                'name': 'MultiMovies',
+                'name': 'MultiMovies (Direct)',
                 'referer': host,
             })
         except Exception as e:
