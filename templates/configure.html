@@ -434,40 +434,6 @@
   .tip-q:hover {
     background: rgba(255, 255, 255, 0.25); color: #ffffff; border-color: rgba(255, 255, 255, 0.4);
   }
-  .tip-q-wrap {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-  }
-  .tip-q-wrap .tip-bubble {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    transform: translateY(-4px);
-    background: #141518;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
-    color: #e4e6eb;
-    font-size: 11.5px;
-    font-weight: 500;
-    line-height: 1.45;
-    padding: 8px 12px;
-    border-radius: 8px;
-    width: max-content;
-    max-width: 320px;
-    white-space: normal;
-    pointer-events: none;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity .18s ease, transform .18s ease;
-    z-index: 100;
-  }
-  .tip-q-wrap:hover .tip-bubble,
-  .tip-q-wrap:focus-within .tip-bubble {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
 
   /* Segmented Controls (Full Width) */
   .seg-ctrl {
@@ -845,22 +811,101 @@
     40% { transform: translateY(-3px); }
   }
 
+  .nav-ico { display: none; }
+  .nav-txt { display: inline; }
+
   /* Responsive layouts */
   @media (max-width: 980px) {
     .cols { grid-template-columns: 1fr; }
     .side { position: static; }
   }
   @media (max-width: 760px) {
-    .nav-inner {
-      flex-wrap: wrap; border-radius: var(--r-xl); padding: var(--sp-2); gap: var(--sp-2);
-      justify-content: space-between; width: calc(100vw - 1.5rem);
+    .navbar {
+      position: fixed;
+      top: auto;
+      bottom: 1.25rem;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+      pointer-events: none;
+      padding: 0 var(--sp-3);
     }
-    .brand { min-height: auto; padding: var(--sp-1) var(--sp-2); }
-    .brand b { font-size: var(--text-base); }
-    .nav-tabs { order: 3; flex-basis: 100%; justify-content: space-between; gap: 2px; overflow-x: auto; }
-    .nav-tab { flex: 1; justify-content: center; padding: 0 var(--sp-2); min-height: 2.25rem; font-size: var(--text-sm); }
-    .nav-count { display: none; }
-    .content { padding: 8.5rem var(--sp-4) 7rem; }
+    .nav-inner {
+      pointer-events: auto;
+      width: auto;
+      max-width: 95vw;
+      min-height: 3.5rem;
+      padding: .35rem .45rem;
+      gap: .35rem;
+      border-radius: 9999px;
+      box-shadow: 0 14px 44px rgba(0, 0, 0, 0.6);
+      background: rgba(22, 23, 27, 0.75);
+    }
+    .brand { display: none; }
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      width: auto;
+    }
+    .nav-tab {
+      width: 2.85rem;
+      height: 2.85rem;
+      min-height: 2.85rem;
+      padding: 0;
+      border-radius: 50% !important;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .nav-tab .nav-txt { display: none; }
+    .nav-tab .nav-ico {
+      display: block;
+      width: 1.3rem;
+      height: 1.3rem;
+      stroke: currentColor;
+    }
+    .nav-tab.on {
+      background: #ffffff !important;
+      color: #000000 !important;
+      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.35);
+    }
+    .nav-tab.on .nav-ico {
+      stroke: #000000 !important;
+      color: #000000 !important;
+    }
+    .nav-tab .nav-count {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: #ff3b30;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      font-family: var(--mono);
+      min-width: 1rem;
+      height: 1rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      line-height: 1;
+      border: 1.5px solid #16171b;
+    }
+    .nav-tab.on .nav-count {
+      background: #000000;
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+    .content {
+      padding: 2.25rem var(--sp-4) 7rem !important;
+    }
+    .savebar {
+      display: none;
+    }
     h1 { font-size: var(--text-2xl); }
     .status-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
     .linkrow { grid-template-columns: minmax(0,1fr); }
@@ -878,15 +923,44 @@
     </a>
 
     <nav class="nav-tabs" role="tablist" aria-label="Sections">
-      <button class="nav-tab on" role="tab" data-tab="providers" aria-selected="true" aria-controls="panel-providers">
-        Providers <span class="nav-count" id="nav-prov-count">4</span>
+      <button class="nav-tab on" role="tab" data-tab="providers" aria-selected="true" aria-controls="panel-providers" aria-label="Providers" title="Providers">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span class="nav-txt">Providers</span>
+        <span class="nav-count" id="nav-prov-count">4</span>
       </button>
-      <button class="nav-tab" role="tab" data-tab="filters" aria-selected="false" aria-controls="panel-filters">
-        Playback
+      <button class="nav-tab" role="tab" data-tab="filters" aria-selected="false" aria-controls="panel-filters" aria-label="Playback" title="Playback">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+          <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+          <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
+        </svg>
+        <span class="nav-txt">Playback</span>
       </button>
-      <button class="nav-tab" role="tab" data-tab="labels" aria-selected="false" aria-controls="panel-labels">Labels</button>
-      <button class="nav-tab" role="tab" data-tab="install" aria-selected="false" aria-controls="panel-install">Install</button>
-      <button class="nav-tab" role="tab" data-tab="status" aria-selected="false" aria-controls="panel-status">Status</button>
+      <button class="nav-tab" role="tab" data-tab="labels" aria-selected="false" aria-controls="panel-labels" aria-label="Labels" title="Labels">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+          <line x1="7" y1="7" x2="7.01" y2="7"/>
+        </svg>
+        <span class="nav-txt">Labels</span>
+      </button>
+      <button class="nav-tab" role="tab" data-tab="install" aria-selected="false" aria-controls="panel-install" aria-label="Install" title="Install">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span class="nav-txt">Install</span>
+      </button>
+      <button class="nav-tab" role="tab" data-tab="status" aria-selected="false" aria-controls="panel-status" aria-label="Status" title="Status">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        <span class="nav-txt">Status</span>
+      </button>
     </nav>
   </div>
 </header>
@@ -956,25 +1030,19 @@
   <section id="panel-filters" class="panel" role="tabpanel" hidden>
     <div class="cols">
       <div class="col-main">
-        <!-- Section 1: Sort Streams By (Pengu Playback Sort Option) -->
+        <!-- Section 1: Sort Streams By -->
         <div class="filter-box sheen-card">
           <div class="filter-box-head">
             <div>
-              <b style="display:inline-flex;align-items:center;gap:6px">
-                Sort streams by
-                <span class="tip-q-wrap">
-                  <span class="tip-q" tabindex="0" role="tooltip">?</span>
-                  <span class="tip-bubble">Resolutions always stay grouped (4K first, then 1080p, ...). Default keeps the per-provider arrival order inside each group; Size puts the biggest files first inside each group.</span>
-                </span>
-              </b>
-              <small>Resolutions always stay grouped (4K first, then 1080p, ...). Default keeps the per-provider arrival order inside each group; Size puts the biggest files first inside each group.</small>
+              <b>Sort streams by</b>
+              <small>Order streams primarily by video quality or by file size.</small>
             </div>
             <div class="sechead-actions">
-              <span class="count" id="sort-count" style="font-size:var(--text-xs);color:var(--ink-faint);font-family:var(--mono);text-transform:uppercase">Default</span>
+              <span class="count" id="sort-count" style="font-size:var(--text-xs);color:var(--ink-faint);font-family:var(--mono);text-transform:uppercase">Quality</span>
             </div>
           </div>
           <div class="chips" id="sort-chips">
-            <button type="button" class="chip on" data-val="default">Default</button>
+            <button type="button" class="chip on" data-val="quality">Quality</button>
             <button type="button" class="chip" data-val="size">Size</button>
           </div>
         </div>
@@ -1313,7 +1381,7 @@ function initState(){
   PROVIDERS.forEach(p => state[p.key] = p.def ? 'on' : 'off');
   state.formatter_style = 'rich';
   state.catalogs = 'on';
-  state.sort_by = 'default';
+  state.sort_by = 'quality';
   state.provider_order = ['source_multimovies', 'source_watchanimeworld', 'source_toonstream', 'source_piratexplay'];
   state.filter_qualities = 'all';
   state.filter_languages = '';
@@ -1342,7 +1410,7 @@ function buildConfig(){
   PROVIDERS.forEach(p => { if (state[p.key] === 'on') c[p.key] = 'on'; });
   c.formatter_style = state.formatter_style;
   c.catalogs = state.catalogs;
-  if (state.sort_by && state.sort_by !== 'default') c.sort_by = state.sort_by;
+  if (state.sort_by && state.sort_by === 'size') c.sort_by = 'size';
   
   const pShortOrder = (state.provider_order || []).map(k => k.replace('source_', ''));
   const defOrder = ['multimovies', 'watchanimeworld', 'toonstream', 'piratexplay'];
@@ -1392,20 +1460,16 @@ function update(){
   if (strictEl) strictEl.textContent = state.filter_audio_strict === 'on' ? 'On' : 'Off';
 
   // Sync sort chips
-  $$('#sort-chips .chip').forEach(b => b.classList.toggle('on', b.dataset.val === (state.sort_by || 'default')));
+  const curSort = (state.sort_by === 'size') ? 'size' : 'quality';
+  $$('#sort-chips .chip').forEach(b => b.classList.toggle('on', b.dataset.val === curSort));
 
+  const sortDisplay = curSort === 'size' ? 'Size' : 'Quality';
   const sortCount = $('#sort-count');
-  if (sortCount) {
-    const map = { default: 'Default', size: 'Size', quality_asc: 'Low to High' };
-    sortCount.textContent = map[state.sort_by] || 'Default';
-  }
+  if (sortCount) sortCount.textContent = sortDisplay;
 
   // Sync STATUS card in Playback tab
   const sumSortMode = $('#sum-sort-mode');
-  if (sumSortMode) {
-    const map = { default: 'Default', size: 'Size', quality_asc: 'Low to High' };
-    sumSortMode.textContent = map[state.sort_by] || 'Default';
-  }
+  if (sumSortMode) sumSortMode.textContent = sortDisplay;
 
   const totalQualities = QUALITIES.length;
   const selQualities = state.filter_qualities === 'all' ? totalQualities : state.filter_qualities.split(',').filter(Boolean).length;
