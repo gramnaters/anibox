@@ -433,6 +433,8 @@ def proxy_segment(segment_id):
         return redirect(mapping['url'], code=302)
 
     upstream_headers = dict(mapping.get('headers') or {})
+    # Request raw uncompressed bytes from upstream CDN so video/audio segments are never double-compressed
+    upstream_headers['Accept-Encoding'] = 'identity'
     # Forward the client's Range header so seeking works for direct files.
     client_range = request.headers.get('Range')
     if client_range:
@@ -443,21 +445,30 @@ def proxy_segment(segment_id):
         if r.status_code not in (200, 206):
             abort(502, description=f'CDN returned {r.status_code}')
 
-        ctype = (r.headers.get('Content-Type') or '').split(';')[0].strip()
-        if not ctype or ctype.startswith('text/html'):
-            path = urlparse(mapping['url']).path.lower()
-            if path.endswith('.m4s') or path.endswith('.mp4'):
-                ctype = 'video/mp4'
-            elif path.endswith('.aac'):
-                ctype = 'audio/aac'
-            elif path.endswith('.m4a'):
-                ctype = 'audio/mp4'
-            elif path.endswith('.mp3'):
-                ctype = 'audio/mpeg'
-            elif path.endswith('.vtt'):
-                ctype = 'text/vtt'
-            else:
-                ctype = 'video/MP2T'
+        # Determine the real media content-type:
+        # Pirate CDNs (Zephyr, etc.) disguise TS segments as .js, .css, .woff to abuse CF caching.
+        # We must ALWAYS force the proper binary media Content-Type so players (ExoPlayer, mpv, VLC)
+        # demux the segments correctly and upstream proxies do not corrupt them with Brotli/Gzip text compression!
+        raw_ctype = (r.headers.get('Content-Type') or '').split(';')[0].strip().lower()
+        path = urlparse(mapping['url']).path.lower()
+        req_path = request.path.lower()
+
+        if req_path.endswith('.ts') or path.endswith('.ts') or path.endswith(('.js', '.css', '.woff', '.png', '.jpg')):
+            ctype = 'video/MP2T'
+        elif req_path.endswith('.m4s') or path.endswith(('.m4s', '.mp4')):
+            ctype = 'video/mp4'
+        elif req_path.endswith('.aac') or path.endswith('.aac'):
+            ctype = 'audio/aac'
+        elif req_path.endswith('.m4a') or path.endswith('.m4a'):
+            ctype = 'audio/mp4'
+        elif req_path.endswith('.mp3') or path.endswith('.mp3'):
+            ctype = 'audio/mpeg'
+        elif req_path.endswith('.vtt') or path.endswith('.vtt'):
+            ctype = 'text/vtt'
+        elif raw_ctype.startswith(('video/', 'audio/')):
+            ctype = raw_ctype
+        else:
+            ctype = 'video/MP2T'
 
         length = r.headers.get('Content-Length')
         is_large = length and length.isdigit() and int(length) > 10_000_000 and not client_range
@@ -482,11 +493,12 @@ def proxy_segment(segment_id):
         for header in ('Content-Range', 'Accept-Ranges', 'ETag', 'Last-Modified'):
             if header in r.headers and header not in response.headers:
                 response.headers[header] = r.headers[header]
+        response.headers['Content-Type'] = ctype
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = '*'
         response.headers['Access-Control-Expose-Headers'] = 'Content-Length, Content-Range, Accept-Ranges'
-        response.headers['Cache-Control'] = 'public, max-age=86400'
+        response.headers['Cache-Control'] = 'public, max-age=86400, no-transform'
         return response
     except Exception as e:
         print(f'[proxy] error proxying segment {segment_id}: {e}')
