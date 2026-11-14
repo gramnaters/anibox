@@ -548,9 +548,18 @@ class MultiMoviesProvider:
             m3 = re.search(r'https?://[^\s"\'<>\\]+\.m3u8[^\s"\'<>\\]*', r.text)
             if not m3:
                 return out
+            m3_url = _unescape(m3.group(0))
+            # Pre-flight DNS check: verify domain is resolvable so dead/seized hosts (e.g. vidmmo.com) are dropped
+            try:
+                import socket
+                target_host = urlparse(m3_url).netloc.split(':')[0]
+                socket.gethostbyname(target_host)
+            except Exception:
+                return out
+
             out.append({
                 'player': 'direct_m3u8',
-                'url': _unescape(m3.group(0)),
+                'url': m3_url,
                 'name': 'MultiMovies (Direct)',
                 'referer': host,
             })

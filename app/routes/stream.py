@@ -132,8 +132,10 @@ def _inspect_m3u8(url, referer=''):
         # but the master playlist is valid HLS (#EXTM3U), do NOT drop the stream!
         _pollution_cache[url] = (False, meta)
         return False, meta
-    except Exception:
-        return False, meta
+    except Exception as e:
+        # If master playlist cannot even be resolved, reached, or connected to, stream is dead
+        _pollution_cache[url] = (True, meta)
+        return True, meta
 
 
 PROVIDER_DISPLAY = {
