@@ -1,0 +1,15 @@
+{
+  "name": "anibox-worker",
+  "version": "2.2.0",
+  "description": "AniBox Stremio Edge Addon - High performance multi-provider anime & cartoon scraper on Cloudflare Workers",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "test": "node tests/test_all.js"
+  },
+  "devDependencies": {
+    "wrangler": "^4.125.0"
+  }
+}
