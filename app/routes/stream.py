@@ -297,7 +297,7 @@ _PROXY_MEDIA_HOSTS = (
     'r66nv9ed.com', 'marketforecasting.cfd',                 # Byse / StreamRuby edge
     'streamruby.net', 'vmnow.online',                        # StreamRuby
     'hanerix.com', 'smoothpre', 'vidhide',                   # StreamHG
-    'zephyrix', 'zephyrflick', 'as-cdn',                     # Zephyr / FirePlayer
+    'zephyrix', 'zephyrflick', 'as-cdn', 'zn-grid',          # Zephyr / FirePlayer
     'vmpx.online', 'owphbf24.com', 'sprintcdn',              # StreamRuby rotating edges
     'byse', 'bysetayico', 'bysezejataos',                    # Byse
 )

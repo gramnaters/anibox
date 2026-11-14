@@ -3,19 +3,31 @@ Generic HLS proxy.
 
 Stremio's streaming server does NOT forward behaviorHints.proxyHeaders to
 URLs discovered INSIDE an m3u8 playlist (sub-playlists, segments, keys).
-CDNs like anvod / uwucdn require a Referer on every request, so without a
+CDNs like anvod / uwucdn / zephyr require a Referer on every request, so without a
 proxy those requests 403 and playback hangs.
 
 This blueprint fixes that by rewriting EVERY URL in a playlist to point back
 at this addon (/m3u8/<id>, /seg/<id>, /subtitles/<id>). The addon fetches
 from the CDN with the stored headers and streams the bytes to Stremio.
+
+To survive server restarts, worker cycling, and Render redeployments, proxy IDs
+support fully stateless tokens (prefixed with 'pl_z_', 'sg_z_', 'sub_z_')
+which compress and encode the upstream target URL and Referer directly into
+the URL itself. In addition, an SQLite disk database caches all registered
+mappings so legacy SHA1 IDs also survive cold process restarts.
 """
 
+import base64
+import hashlib
+import json
+import os
 import re
 import secrets
-import hashlib
+import sqlite3
+import tempfile
 import time
 import warnings
+import zlib
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -43,21 +55,115 @@ _BYTE_PATCH_HOSTS = ('hanerix.com', 'smoothpre', 'vidhide', 'tiktokcdn.com', 'p1
 # Hosts whose segments MUST pass through Render:
 # 1. Byte-patching hosts (StreamHG PNG headers on TikTok CDN)
 # 2. IP/ASN-locked hosts (Byse / SprintCDN / StreamRuby / Zephyr rotating
-#    edges where the signed token is tied to Render's IP)
+#    edges where the signed token or Referer is tied to Render's IP / origin)
 #
 # IMPORTANT: Keep this in sync with _PROXY_MEDIA_HOSTS in stream.py.
-# Any CDN whose m3u8 is proxied MUST also appear here so the rewritten
-# variant playlists and segments also route through Render; otherwise the
-# IP-bound tokens will 403 when the player fetches from a different IP.
 _MUST_PROXY_SEGMENT_HOSTS = (
     # StreamHG / TikTok CDN byte-patching
     'hanerix.com', 'smoothpre', 'vidhide', 'tiktokcdn.com', 'p16-ad-site-sign',
     # Byse / SprintCDN / StreamRuby IP-locked rotating edges
     'sprintcdn', 'r66nv9ed.com', 'marketforecasting.cfd', 'streamruby.net',
     'vmnow.online', 'vmpx.online', 'owphbf24.com', 'byse', 'bysetayico',
-    # Zephyr / FirePlayer IP-signed CDN tokens
-    'zephyrix', 'zephyrflick', 'as-cdn',
+    # Zephyr / FirePlayer IP-signed CDN tokens and edge servers
+    'zephyrix', 'zephyrflick', 'as-cdn', 'zn-grid',
 )
+
+# ---------------------------------------------------------------------------
+# SQLite Persistent Cache Setup (survives worker reboots within container)
+# ---------------------------------------------------------------------------
+_DB_PATH = os.environ.get('PROXY_DB_PATH')
+if not _DB_PATH:
+    _temp_dir = tempfile.gettempdir()
+    _DB_PATH = os.path.join(_temp_dir, 'anibox_proxy_cache.db')
+
+
+def _init_db():
+    try:
+        with sqlite3.connect(_DB_PATH, timeout=5) as conn:
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS proxy_mappings (
+                    id TEXT PRIMARY KEY,
+                    url TEXT NOT NULL,
+                    referer TEXT,
+                    type TEXT,
+                    created_at REAL
+                )
+            ''')
+            conn.execute('CREATE INDEX IF NOT EXISTS idx_proxy_created ON proxy_mappings(created_at)')
+            conn.commit()
+    except Exception as e:
+        print(f'[proxy_db] init error: {e}')
+
+
+_init_db()
+
+
+def _db_save(mapping_id: str, url: str, referer: str, kind: str):
+    """Persist mapping into local SQLite cache."""
+    try:
+        with sqlite3.connect(_DB_PATH, timeout=3) as conn:
+            conn.execute(
+                'INSERT OR REPLACE INTO proxy_mappings (id, url, referer, type, created_at) VALUES (?, ?, ?, ?, ?)',
+                (mapping_id, url, referer or '', kind or 'm3u8', time.time())
+            )
+            conn.commit()
+    except Exception:
+        pass
+
+
+def _db_lookup(mapping_id: str):
+    """Look up mapping from local SQLite cache."""
+    try:
+        with sqlite3.connect(_DB_PATH, timeout=3) as conn:
+            cursor = conn.execute(
+                'SELECT url, referer, type FROM proxy_mappings WHERE id = ?',
+                (mapping_id,)
+            )
+            row = cursor.fetchone()
+            if row:
+                u, r, k = row
+                headers = {'User-Agent': DEFAULT_UA}
+                if r:
+                    headers['Referer'] = r
+                return {'url': u, 'headers': headers, 'type': k or 'm3u8'}
+    except Exception:
+        pass
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Stateless Token Encoding / Decoding (zero server state required)
+# ---------------------------------------------------------------------------
+def encode_proxy_token(url: str, referer: str = '', kind: str = 'm3u8') -> str:
+    """Encode upstream url, referer, and kind into a stateless URL-safe token."""
+    payload = {'u': url}
+    if referer:
+        payload['r'] = referer
+    if kind and kind != 'm3u8':
+        payload['k'] = kind
+    raw = json.dumps(payload, separators=(',', ':')).encode('utf-8')
+    comp = zlib.compress(raw, level=9)
+    return base64.urlsafe_b64encode(comp).decode('ascii').rstrip('=')
+
+
+def decode_proxy_token(token: str):
+    """Decode a stateless token into {'url': ..., 'headers': {...}, 'type': ...}."""
+    try:
+        pad = '=' * (-len(token) % 4)
+        raw = zlib.decompress(base64.urlsafe_b64decode(token + pad))
+        payload = json.loads(raw.decode('utf-8'))
+        referer = payload.get('r', '')
+        headers = {'User-Agent': DEFAULT_UA}
+        if referer:
+            headers['Referer'] = referer
+        return {
+            'url': payload['u'],
+            'headers': headers,
+            'type': payload.get('k', 'm3u8')
+        }
+    except Exception as e:
+        print(f'[proxy] decode token error: {e}')
+        return None
 
 
 def _needs_byte_patching(url: str) -> bool:
@@ -67,10 +173,9 @@ def _needs_byte_patching(url: str) -> bool:
 
 
 def _needs_proxy_segment(url: str) -> bool:
-    """Return True only for hosts whose video segments contain an image wrapper header (e.g. StreamHG PNG).
-    Direct CDN segments (Byse, SprintCDN, Zephyr, etc.) are fetched directly by the player,
-    preventing Render CPU bottlenecks, eliminating seeking lag, and saving bandwidth."""
-    return _needs_byte_patching(url)
+    """Return True for hosts whose video segments require proxying (headers or byte stripping)."""
+    low = (url or '').lower()
+    return any(h in low for h in _MUST_PROXY_SEGMENT_HOSTS) or _needs_byte_patching(url)
 
 
 def _find_media_offset(data: bytes) -> int:
@@ -146,11 +251,7 @@ _SEGMENT_EXTS = ('.ts', '.m4s', '.mp4', '.m4a', '.aac', '.mp3', '.key',
 
 
 def _segment_ext(u):
-    """Pick a filename extension for a proxied segment URL.
-
-    Some HLS demuxers (ffmpeg) reject segment URLs without a known media
-    extension, so the proxy exposes /seg/<id>.<ext> instead of /seg/<id>.
-    """
+    """Pick a filename extension for a proxied segment URL."""
     path = urlparse(u).path.lower()
     for ext in _SEGMENT_EXTS:
         if path.endswith(ext):
@@ -165,61 +266,67 @@ def _addon_base():
 
 
 def addon_base_url():
-    """Return this addon's public base URL for the current request.
-
-    Call this on the request thread and pass the result to register_proxy_url
-    when registering from a worker thread (Flask's request is thread-local).
-    """
+    """Return this addon's public base URL for the current request."""
     return _addon_base()
 
 
 def register_proxy_url(url, headers, base_url=None, kind=None, ext=None):
-    """Register an upstream media URL and return a local proxy URL for it.
+    """Register an upstream media URL and return a stateless, durable proxy URL.
 
-    Used by the stream route for CDNs that reject browser Origin headers or
-    require headers on sub-playlists/segments, which Stremio does not forward.
-    ``base_url`` must be supplied when called outside the request thread.
-    ``kind`` forces 'm3u8' for playlists whose URL carries no playlist
-    extension (e.g. Zephyr's /cdn/hls/<id>/master.txt).
-    ``ext`` forces the proxy URL's media extension for direct files whose
-    upstream URL has none (e.g. an extensionless MP4) so players demux it
-    correctly.
+    The returned URL encodes the target and headers directly (pl_z_<token>.m3u8),
+    guaranteeing that playback will NEVER 404 even after Render redeployments or container restarts.
     """
     headers = headers or {}
     kind = kind or ('m3u8' if _is_playlist_url(url) else 'segment')
+    referer = headers.get('Referer') or ''
+    token = encode_proxy_token(url, referer, kind)
+
     prefix, route = ('pl_', 'm3u8') if kind == 'm3u8' else ('sg_', 'seg')
-    pid = prefix + hashlib.sha1(
-        (url + '|' + (headers.get('Referer') or '')).encode()
-    ).hexdigest()[:16]
-    playlist_mappings[pid] = {'url': url, 'headers': headers, 'type': kind}
+    pid_stateless = f'{prefix}z_{token}'
+
+    # Also compute legacy SHA1 hash and store both in memory + SQLite
+    pid_hash = prefix + hashlib.sha1((url + '|' + referer).encode()).hexdigest()[:16]
+    mapping_data = {'url': url, 'headers': headers, 'type': kind}
+    playlist_mappings[pid_stateless] = mapping_data
+    playlist_mappings[pid_hash] = mapping_data
+    _db_save(pid_stateless, url, referer, kind)
+    _db_save(pid_hash, url, referer, kind)
+
     if kind == 'segment':
         suffix = ('.' + ext.lstrip('.')) if ext else _segment_ext(url)
     else:
         suffix = '.m3u8'
-    return f'{(base_url or _addon_base()).rstrip("/")}/{route}/{pid}{suffix}'
+    return f'{(base_url or _addon_base()).rstrip("/")}/{route}/{pid_stateless}{suffix}'
 
 
 def _rewrite_m3u8_urls(content, base_url, headers):
-    """Rewrite ALL URLs in an m3u8 playlist to go through this addon."""
+    """Rewrite ALL URLs in an m3u8 playlist into stateless proxy URLs."""
     addon_base = _addon_base()
+    referer = ((headers or {}).get('Referer') or '')
 
     def _register(u, kind):
+        token = encode_proxy_token(u, referer, kind)
         if kind == 'subtitle':
-            sid = 'sub_' + hashlib.sha1(
-                (u + '|' + ((headers or {}).get('Referer') or '')).encode()
-            ).hexdigest()[:16]
-            subtitle_mappings[sid] = {'url': u, 'headers': headers}
-            return f'{addon_base}/subtitles/{sid}'
+            sid_stateless = f'sub_z_{token}'
+            sid_hash = 'sub_' + hashlib.sha1((u + '|' + referer).encode()).hexdigest()[:16]
+            m_data = {'url': u, 'headers': headers}
+            subtitle_mappings[sid_stateless] = m_data
+            subtitle_mappings[sid_hash] = m_data
+            _db_save(sid_stateless, u, referer, 'subtitle')
+            _db_save(sid_hash, u, referer, 'subtitle')
+            return f'{addon_base}/subtitles/{sid_stateless}'
+
         prefix, route = ('pl_', 'm3u8') if kind == 'm3u8' else ('sg_', 'seg')
-        # Deterministic IDs: the same upstream URL always maps to the same
-        # entry, so repeated playlist fetches can't flood the cache and evict
-        # the IDs Stremio is currently playing.
-        pid = prefix + hashlib.sha1(
-            (u + '|' + ((headers or {}).get('Referer') or '')).encode()
-        ).hexdigest()[:16]
-        playlist_mappings[pid] = {'url': u, 'headers': headers, 'type': kind}
+        pid_stateless = f'{prefix}z_{token}'
+        pid_hash = prefix + hashlib.sha1((u + '|' + referer).encode()).hexdigest()[:16]
+        m_data = {'url': u, 'headers': headers, 'type': kind}
+        playlist_mappings[pid_stateless] = m_data
+        playlist_mappings[pid_hash] = m_data
+        _db_save(pid_stateless, u, referer, kind)
+        _db_save(pid_hash, u, referer, kind)
+
         suffix = _segment_ext(u) if kind == 'segment' else '.m3u8'
-        return f'{addon_base}/{route}/{pid}{suffix}'
+        return f'{addon_base}/{route}/{pid_stateless}{suffix}'
 
     def _rewrite_uri(m, line):
         u = m.group(1)
@@ -246,17 +353,14 @@ def _rewrite_m3u8_urls(content, base_url, headers):
             continue
         # Every non-comment line in an HLS playlist is a URI - it may be
         # absolute, root-relative (/seg.m4s) or bare-relative (seg-1.m4s).
-        # Resolve against the playlist base and register all of them so the
-        # CDN Referer is applied to sub-playlists, keys, init segments, etc.
         absu = _resolve_url(base_url, stripped)
         if _is_playlist_url(absu) or prev_tag == 'playlist':
             out.append(_register(absu, 'm3u8'))
         elif _needs_proxy_segment(absu):
-            # Proxy segments that need byte stripping or are IP/ASN bound
+            # Proxy segments that need byte stripping or are IP/Referer bound
             out.append(_register(absu, 'segment'))
         else:
-            # Safe direct CDN URL for video segment: ExoPlayer/mpv downloads directly,
-            # saving Render bandwidth (free tier 4GB cap)!
+            # Safe direct CDN URL for video segment: ExoPlayer/mpv downloads directly
             out.append(absu)
         prev_tag = ''
 
@@ -266,9 +370,21 @@ def _rewrite_m3u8_urls(content, base_url, headers):
 @proxy_bp.route('/m3u8/<playlist_id>')
 def proxy_m3u8(playlist_id):
     """Proxy an m3u8 playlist from the CDN, rewriting all internal URLs."""
-    mapping = playlist_mappings.get(playlist_id) or playlist_mappings.get(
-        playlist_id.split('.', 1)[0]
-    )
+    raw_id = playlist_id.split('.', 1)[0]
+    mapping = None
+
+    # 1. Stateless token lookup (100% resilient across server redeployments)
+    if raw_id.startswith('pl_z_'):
+        mapping = decode_proxy_token(raw_id[5:])
+
+    # 2. In-memory cache lookup
+    if not mapping:
+        mapping = playlist_mappings.get(playlist_id) or playlist_mappings.get(raw_id)
+
+    # 3. Persistent SQLite disk lookup (for legacy SHA1 hashes or cross-process lookups)
+    if not mapping:
+        mapping = _db_lookup(raw_id) or _db_lookup(playlist_id)
+
     if not mapping:
         abort(404, description='Playlist mapping expired or not found')
 
@@ -293,16 +409,25 @@ def proxy_m3u8(playlist_id):
 @proxy_bp.route('/seg/<segment_id>')
 def proxy_segment(segment_id):
     """Proxy a segment or direct media file from the CDN with the correct headers."""
-    # The public URL carries a media extension (/seg/sg_abc.ts); the mapping
-    # key does not.
-    mapping = playlist_mappings.get(segment_id) or playlist_mappings.get(
-        segment_id.split('.', 1)[0]
-    )
+    raw_id = segment_id.split('.', 1)[0]
+    mapping = None
+
+    # 1. Stateless token lookup
+    if raw_id.startswith('sg_z_'):
+        mapping = decode_proxy_token(raw_id[5:])
+
+    # 2. In-memory cache lookup
+    if not mapping:
+        mapping = playlist_mappings.get(segment_id) or playlist_mappings.get(raw_id)
+
+    # 3. Persistent SQLite disk lookup
+    if not mapping:
+        mapping = _db_lookup(raw_id) or _db_lookup(segment_id)
+
     if not mapping:
         abort(404, description='Segment mapping expired or not found')
 
-    # Bandwidth optimization: If this segment does not require proxying
-    # (not StreamHG / Byse / StreamRuby IP-locked), redirect the client directly to the CDN.
+    # Bandwidth optimization: If this segment does not require proxying, redirect directly to CDN
     if not _needs_proxy_segment(mapping.get('url', '')):
         from flask import redirect
         return redirect(mapping['url'], code=302)
@@ -338,8 +463,7 @@ def proxy_segment(segment_id):
         is_large = length and length.isdigit() and int(length) > 10_000_000 and not client_range
         needs_patch = _needs_byte_patching(mapping.get('url', ''))
         if is_large or (not needs_patch and not client_range):
-            # For non-patching segments (e.g. Byse/SprintCDN), stream directly in chunks
-            # with minimal buffering overhead on Render's RAM!
+            # For non-patching segments (e.g. Byse/SprintCDN/Zephyr), stream directly in chunks
             response = Response(
                 stream_with_context(r.iter_content(chunk_size=65536)),
                 status=r.status_code,
@@ -371,15 +495,22 @@ def proxy_segment(segment_id):
 
 @proxy_bp.route('/subtitles/<subtitle_id>')
 def proxy_subtitle(subtitle_id):
-    """Proxy subtitle files with the correct content-type.
+    """Proxy subtitle files with the correct content-type."""
+    raw_id = subtitle_id.split('.', 1)[0]
+    mapping = None
 
-    Some CDNs (PirateXPlay's sprintcdn edges) publish subtitles as an HLS
-    playlist of .vtt segments instead of a single file. Those URLs are
-    token/IP-bound, so passing the body through verbatim makes the player
-    fetch the segments directly from the CDN and hang. Detect that shape and
-    proxy every segment too.
-    """
-    mapping = subtitle_mappings.get(subtitle_id)
+    # 1. Stateless token lookup
+    if raw_id.startswith('sub_z_'):
+        mapping = decode_proxy_token(raw_id[6:])
+
+    # 2. In-memory cache lookup
+    if not mapping:
+        mapping = subtitle_mappings.get(subtitle_id) or subtitle_mappings.get(raw_id)
+
+    # 3. Persistent SQLite disk lookup
+    if not mapping:
+        mapping = _db_lookup(raw_id) or _db_lookup(subtitle_id)
+
     if not mapping:
         abort(404, description='Subtitle mapping expired or not found')
 

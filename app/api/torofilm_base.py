@@ -291,12 +291,23 @@ class TorofilmAPI:
                                     'url': val.get('embed_url') or val.get('embed', ''),
                                 })
 
+                        has_multi_audio = any(
+                            'zephyr' in (tab.get('url') or '').lower() or
+                            'zephyr' in (tab.get('embed_url') or '').lower() or
+                            'zephyr' in (tab.get('embed') or '').lower()
+                            for tab in tabs
+                        )
+
                         for tab in tabs:
                             turl = tab.get('url', '')
                             if not turl: continue
                             turl = urljoin(base, turl)
                             tname = tab.get('name', 'Direct')
                             if 'dub-player' in turl:
+                                if has_multi_audio:
+                                    # Multi-audio stream (Direct Auto) is available with in-player audio switching.
+                                    # Skip 7 redundant single-audio Abyss streams.
+                                    continue
                                 dubs = self._extract_dub_player(turl, tname)
                                 if dubs:
                                     streams.extend(dubs)
@@ -314,11 +325,15 @@ class TorofilmAPI:
                     ep_page_url = ep_data.get('url', f'{base}/series/{slug}')
                 resp = self._get(ep_page_url)
                 soup = BeautifulSoup(resp.text, 'html.parser')
-                for iframe in soup.find_all('iframe'):
+                iframes = soup.find_all('iframe')
+                has_multi_audio = any('zephyr' in (iframe.get('src') or iframe.get('data-src') or '').lower() for iframe in iframes)
+                for iframe in iframes:
                     src = iframe.get('src') or iframe.get('data-src', '')
                     if src:
                         src = urljoin(base, src)
                         if 'dub-player' in src:
+                            if has_multi_audio:
+                                continue
                             dubs = self._extract_dub_player(src, 'Direct')
                             if dubs:
                                 streams.extend(dubs)
@@ -332,7 +347,7 @@ class TorofilmAPI:
         url = urljoin(self._live_base(), url)
         url_lower = url.lower()
         if 'zephyr' in url_lower:
-            return {'player': 'zephyrflick', 'url': url, 'name': f'{name} (Zephyr)', 'languages': []}
+            return {'player': 'zephyrflick', 'url': url, 'name': 'Direct (Auto)', 'languages': []}
         elif 'gdmirrorbot' in url_lower:
             return {'player': 'gdmirrorbot', 'url': url, 'name': f'{name} (GDMirror)', 'languages': []}
         elif 'vidmoly' in url_lower:

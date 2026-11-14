@@ -564,7 +564,7 @@ def extract_zephyrflick(url):
                                 lang_code = 'eng' if 'english' in sl.group(1).lower() else sl.group(1).lower()[:3]
                                 subtitles.append({'id': f'{video_id}_{lang_code}', 'url': sl.group(2), 'lang': lang_code})
                 except: pass
-                return {'streams': [{'player': 'direct_m3u8', 'url': video_url, 'name': 'Zephyr',
+                return {'streams': [{'player': 'direct_m3u8', 'url': video_url, 'name': 'Direct (Auto)',
                                     'subtitles': subtitles}]}
         except Exception as e:
             print(f'[zephyr] {base}: {e}')
@@ -1110,7 +1110,7 @@ PLAYER_NAMES = {
     'doodstream': 'DoodStream', 'streamtape': 'StreamTape', 'turbovid': 'TurboVid',
     'streamp2p': 'StreamP2P', 'rpmstream': 'RPMShare', 'upnshare': 'UPNShare',
     'streamhg': 'StreamHG', 'vidsrc': 'VidSrc', 'vidrocks': 'VidRocks',
-    'zephyrflick': 'ZephyrFlick', 'moviesapi': 'MoviesAPI', 'videasy': 'Videasy',
+    'zephyrflick': 'Direct (Auto)', 'moviesapi': 'MoviesAPI', 'videasy': 'Videasy',
     'playmogo': 'PlayMogo', 'abyss': 'Abyss Player', 'flixcloud': 'FlixCloud',
     'megacloud': 'MegaCloud', 'direct_m3u8': 'Direct Stream',
     'piratexplay': 'PirateXPlay', 'hsastream': 'HSAStream', 'byse': 'Byse',
