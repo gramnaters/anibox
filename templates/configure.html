@@ -12,21 +12,21 @@
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  /* ─── TypeUI Precision Monochrome System Tokens ─── */
+  /* ─── TypeUI Precision Monochrome System Tokens (mkissa.to & BitChord Glass) ─── */
   :root {
-    --bg-base: #000000;
-    --app-bg: #000000;
-    --surface: #0e0e11;
-    --surface-2: #16161a;
-    --surface-3: #202026;
+    --bg-base: #16171b;
+    --app-bg: #16171b;
+    --surface: rgba(255, 255, 255, 0.055);
+    --surface-2: rgba(255, 255, 255, 0.08);
+    --surface-3: rgba(255, 255, 255, 0.13);
 
     --ink: #ffffff;
-    --ink-muted: #a1a1aa;
-    --ink-faint: #52525b;
+    --ink-muted: #a6a8b1;
+    --ink-faint: #6e707a;
 
-    --border: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(255, 255, 255, 0.22);
-    --border-active: rgba(255, 255, 255, 0.7);
+    --border: rgba(255, 255, 255, 0.12);
+    --border-hover: rgba(255, 255, 255, 0.28);
+    --border-active: rgba(255, 255, 255, 0.85);
 
     /* Single unified monochrome highlight */
     --accent: #ffffff;
@@ -57,28 +57,38 @@
 
   html {
     font-size: 16px;
-    background-color: #06070a !important;
+    background-color: #16171b !important;
     color: #ffffff;
   }
 
-  /* ─── Atmospheric Japanese Midnight Anime Backdrop with Sakura Bloom & Liquid Glass ─── */
+  /* ─── mkissa.to Diffused Blur White Glass Screen Backdrop ─── */
   body {
     margin: 0;
     min-height: 100vh;
-    background-color: #06070a !important;
+    background-color: #16171b !important;
     background-image: 
-      radial-gradient(ellipse 950px 320px at 50% 0%, rgba(255, 215, 230, 0.09) 0%, transparent 72%),
-      linear-gradient(to bottom, rgba(6, 7, 10, 0.28) 0%, rgba(6, 7, 10, 0.68) 320px, rgba(6, 7, 10, 0.94) 700px, #06070a 1050px),
-      url('/static/anime-bg.jpg') !important;
-    background-position: center top !important;
-    background-size: 100% auto, 100% auto, cover !important;
-    background-attachment: scroll, scroll, fixed !important;
+      radial-gradient(ellipse 1100px 580px at 50% 12%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 45%, transparent 72%),
+      radial-gradient(ellipse 950px 520px at 85% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 850px 480px at 15% 65%, rgba(255, 255, 255, 0.06) 0%, transparent 55%),
+      linear-gradient(175deg, #44474f 0%, #2f3137 28%, #1c1d22 65%, #121316 100%) !important;
+    background-attachment: fixed !important;
     background-repeat: no-repeat !important;
     color: #ffffff;
     font: var(--text-md)/1.55 var(--font);
     -webkit-font-smoothing: antialiased;
     accent-color: #ffffff;
     position: relative;
+  }
+
+  /* Tactile matte micro-grain texture matching mkissa & BitChord */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   ::selection { background: #ffffff; color: #000000; }
@@ -107,73 +117,99 @@
     100% { background-position: -200% 0; }
   }
 
-  /* ─── Apple Music Liquid Frosted Glass Floating Pill Nav ─── */
+  /* ─── BitChord Immersive Liquid Glass Floating Pill Nav ─── */
   .navbar {
     position: fixed; top: 0; left: 0; right: 0; z-index: 40;
     padding: .875rem clamp(.75rem, 2vw, 2rem); pointer-events: none;
     display: flex; justify-content: center;
   }
   .nav-inner {
-    position: relative; display: inline-flex; align-items: center; gap: var(--sp-3); width: max-content; max-width: 100%;
-    min-height: 3.5rem; margin: 0 auto; padding: .32rem .45rem .32rem .75rem; color: #ffffff;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.22); border-radius: var(--r-full);
-    box-shadow: 
-      0 20px 48px -8px rgba(0, 0, 0, 0.8),
-      0 1.5px 0 0 rgba(255, 255, 255, 0.45) inset,
-      0 -1px 0 0 rgba(0, 0, 0, 0.6) inset,
-      0 0 24px 0 rgba(255, 255, 255, 0.08) inset;
-    -webkit-backdrop-filter: blur(28px) saturate(220%) contrast(115%);
-    backdrop-filter: blur(28px) saturate(220%) contrast(115%);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    width: max-content;
+    max-width: 100%;
+    min-height: 3.5rem;
+    margin: 0 auto;
+    padding: .35rem .5rem .35rem .75rem;
+    border-radius: 9999px;
+    isolation: isolate;
     pointer-events: auto;
-    transition: all .22s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .nav-inner:hover {
-    border-color: rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.09);
-    box-shadow: 
-      0 24px 54px -8px rgba(0, 0, 0, 0.9),
-      0 2px 0 0 rgba(255, 255, 255, 0.6) inset,
-      0 -1px 0 0 rgba(0, 0, 0, 0.6) inset,
-      0 0 28px 0 rgba(255, 255, 255, 0.12) inset;
+  /* BitChord Glass Fill & Drop Shadow (::before) */
+  .nav-inner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
+    background-color: #26262899; /* BitChord glassMaterialBackground */
+    backdrop-filter: saturate(2.2) blur(18px);
+    -webkit-backdrop-filter: saturate(2.2) blur(18px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.32);
+    transition: background-color .2s ease, box-shadow .2s ease;
+  }
+  /* BitChord 0.5px Inner Stroke (::after) */
+  .nav-inner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      inset 0.5px 0.5px 0 #ffffff,
+      inset 0.5px -0.5px 0 #ffffff,
+      inset -0.5px 0.5px 0 #ffffff,
+      inset -0.5px -0.5px 0 #ffffff;
+    opacity: 0.25;
+    transition: opacity .2s ease;
+  }
+  .nav-inner:hover::before {
+    background-color: #2e2e32b3;
+    box-shadow: 0 14px 48px rgba(0, 0, 0, 0.42);
+  }
+  .nav-inner:hover::after {
+    opacity: 0.38;
   }
 
   .brand {
     display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 2.6rem; padding: 0 var(--sp-3) 0 var(--sp-1);
-    border-radius: var(--r-full); font-weight: 700; font-size: var(--text-md); letter-spacing: -.02em; flex: none;
+    border-radius: 9999px; font-weight: 700; font-size: var(--text-md); letter-spacing: -.02em; flex: none;
     transition: opacity .16s ease;
   }
   .brand:hover { opacity: 0.85; }
   .brand img {
     width: 1.85rem; height: 1.85rem; border-radius: 9px; object-fit: contain; display: block;
-    border: 1px solid rgba(255, 255, 255, 0.16); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
   .brand b { font-weight: 800; color: #ffffff; letter-spacing: -.03em; font-size: var(--text-base); }
 
   .nav-tabs { display: inline-flex; gap: 3px; align-items: center; justify-content: center; min-width: 0; }
   .nav-tab {
     display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2); min-height: 2.5rem;
-    padding: 0 var(--sp-4); border: 1px solid transparent; border-radius: var(--r-full); background: transparent;
-    color: rgba(255, 255, 255, 0.65); font-size: var(--text-sm); font-weight: 600; letter-spacing: -.01em;
-    white-space: nowrap; transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 0 var(--sp-4); border: 0; border-radius: 9999px; background: transparent;
+    color: rgba(255, 255, 255, 0.72); font-size: var(--text-sm); font-weight: 600; letter-spacing: -.01em;
+    white-space: nowrap; transition: all .18s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .nav-tab:hover { color: #ffffff; background: rgba(255, 255, 255, 0.08); }
 
-  /* Apple Music Active Tab: Crisp Solid White with Glass Depth */
+  /* BitChord Active Pill Tab: Pure crisp white pill with black text */
   .nav-tab.on {
     color: #000000 !important;
     background: #ffffff !important;
-    border-color: #ffffff !important;
     font-weight: 700;
-    box-shadow: 0 3px 16px rgba(255, 255, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 14px rgba(255, 255, 255, 0.28);
   }
   .nav-tab.on .nav-count {
     color: #000000 !important;
     background: rgba(0, 0, 0, 0.12) !important;
   }
   .nav-count {
-    font-size: 11px; font-weight: 800; color: rgba(255, 255, 255, 0.75);
-    background: rgba(255, 255, 255, 0.12); border-radius: var(--r-full); padding: 1px 7px; line-height: 16px;
+    font-size: 11px; font-weight: 800; color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.12); border-radius: 9999px; padding: 1px 7px; line-height: 16px;
     font-variant-numeric: tabular-nums;
   }
 
@@ -236,7 +272,8 @@
   /* ─── Cards & Option List ─── */
   .optlist {
     display: block; background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-lg); padding: 0; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-radius: var(--r-lg); padding: 0; backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.25);
   }
   .opt {
     display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4) var(--sp-5);
@@ -318,7 +355,8 @@
   /* ─── Filter Boxes & Chips (Pure Monochrome) ─── */
   .filter-box {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--sp-5);
-    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.25);
   }
   .filter-box-head {
     display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-3);
@@ -468,7 +506,8 @@
 
   .pv {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--sp-5);
-    position: relative; overflow: hidden; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    position: relative; overflow: hidden; backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.25);
   }
 
   .pv .ph {
@@ -794,21 +833,9 @@
     .steps { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-
-  /* ─── Animated Floating Sakura Petals Canvas ─── */
-  #sakura-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 1; /* Below content (10) and liquid glass navbar (40) */
-  }
 </style>
 </head>
 <body>
-<canvas id="sakura-canvas" aria-hidden="true"></canvas>
 <header class="navbar">
   <div class="nav-inner">
     <a class="brand" href="#providers" aria-label="AniBox home">
@@ -895,11 +922,11 @@
   <section id="panel-filters" class="panel" role="tabpanel" hidden>
     <div class="cols">
       <div class="col-main">
-        <!-- Section 1: Playback Preferences -->
+        <!-- Section 1: Preferences (Pengu Settings in AniBox Native Layout) -->
         <div class="filter-box sheen-card">
           <div class="filter-box-head">
             <div>
-              <b>Playback Preferences</b>
+              <b>Preferences</b>
               <small>Subtitles, player load timeout, and stream grouping rules.</small>
             </div>
           </div>
@@ -921,8 +948,35 @@
             </label>
           </div>
 
-          <!-- Load Timeout -->
+          <!-- Group Streams By -->
           <div style="margin-top:var(--sp-4);padding-bottom:var(--sp-3);border-bottom:1px solid rgba(255,255,255,.06)">
+            <div class="sechead" style="margin-bottom:var(--sp-1)">
+              <h2>Group Streams By</h2>
+              <span class="count" id="group-count">Quality</span>
+            </div>
+            <small style="color:var(--ink-muted);font-size:var(--text-sm);display:block;margin-bottom:var(--sp-2)">Choose how streams are grouped together in your player list.</small>
+            <div class="chips" id="group-chips">
+              <button type="button" class="chip" data-val="default">Default</button>
+              <button type="button" class="chip" data-val="provider">Provider</button>
+              <button type="button" class="chip on" data-val="quality">Quality</button>
+            </div>
+          </div>
+
+          <!-- Sort Streams -->
+          <div style="margin-top:var(--sp-4);padding-bottom:var(--sp-3);border-bottom:1px solid rgba(255,255,255,.06)">
+            <div class="sechead" style="margin-bottom:var(--sp-1)">
+              <h2>Sort Streams</h2>
+              <span class="count" id="sort-count">Default</span>
+            </div>
+            <small style="color:var(--ink-muted);font-size:var(--text-sm);display:block;margin-bottom:var(--sp-2)">Choose stream ordering within each group.</small>
+            <div class="chips" id="sort-chips">
+              <button type="button" class="chip on" data-val="default">Default</button>
+              <button type="button" class="chip" data-val="size">Size</button>
+            </div>
+          </div>
+
+          <!-- Load Timeout -->
+          <div style="margin-top:var(--sp-4)">
             <div class="sechead" style="margin-bottom:var(--sp-1)">
               <h2>Load Timeout</h2>
               <span class="count" id="timeout-count">15s</span>
@@ -931,54 +985,25 @@
             <div class="chips" id="timeout-chips">
               <button type="button" class="chip" data-val="5">5s</button>
               <button type="button" class="chip" data-val="10">10s</button>
-              <button type="button" class="chip on" data-val="15">15s (Default)</button>
+              <button type="button" class="chip on" data-val="15">15s</button>
               <button type="button" class="chip" data-val="30">30s</button>
               <button type="button" class="chip" data-val="45">45s</button>
             </div>
           </div>
-
-          <!-- Group Streams By -->
-          <div style="margin-top:var(--sp-4)">
-            <div class="sechead" style="margin-bottom:var(--sp-1)">
-              <h2>Group Streams By</h2>
-              <span class="count" id="group-count">Quality</span>
-            </div>
-            <small style="color:var(--ink-muted);font-size:var(--text-sm);display:block;margin-bottom:var(--sp-2)">How stream results are grouped together in your player list.</small>
-            <div class="chips" id="group-chips">
-              <button type="button" class="chip on" data-val="quality">Quality (4K → 1080p → 720p)</button>
-              <button type="button" class="chip" data-val="provider">Provider Name</button>
-              <button type="button" class="chip" data-val="default">Default (Flat List)</button>
-            </div>
-          </div>
         </div>
 
-        <!-- Section 2: Stream Ordering -->
+        <!-- Section 2: Provider Order -->
         <div class="filter-box sheen-card">
           <div class="filter-box-head">
             <div>
-              <b>Stream Ordering</b>
-              <small>Choose how results are sorted within each group.</small>
-            </div>
-          </div>
-          <div class="chips" id="sort-chips">
-            <button type="button" class="chip on" data-val="default">Quality: High to Low (Recommended)</button>
-            <button type="button" class="chip" data-val="quality_asc">Quality: Low to High (Data Saver)</button>
-            <button type="button" class="chip" data-val="size">File Size: Largest First</button>
-          </div>
-        </div>
-
-        <!-- Section 3: Provider Priority Order -->
-        <div class="filter-box sheen-card">
-          <div class="filter-box-head">
-            <div>
-              <b>Provider Order Priority</b>
-              <small>Within each resolution tier, providers appear in this order. Ranking decides who goes first inside a group.</small>
+              <b>Provider Order</b>
+              <small>Within each resolution tier, providers appear in this order. All 4K first, then 1080p, and so on. The ranking only decides who goes first inside a group.</small>
             </div>
           </div>
           <div class="porder-list" id="porder-list"></div>
         </div>
 
-        <!-- Section 4: Quality Filter -->
+        <!-- Section 3: Quality Filter -->
         <div class="filter-box sheen-card">
           <div class="filter-box-head">
             <div>
@@ -993,7 +1018,7 @@
           <div class="chips" id="quality-chips"></div>
         </div>
 
-        <!-- Section 5: Audio Languages -->
+        <!-- Section 4: Audio Languages -->
         <div class="filter-box sheen-card">
           <div class="filter-box-head">
             <div>
@@ -1404,6 +1429,12 @@ function update(){
   const subToggle = $('#hide-subtitles-toggle');
   if (subToggle) subToggle.checked = state.hide_subtitles === 'on';
 
+  const sortCount = $('#sort-count');
+  if (sortCount) {
+    const map = { default: 'Default', size: 'Size', quality_asc: 'Low to High' };
+    sortCount.textContent = map[state.sort_by] || 'Default';
+  }
+
   // Sync STATUS card in Playback tab
   const sumGroup = $('#sum-group');
   if (sumGroup) {
@@ -1413,8 +1444,8 @@ function update(){
   
   const sumSortMode = $('#sum-sort-mode');
   if (sumSortMode) {
-    const map = { default: 'High to Low', quality_asc: 'Low to High', size: 'File Size' };
-    sumSortMode.textContent = map[state.sort_by] || 'High to Low';
+    const map = { default: 'Default', size: 'Size', quality_asc: 'Low to High' };
+    sumSortMode.textContent = map[state.sort_by] || 'Default';
   }
 
   const sumTimeout = $('#sum-timeout');
@@ -1914,84 +1945,7 @@ $$('.sfilter').forEach(btn => btn.addEventListener('click', () => {
 }));
 setInterval(() => { if (statusStarted) loadStatus(false); }, 30000);
 
-function initSakura(){
-  const canvas = document.getElementById('sakura-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let width = (canvas.width = window.innerWidth);
-  let height = (canvas.height = window.innerHeight);
-
-  function resize(){
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  }
-  window.addEventListener('resize', resize, { passive: true });
-
-  const TOTAL_PETALS = Math.min(42, Math.max(22, Math.floor(window.innerWidth / 35)));
-  const petals = [];
-
-  class Petal {
-    constructor(){ this.reset(true); }
-    reset(init){
-      this.x = Math.random() * width;
-      this.y = init ? Math.random() * height : -25 - Math.random() * 30;
-      this.size = 11 + Math.random() * 11;
-      this.speedX = 0.35 + Math.random() * 0.85;
-      this.speedY = 0.85 + Math.random() * 1.35;
-      this.rotation = Math.random() * Math.PI * 2;
-      this.rotSpeed = (Math.random() - 0.5) * 0.022;
-      this.flip = Math.random() * Math.PI;
-      this.flipSpeed = 0.02 + Math.random() * 0.03;
-      this.opacity = 0.38 + Math.random() * 0.42;
-      const tints = [
-        'rgba(255, 218, 230, ',
-        'rgba(255, 236, 244, ',
-        'rgba(255, 204, 222, ',
-        'rgba(255, 245, 250, '
-      ];
-      this.color = tints[Math.floor(Math.random() * tints.length)];
-    }
-    update(){
-      this.x += this.speedX + Math.sin(this.flip) * 0.45;
-      this.y += this.speedY;
-      this.rotation += this.rotSpeed;
-      this.flip += this.flipSpeed;
-      if (this.y > height + 35 || this.x > width + 35) this.reset(false);
-    }
-    draw(c){
-      c.save();
-      c.translate(this.x, this.y);
-      c.rotate(this.rotation);
-      c.scale(Math.sin(this.flip), 1);
-      c.fillStyle = this.color + this.opacity + ')';
-      c.beginPath();
-      c.moveTo(0, -this.size);
-      c.bezierCurveTo(this.size * 0.65, -this.size * 0.9, this.size * 0.85, -this.size * 0.2, this.size * 0.45, this.size * 0.6);
-      c.bezierCurveTo(this.size * 0.2, this.size * 0.9, 0, this.size, 0, this.size);
-      c.bezierCurveTo(0, this.size, -this.size * 0.2, this.size * 0.9, -this.size * 0.45, this.size * 0.6);
-      c.bezierCurveTo(-this.size * 0.85, -this.size * 0.2, -this.size * 0.65, -this.size * 0.9, 0, -this.size);
-      c.fill();
-      c.restore();
-    }
-  }
-
-  for (let i = 0; i < TOTAL_PETALS; i++) petals.push(new Petal());
-
-  function loop(){
-    if (!document.hidden) {
-      ctx.clearRect(0, 0, width, height);
-      for (let i = 0; i < petals.length; i++) {
-        petals[i].update();
-        petals[i].draw(ctx);
-      }
-    }
-    requestAnimationFrame(loop);
-  }
-  loop();
-}
-
 initState();
-initSakura();
 initPlaybackControls();
 renderProviders();
 renderFilters();
