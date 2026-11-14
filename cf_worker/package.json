@@ -1,11 +1,13 @@
 {
   "name": "anibox-edge",
   "version": "1.0.0",
+  "type": "module",
   "description": "Ultra-fast Cloudflare Worker edge scraper & Stremio addon for AniBox",
   "main": "src/index.js",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "start": "node server.js"
   },
   "devDependencies": {
     "wrangler": "^3.50.0"
