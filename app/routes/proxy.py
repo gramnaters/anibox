@@ -45,6 +45,10 @@ playlist_mappings = TTLCache(maxsize=50000, ttl=43200)
 subtitle_mappings = TTLCache(maxsize=8000, ttl=3600)
 
 _cookie_jar = requests.cookies.RequestsCookieJar()
+_proxy_session = requests.Session()
+from requests.adapters import HTTPAdapter
+_proxy_session.mount('https://', HTTPAdapter(pool_connections=64, pool_maxsize=128, max_retries=1))
+_proxy_session.mount('http://', HTTPAdapter(pool_connections=64, pool_maxsize=128, max_retries=1))
 
 DEFAULT_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
               '(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
@@ -202,19 +206,19 @@ def _find_media_offset(data: bytes) -> int:
     return -1 if is_img else 0
 
 
-def _fetch_upstream(url, headers, max_retries=4, stream=False, timeout=25):
-    """Fetch a URL from the CDN with retry on 403/5xx and timeout backoff."""
+def _fetch_upstream(url, headers, max_retries=3, stream=False, timeout=18):
+    """Fetch a URL from the CDN using connection pooling with fast backoff on transient errors."""
     last = None
     for attempt in range(max_retries):
         try:
-            r = requests.get(url, headers=headers, timeout=timeout, stream=stream, verify=False)
+            r = _proxy_session.get(url, headers=headers, timeout=timeout, stream=stream, verify=False)
             if r.cookies:
                 for c in r.cookies:
                     _cookie_jar.set_cookie(c)
             if r.status_code == 200:
                 return r
             if r.status_code in (403, 429, 500, 502, 503, 504, 522, 524):
-                time.sleep(1.5 * (attempt + 1))
+                time.sleep(0.3 * (attempt + 1))
                 last = r
                 continue
             return r
@@ -223,7 +227,7 @@ def _fetch_upstream(url, headers, max_retries=4, stream=False, timeout=25):
             err_str = str(e).lower()
             if 'nameresolutionerror' in err_str or 'getaddrinfo failed' in err_str or 'connection refused' in err_str:
                 break
-            time.sleep(1.5 * (attempt + 1))
+            time.sleep(0.3 * (attempt + 1))
     if isinstance(last, Exception):
         raise last
     return last

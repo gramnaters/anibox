@@ -2,10 +2,10 @@ from flask import Flask, render_template, request, make_response, send_from_dire
 from flask_compress import Compress
 import logging, os, hashlib, sys, io
 
-# Fix Unicode on Windows
+# Fix Unicode on Windows with immediate line buffering
 if sys.platform == 'win32':
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
 
 from config import Config
 

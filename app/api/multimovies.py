@@ -281,38 +281,40 @@ class MultiMoviesProvider:
                 page_url = self._episode_url(slug, kind, basename, season, episode, dom)
             chips = self._server_chips(page_url)
 
-            streams = []
-            for name, url in chips:
-                added = 0
+            def _resolve_one_chip(chip):
+                name, url = chip
+                s_list = []
                 low = url.lower()
-                if 'modiplay' in low:
-                    for sd in self._resolve_modiplay(url):
-                        streams.append(sd)
-                        added += 1
-                elif 'vidout' in low:
-                    for sd in self._resolve_vidout(url):
-                        streams.append(sd)
-                        added += 1
-                elif 'vidrift' in low or 'filmu' in low:
-                    for sd in self._resolve_vidrift(url):
-                        streams.append(sd)
-                        added += 1
-                elif 'iqsmartgames' in low or 'gdmirrorbot' in low:
-                    for sd in resolve_embed(url):
-                        sd.setdefault('name', f'GD Mirror {name}'.strip())
-                        streams.append(sd)
-                        added += 1
-                elif 'nxsha' in low:
-                    for sd in self._resolve_nxsha(url):
-                        sd.setdefault('name', f'NxSha {name}'.strip())
-                        streams.append(sd)
-                        added += 1
-                else:
-                    for sd in self._resolve_direct(url):
-                        sd.setdefault('name', name or 'MultiMovies')
-                        streams.append(sd)
-                        added += 1
-                # else: dead/JS host, skip
+                try:
+                    if 'modiplay' in low:
+                        for sd in self._resolve_modiplay(url):
+                            s_list.append(sd)
+                    elif 'vidout' in low:
+                        for sd in self._resolve_vidout(url):
+                            s_list.append(sd)
+                    elif 'vidrift' in low or 'filmu' in low:
+                        for sd in self._resolve_vidrift(url):
+                            s_list.append(sd)
+                    elif 'iqsmartgames' in low or 'gdmirrorbot' in low:
+                        for sd in resolve_embed(url):
+                            sd.setdefault('name', f'GD Mirror {name}'.strip())
+                            s_list.append(sd)
+                    elif 'nxsha' in low:
+                        for sd in self._resolve_nxsha(url):
+                            sd.setdefault('name', f'NxSha {name}'.strip())
+                            s_list.append(sd)
+                    else:
+                        for sd in self._resolve_direct(url):
+                            sd.setdefault('name', name or 'MultiMovies')
+                            s_list.append(sd)
+                except Exception as ex:
+                    print(f'[multimovies] chip {name} error: {ex}')
+                return s_list
+
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=min(len(chips) or 1, 6)) as ex:
+                batches = list(ex.map(_resolve_one_chip, chips))
+            streams = [sd for b in batches for sd in b]
 
             # dedupe by (player, url)
             seen = set()
@@ -366,7 +368,9 @@ class MultiMoviesProvider:
             codes = re.findall(r'data-code=["\']([^"\']+)["\']', r.text)
             items = list(zip(pnames, platforms, codes))
 
-            for pname, platform, code in items:
+            def _resolve_one_item(item):
+                pname, platform, code = item
+                item_streams = []
                 # 1. EarnVids / VidHide (Direct HLS2 on acek-cdn.com)
                 if platform == 'earnvids' or 'minochinos' in code:
                     try:
@@ -384,7 +388,7 @@ class MultiMoviesProvider:
                                 unpacked = re.sub(r'\b\w+\b', lambda m: symtab[unbase(m.group(0), radix)] if unbase(m.group(0), radix) < len(symtab) and symtab[unbase(m.group(0), radix)] else m.group(0), payload)
                                 hls2 = re.search(r'https?://[^\s"\'<>]+\.acek-cdn\.com/hls2/[^\s"\'<>]+', unpacked)
                                 if hls2:
-                                    out.append({
+                                    item_streams.append({
                                         'player': 'direct_m3u8',
                                         'url': hls2.group(0),
                                         'name': f"VidHide (Acek CDN - {pname})",
@@ -403,7 +407,7 @@ class MultiMoviesProvider:
                         rp = self.session.get(p_url, headers={'Referer': embed_url}, timeout=6, verify=False)
                         mvib = re.search(r'stream_proxy\.php\?url=(https%3A%2F%2Fvibuxer\.com%2Fstream%2F[^&]+)', rp.text)
                         if mvib:
-                            out.append({
+                            item_streams.append({
                                 'player': 'direct_m3u8',
                                 'url': unquote(mvib.group(1)),
                                 'name': f"StreamHG (Vibuxer - {pname})",
@@ -416,10 +420,13 @@ class MultiMoviesProvider:
 
                 # 3. Vidrift (Direct Vidly / Rousav CDN)
                 elif platform == 'vidrift':
-                    tmdb = code.split(':')[0]
-                    is_show = ':tv:' in code
-                    v_streams = self._resolve_vidrift(f"https://vidly.pro/{'tv' if is_show else 'movie'}/{tmdb}")
-                    out.extend(v_streams)
+                    try:
+                        tmdb = code.split(':')[0]
+                        is_show = ':tv:' in code
+                        v_streams = self._resolve_vidrift(f"https://vidly.pro/{'tv' if is_show else 'movie'}/{tmdb}")
+                        item_streams.extend(v_streams)
+                    except Exception as ex:
+                        print(f'[multimovies/modiplay] vidrift error: {ex}')
 
                 # 4. VidShared (Direct HLS on pureharvesthub)
                 elif platform == 'vsembed':
@@ -428,7 +435,7 @@ class MultiMoviesProvider:
                         rp = self.session.get(p_url, headers={'Referer': embed_url}, timeout=6, verify=False)
                         msrc = re.search(r'var\s+src\s*=\s*["\']([^"\']+)["\']', rp.text)
                         if msrc:
-                            out.append({
+                            item_streams.append({
                                 'player': 'direct_m3u8',
                                 'url': msrc.group(1).replace(r'\/', '/'),
                                 'name': f"VidShared (PureHarvest - {pname})",
@@ -439,16 +446,23 @@ class MultiMoviesProvider:
                     except Exception as ex:
                         print(f'[multimovies/modiplay] vidshared error: {ex}')
 
-                # 5. Filemoon
+                # 5. Filemoon (fixed return format)
                 elif platform == 'filemoon':
                     try:
                         from app.players.all_players import extract_filemoon
-                        fm_streams = extract_filemoon(f"https://filemoon.sx/e/{code}")
-                        for fms in fm_streams:
+                        fm_res = extract_filemoon(f"https://filemoon.sx/e/{code}")
+                        for fms in (fm_res.get('streams') or []):
                             fms['name'] = f"Filemoon ({pname})"
-                            out.append(fms)
+                            item_streams.append(fms)
                     except Exception as ex:
                         print(f'[multimovies/modiplay] filemoon error: {ex}')
+                return item_streams
+
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=min(len(items) or 1, 5)) as ex:
+                item_batches = list(ex.map(_resolve_one_item, items))
+            for b in item_batches:
+                out.extend(b)
 
             if out:
                 return out
