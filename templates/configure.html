@@ -61,22 +61,24 @@
     color: #ffffff;
   }
 
-  /* ─── Atmospheric Japanese Midnight Anime Backdrop with Liquid Glass Blur Support ─── */
+  /* ─── Atmospheric Japanese Midnight Anime Backdrop with Sakura Bloom & Liquid Glass ─── */
   body {
     margin: 0;
     min-height: 100vh;
     background-color: #06070a !important;
     background-image: 
-      linear-gradient(to bottom, rgba(6, 7, 10, 0.38) 0%, rgba(6, 7, 10, 0.72) 340px, rgba(6, 7, 10, 0.94) 720px, #06070a 1100px),
+      radial-gradient(ellipse 950px 320px at 50% 0%, rgba(255, 215, 230, 0.09) 0%, transparent 72%),
+      linear-gradient(to bottom, rgba(6, 7, 10, 0.28) 0%, rgba(6, 7, 10, 0.68) 320px, rgba(6, 7, 10, 0.94) 700px, #06070a 1050px),
       url('/static/anime-bg.jpg') !important;
     background-position: center top !important;
-    background-size: 100% auto, cover !important;
-    background-attachment: scroll, fixed !important;
+    background-size: 100% auto, 100% auto, cover !important;
+    background-attachment: scroll, scroll, fixed !important;
     background-repeat: no-repeat !important;
     color: #ffffff;
     font: var(--text-md)/1.55 var(--font);
     -webkit-font-smoothing: antialiased;
     accent-color: #ffffff;
+    position: relative;
   }
 
   ::selection { background: #ffffff; color: #000000; }
@@ -105,7 +107,7 @@
     100% { background-position: -200% 0; }
   }
 
-  /* ─── Apple Music Liquid Glass Floating Pill Nav ─── */
+  /* ─── Apple Music Liquid Frosted Glass Floating Pill Nav ─── */
   .navbar {
     position: fixed; top: 0; left: 0; right: 0; z-index: 40;
     padding: .875rem clamp(.75rem, 2vw, 2rem); pointer-events: none;
@@ -114,23 +116,26 @@
   .nav-inner {
     position: relative; display: inline-flex; align-items: center; gap: var(--sp-3); width: max-content; max-width: 100%;
     min-height: 3.5rem; margin: 0 auto; padding: .32rem .45rem .32rem .75rem; color: #ffffff;
-    background: rgba(14, 16, 24, 0.48);
-    border: 1px solid rgba(255, 255, 255, 0.18); border-radius: var(--r-full);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.22); border-radius: var(--r-full);
     box-shadow: 
-      0 20px 48px -8px rgba(0, 0, 0, 0.85),
-      0 1px 1px 0 rgba(255, 255, 255, 0.32) inset,
-      0 -1px 1px 0 rgba(0, 0, 0, 0.45) inset;
-    -webkit-backdrop-filter: blur(36px) saturate(210%); backdrop-filter: blur(36px) saturate(210%);
+      0 20px 48px -8px rgba(0, 0, 0, 0.8),
+      0 1.5px 0 0 rgba(255, 255, 255, 0.45) inset,
+      0 -1px 0 0 rgba(0, 0, 0, 0.6) inset,
+      0 0 24px 0 rgba(255, 255, 255, 0.08) inset;
+    -webkit-backdrop-filter: blur(28px) saturate(220%) contrast(115%);
+    backdrop-filter: blur(28px) saturate(220%) contrast(115%);
     pointer-events: auto;
     transition: all .22s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .nav-inner:hover {
-    border-color: rgba(255, 255, 255, 0.28);
-    background: rgba(18, 20, 30, 0.58);
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.09);
     box-shadow: 
-      0 24px 54px -8px rgba(0, 0, 0, 0.92),
-      0 1px 1px 0 rgba(255, 255, 255, 0.45) inset,
-      0 -1px 1px 0 rgba(0, 0, 0, 0.45) inset;
+      0 24px 54px -8px rgba(0, 0, 0, 0.9),
+      0 2px 0 0 rgba(255, 255, 255, 0.6) inset,
+      0 -1px 0 0 rgba(0, 0, 0, 0.6) inset,
+      0 0 28px 0 rgba(255, 255, 255, 0.12) inset;
   }
 
   .brand {
@@ -191,6 +196,7 @@
   .content {
     width: 100%; max-width: 86rem; margin: 0 auto;
     padding: 7rem clamp(1rem, 3.5vw, 2.5rem) 9rem;
+    position: relative; z-index: 10;
   }
   .page-head { margin-bottom: var(--sp-6); }
   h1 {
@@ -788,9 +794,21 @@
     .steps { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+  /* ─── Animated Floating Sakura Petals Canvas ─── */
+  #sakura-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1; /* Below content (10) and liquid glass navbar (40) */
+  }
 </style>
 </head>
 <body>
+<canvas id="sakura-canvas" aria-hidden="true"></canvas>
 <header class="navbar">
   <div class="nav-inner">
     <a class="brand" href="#providers" aria-label="AniBox home">
@@ -873,93 +891,94 @@
     </div>
   </section>
 
-  <!-- PANEL 2: PLAYBACK -->
+  <!-- PANEL 2: PLAYBACK & FILTERING -->
   <section id="panel-filters" class="panel" role="tabpanel" hidden>
     <div class="cols">
       <div class="col-main">
-        <!-- Preferences Card -->
+        <!-- Section 1: Playback Preferences -->
         <div class="filter-box sheen-card">
-          <div class="pref-card-header">
-            <span class="pref-header-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="glyph-icon">
-                <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
-                <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
-                <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
-                <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
-              </svg>
-            </span>
-            <h3 class="pref-card-title">PREFERENCES</h3>
+          <div class="filter-box-head">
+            <div>
+              <b>Playback Preferences</b>
+              <small>Subtitles, player load timeout, and stream grouping rules.</small>
+            </div>
           </div>
 
-          <!-- Hide subtitles -->
-          <div class="pref-row">
-            <div class="pref-label">
-              <span>Hide subtitles</span>
-              <span class="tip-q" title="Strip subtitle tracks from returned stream links">?</span>
-            </div>
-            <label class="swwrap">
-              <input type="checkbox" id="hide-subtitles-toggle">
-              <span class="sw"></span>
+          <!-- Hide Subtitles Option -->
+          <div style="padding-bottom:var(--sp-3);border-bottom:1px solid rgba(255,255,255,.06)">
+            <label class="opt" style="border:0;padding:var(--sp-2) 0;cursor:pointer">
+              <span class="ico" aria-hidden="true" style="width:2.5rem;height:2.5rem">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="glyph-icon">
+                  <rect x="2" y="4" width="20" height="16" rx="3"/>
+                  <path d="M7 15h4M15 15h2M7 11h2M13 11h4"/>
+                </svg>
+              </span>
+              <span class="txt">
+                <b>Hide subtitles</b>
+                <small>Strip subtitle tracks from returned stream links so your player handles them cleanly.</small>
+              </span>
+              <span class="swwrap"><input type="checkbox" id="hide-subtitles-toggle"><span class="sw"></span></span>
             </label>
           </div>
 
-          <!-- Group streams by -->
-          <div class="pref-group-block">
-            <div class="pref-label">
-              <span>Group streams by</span>
-              <span class="tip-q" title="Group streams together by quality, provider, or keep default ordering">?</span>
+          <!-- Load Timeout -->
+          <div style="margin-top:var(--sp-4);padding-bottom:var(--sp-3);border-bottom:1px solid rgba(255,255,255,.06)">
+            <div class="sechead" style="margin-bottom:var(--sp-1)">
+              <h2>Load Timeout</h2>
+              <span class="count" id="timeout-count">15s</span>
             </div>
-            <div class="seg-ctrl" role="radiogroup" aria-label="Group streams by" id="seg-group-by">
-              <button type="button" class="seg-btn" data-val="default">Default</button>
-              <button type="button" class="seg-btn" data-val="provider">Provider</button>
-              <button type="button" class="seg-btn on" data-val="quality">Quality</button>
-            </div>
-          </div>
-
-          <!-- Sort streams -->
-          <div class="pref-group-block">
-            <div class="pref-label">
-              <span>Sort streams</span>
-              <span class="tip-q" title="Sort within groups by default ranking or file size">?</span>
-            </div>
-            <div class="seg-ctrl" role="radiogroup" aria-label="Sort streams" id="seg-sort-by">
-              <button type="button" class="seg-btn on" data-val="default">Default</button>
-              <button type="button" class="seg-btn" data-val="size">Size</button>
+            <small style="color:var(--ink-muted);font-size:var(--text-sm);display:block;margin-bottom:var(--sp-2)">Maximum seconds to wait for source scraping before returning streams.</small>
+            <div class="chips" id="timeout-chips">
+              <button type="button" class="chip" data-val="5">5s</button>
+              <button type="button" class="chip" data-val="10">10s</button>
+              <button type="button" class="chip on" data-val="15">15s (Default)</button>
+              <button type="button" class="chip" data-val="30">30s</button>
+              <button type="button" class="chip" data-val="45">45s</button>
             </div>
           </div>
 
-          <!-- Load timeout -->
-          <div class="pref-group-block">
-            <div class="pref-label">
-              <span>Load timeout</span>
-              <span class="tip-q" title="Maximum seconds to wait for provider scraping before returning streams">?</span>
+          <!-- Group Streams By -->
+          <div style="margin-top:var(--sp-4)">
+            <div class="sechead" style="margin-bottom:var(--sp-1)">
+              <h2>Group Streams By</h2>
+              <span class="count" id="group-count">Quality</span>
             </div>
-            <div class="seg-ctrl" role="radiogroup" aria-label="Load timeout" id="seg-timeout">
-              <button type="button" class="seg-btn" data-val="5">5s</button>
-              <button type="button" class="seg-btn" data-val="10">10s</button>
-              <button type="button" class="seg-btn on" data-val="15">15s</button>
-              <button type="button" class="seg-btn" data-val="30">30s</button>
-              <button type="button" class="seg-btn" data-val="45">45s</button>
+            <small style="color:var(--ink-muted);font-size:var(--text-sm);display:block;margin-bottom:var(--sp-2)">How stream results are grouped together in your player list.</small>
+            <div class="chips" id="group-chips">
+              <button type="button" class="chip on" data-val="quality">Quality (4K → 1080p → 720p)</button>
+              <button type="button" class="chip" data-val="provider">Provider Name</button>
+              <button type="button" class="chip" data-val="default">Default (Flat List)</button>
             </div>
           </div>
         </div>
 
-        <!-- Provider Order Card -->
+        <!-- Section 2: Stream Ordering -->
         <div class="filter-box sheen-card">
-          <div class="pref-card-header">
-            <span class="pref-header-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="glyph-icon">
-                <path d="M3 17l6-6 4 4 8-8"/>
-                <path d="M14 7h7v7"/>
-              </svg>
-            </span>
-            <h3 class="pref-card-title">PROVIDER ORDER</h3>
+          <div class="filter-box-head">
+            <div>
+              <b>Stream Ordering</b>
+              <small>Choose how results are sorted within each group.</small>
+            </div>
           </div>
-          <p class="pref-desc">Within each resolution, providers appear in this order. All 4K first, then 1080p, and so on. The ranking only decides who goes first inside a group.</p>
+          <div class="chips" id="sort-chips">
+            <button type="button" class="chip on" data-val="default">Quality: High to Low (Recommended)</button>
+            <button type="button" class="chip" data-val="quality_asc">Quality: Low to High (Data Saver)</button>
+            <button type="button" class="chip" data-val="size">File Size: Largest First</button>
+          </div>
+        </div>
+
+        <!-- Section 3: Provider Priority Order -->
+        <div class="filter-box sheen-card">
+          <div class="filter-box-head">
+            <div>
+              <b>Provider Order Priority</b>
+              <small>Within each resolution tier, providers appear in this order. Ranking decides who goes first inside a group.</small>
+            </div>
+          </div>
           <div class="porder-list" id="porder-list"></div>
         </div>
 
-        <!-- Quality Filter -->
+        <!-- Section 4: Quality Filter -->
         <div class="filter-box sheen-card">
           <div class="filter-box-head">
             <div>
@@ -974,7 +993,7 @@
           <div class="chips" id="quality-chips"></div>
         </div>
 
-        <!-- Audio Language Filter -->
+        <!-- Section 5: Audio Languages -->
         <div class="filter-box sheen-card">
           <div class="filter-box-head">
             <div>
@@ -1003,22 +1022,23 @@
 
       <aside class="side">
         <div>
-          <div class="cap">Status <em>● live</em></div>
+          <div class="cap">Live Overview <em>● active</em></div>
           <div class="pv sheen-card">
             <div class="ph">
               <span class="pulse-dot"></span>
-              <b>STATUS</b>
+              <b>Playback & Filters</b>
               <span class="live-badge">LIVE</span>
             </div>
-            <p style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:var(--sp-3);font-family:var(--font);">Configuration ready.</p>
-            <div class="line"><span>Providers</span><span class="sum-providers">4 / 4</span></div>
-            <div class="line"><span>Resolutions</span><span class="sum-resolutions">5 / 5</span></div>
-            <div class="line"><span>Group streams by</span><span id="sum-group">Quality</span></div>
-            <div class="line"><span>Sort streams</span><span id="sum-sort-mode">Default</span></div>
-            <div class="line"><span>Load timeout</span><span id="sum-timeout">15s</span></div>
+            <div class="line"><span>Sources</span><span class="sum-providers">4/4</span></div>
+            <div class="line"><span>Grouping</span><span id="sum-group">Quality</span></div>
+            <div class="line"><span>Sort</span><span id="sum-sort-mode">Default</span></div>
+            <div class="line"><span>Timeout</span><span id="sum-timeout">15s</span></div>
             <div class="line"><span>Subtitles</span><span id="sum-subtitles">Shown</span></div>
+            <div class="line"><span>Qualities</span><span class="sum-qualities">All</span></div>
+            <div class="line"><span>Audio</span><span class="sum-audio">All</span></div>
+            <div class="line"><span>Strict Audio</span><span id="sum-strict">Off</span></div>
           </div>
-          <p class="pvhint">Direct CDN scraping with parallel workers. Zero external proxy bottlenecks.</p>
+          <p class="pvhint">URL updates live as you change settings — direct CDN playback with zero lag.</p>
         </div>
       </aside>
     </div>
@@ -1293,6 +1313,22 @@ function initState(){
   state.filter_languages = '';
   state.filter_audio_strict = 'off';
   state.filter_dead = 'on';
+
+  try {
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    if (parts.length > 0 && parts[0] !== 'configure' && parts[0] !== 'api') {
+      let b64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      const jsonStr = decodeURIComponent(escape(atob(b64)));
+      const parsed = JSON.parse(jsonStr);
+      if (parsed && typeof parsed === 'object') {
+        Object.assign(state, parsed);
+        if (parsed.provider_order && typeof parsed.provider_order === 'string') {
+          state.provider_order = parsed.provider_order.split(',').map(s => s.startsWith('source_') ? s : 'source_' + s);
+        }
+      }
+    }
+  } catch(e) {}
 }
 
 function buildConfig(){
@@ -1352,19 +1388,34 @@ function update(){
   const strictEl = $('#sum-strict');
   if (strictEl) strictEl.textContent = state.filter_audio_strict === 'on' ? 'On' : 'Off';
 
-  // Sync segmented controls
-  $$('#seg-group-by .seg-btn').forEach(b => b.classList.toggle('on', b.dataset.val === state.group_by));
-  $$('#seg-sort-by .seg-btn').forEach(b => b.classList.toggle('on', b.dataset.val === state.sort_by));
-  $$('#seg-timeout .seg-btn').forEach(b => b.classList.toggle('on', b.dataset.val === state.load_timeout));
+  // Sync playback preference chips
+  $$('#group-chips .chip').forEach(b => b.classList.toggle('on', b.dataset.val === (state.group_by || 'quality')));
+  $$('#sort-chips .chip').forEach(b => b.classList.toggle('on', b.dataset.val === (state.sort_by || 'default')));
+  $$('#timeout-chips .chip').forEach(b => b.classList.toggle('on', b.dataset.val === (state.load_timeout || '15')));
+
+  const groupCount = $('#group-count');
+  if (groupCount) {
+    const map = { quality: 'Quality', provider: 'Provider', default: 'Default' };
+    groupCount.textContent = map[state.group_by] || 'Quality';
+  }
+  const timeoutCount = $('#timeout-count');
+  if (timeoutCount) timeoutCount.textContent = (state.load_timeout || '15') + 's';
+
   const subToggle = $('#hide-subtitles-toggle');
   if (subToggle) subToggle.checked = state.hide_subtitles === 'on';
 
   // Sync STATUS card in Playback tab
   const sumGroup = $('#sum-group');
-  if (sumGroup) sumGroup.textContent = state.group_by ? state.group_by.charAt(0).toUpperCase() + state.group_by.slice(1) : 'Quality';
+  if (sumGroup) {
+    const map = { quality: 'Quality', provider: 'Provider', default: 'Default' };
+    sumGroup.textContent = map[state.group_by] || 'Quality';
+  }
   
   const sumSortMode = $('#sum-sort-mode');
-  if (sumSortMode) sumSortMode.textContent = state.sort_by ? state.sort_by.charAt(0).toUpperCase() + state.sort_by.slice(1) : 'Default';
+  if (sumSortMode) {
+    const map = { default: 'High to Low', quality_asc: 'Low to High', size: 'File Size' };
+    sumSortMode.textContent = map[state.sort_by] || 'High to Low';
+  }
 
   const sumTimeout = $('#sum-timeout');
   if (sumTimeout) sumTimeout.textContent = (state.load_timeout || '15') + 's';
@@ -1401,7 +1452,7 @@ function renderProviders(){
     el.className = 'opt';
     el.dataset.on = String(state[p.key] === 'on');
     el.innerHTML = '<span class="ico" aria-hidden="true">' + p.glyphSvg + '</span>' +
-      '<span class="txt"><b><span class="name-glyph">' + p.glyphSvg + '</span> ' + p.name + ' <span class="prov-pill">' + p.tag + '</span></b><small>' + p.desc + '</small></span>' +
+      '<span class="txt"><b>' + p.name + ' <span class="prov-pill">' + p.tag + '</span></b><small>' + p.desc + '</small></span>' +
       '<span class="swwrap"><input type="checkbox"><span class="sw"></span></span>';
     const input = el.querySelector('input');
     input.checked = state[p.key] === 'on';
@@ -1470,26 +1521,23 @@ function renderProviderOrder(){
 }
 
 function initPlaybackControls(){
-  $$('#seg-group-by .seg-btn').forEach(btn => {
+  $$('#group-chips .chip').forEach(btn => {
     btn.addEventListener('click', () => {
       state.group_by = btn.dataset.val;
-      $$('#seg-group-by .seg-btn').forEach(b => b.classList.toggle('on', b === btn));
       update();
     });
   });
 
-  $$('#seg-sort-by .seg-btn').forEach(btn => {
+  $$('#sort-chips .chip').forEach(btn => {
     btn.addEventListener('click', () => {
       state.sort_by = btn.dataset.val;
-      $$('#seg-sort-by .seg-btn').forEach(b => b.classList.toggle('on', b === btn));
       update();
     });
   });
 
-  $$('#seg-timeout .seg-btn').forEach(btn => {
+  $$('#timeout-chips .chip').forEach(btn => {
     btn.addEventListener('click', () => {
       state.load_timeout = btn.dataset.val;
-      $$('#seg-timeout .seg-btn').forEach(b => b.classList.toggle('on', b === btn));
       update();
     });
   });
@@ -1866,7 +1914,84 @@ $$('.sfilter').forEach(btn => btn.addEventListener('click', () => {
 }));
 setInterval(() => { if (statusStarted) loadStatus(false); }, 30000);
 
+function initSakura(){
+  const canvas = document.getElementById('sakura-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  function resize(){
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize, { passive: true });
+
+  const TOTAL_PETALS = Math.min(42, Math.max(22, Math.floor(window.innerWidth / 35)));
+  const petals = [];
+
+  class Petal {
+    constructor(){ this.reset(true); }
+    reset(init){
+      this.x = Math.random() * width;
+      this.y = init ? Math.random() * height : -25 - Math.random() * 30;
+      this.size = 11 + Math.random() * 11;
+      this.speedX = 0.35 + Math.random() * 0.85;
+      this.speedY = 0.85 + Math.random() * 1.35;
+      this.rotation = Math.random() * Math.PI * 2;
+      this.rotSpeed = (Math.random() - 0.5) * 0.022;
+      this.flip = Math.random() * Math.PI;
+      this.flipSpeed = 0.02 + Math.random() * 0.03;
+      this.opacity = 0.38 + Math.random() * 0.42;
+      const tints = [
+        'rgba(255, 218, 230, ',
+        'rgba(255, 236, 244, ',
+        'rgba(255, 204, 222, ',
+        'rgba(255, 245, 250, '
+      ];
+      this.color = tints[Math.floor(Math.random() * tints.length)];
+    }
+    update(){
+      this.x += this.speedX + Math.sin(this.flip) * 0.45;
+      this.y += this.speedY;
+      this.rotation += this.rotSpeed;
+      this.flip += this.flipSpeed;
+      if (this.y > height + 35 || this.x > width + 35) this.reset(false);
+    }
+    draw(c){
+      c.save();
+      c.translate(this.x, this.y);
+      c.rotate(this.rotation);
+      c.scale(Math.sin(this.flip), 1);
+      c.fillStyle = this.color + this.opacity + ')';
+      c.beginPath();
+      c.moveTo(0, -this.size);
+      c.bezierCurveTo(this.size * 0.65, -this.size * 0.9, this.size * 0.85, -this.size * 0.2, this.size * 0.45, this.size * 0.6);
+      c.bezierCurveTo(this.size * 0.2, this.size * 0.9, 0, this.size, 0, this.size);
+      c.bezierCurveTo(0, this.size, -this.size * 0.2, this.size * 0.9, -this.size * 0.45, this.size * 0.6);
+      c.bezierCurveTo(-this.size * 0.85, -this.size * 0.2, -this.size * 0.65, -this.size * 0.9, 0, -this.size);
+      c.fill();
+      c.restore();
+    }
+  }
+
+  for (let i = 0; i < TOTAL_PETALS; i++) petals.push(new Petal());
+
+  function loop(){
+    if (!document.hidden) {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < petals.length; i++) {
+        petals[i].update();
+        petals[i].draw(ctx);
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 initState();
+initSakura();
 initPlaybackControls();
 renderProviders();
 renderFilters();
