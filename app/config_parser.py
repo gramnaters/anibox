@@ -31,6 +31,11 @@ def _default_config():
         'source_piratexplay': 'on',
         'formatter_style': 'rich',
         'catalogs': 'on',
+        'sort_by': 'quality_desc',
+        'filter_qualities': 'all',
+        'filter_languages': '',
+        'filter_audio_strict': 'off',
+        'filter_dead': 'on',
     }
 
 

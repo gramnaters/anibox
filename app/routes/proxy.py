@@ -67,9 +67,10 @@ def _needs_byte_patching(url: str) -> bool:
 
 
 def _needs_proxy_segment(url: str) -> bool:
-    """Return True for hosts whose segments must pass through Render (IP-bound tokens or byte-patching)."""
-    low = (url or '').lower()
-    return any(h in low for h in _MUST_PROXY_SEGMENT_HOSTS)
+    """Return True only for hosts whose video segments contain an image wrapper header (e.g. StreamHG PNG).
+    Direct CDN segments (Byse, SprintCDN, Zephyr, etc.) are fetched directly by the player,
+    preventing Render CPU bottlenecks, eliminating seeking lag, and saving bandwidth."""
+    return _needs_byte_patching(url)
 
 
 def _find_media_offset(data: bytes) -> int:

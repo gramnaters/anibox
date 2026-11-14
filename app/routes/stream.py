@@ -110,26 +110,30 @@ def _inspect_m3u8(url, referer=''):
         # First segment: only need the first bytes (magic + size check)
         seg_headers = dict(headers)
         seg_headers['Range'] = 'bytes=0-16383'
-        rs = _fetch_upstream(seg_url, seg_headers, timeout=10)
-        code = getattr(rs, 'status_code', None)
-        if rs is None or code not in (200, 206):
-            _pollution_cache[url] = (True, meta)
-            return True, meta
-        data = rs.content
-        if _is_image(data):
-            if _find_media_offset(data) >= 0:
-                meta.setdefault('container', 'ts')
-            else:
-                _pollution_cache[url] = (True, meta)
-                return True, meta
-        if len(data) < 100:
-            _pollution_cache[url] = (True, meta)
-            return True, meta
+        try:
+            rs = _fetch_upstream(seg_url, seg_headers, timeout=6)
+            code = getattr(rs, 'status_code', None)
+            if rs is not None and code in (200, 206):
+                data = rs.content
+                if _is_image(data):
+                    if _find_media_offset(data) >= 0:
+                        meta.setdefault('container', 'ts')
+                    else:
+                        # Confirmed ad image wrapper with no media payload
+                        _pollution_cache[url] = (True, meta)
+                        return True, meta
+                elif len(data) >= 100:
+                    _pollution_cache[url] = (False, meta)
+                    return False, meta
+        except Exception:
+            pass
+
+        # If segment probe timed out or CDN rejected Range header,
+        # but the master playlist is valid HLS (#EXTM3U), do NOT drop the stream!
         _pollution_cache[url] = (False, meta)
         return False, meta
     except Exception:
-        _pollution_cache[url] = (True, meta)
-        return True, meta
+        return False, meta
 
 
 PROVIDER_DISPLAY = {
@@ -345,7 +349,11 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
             direct = (_p[1], _slug, _season, _episode)
 
     cache_key = (content_type, content_id, tuple(sorted(enabled_providers)),
-                 str(config.get('formatter_style') or 'rich').lower())
+                 str(config.get('formatter_style') or 'rich').lower(),
+                 str(config.get('sort_by') or 'quality_desc').lower(),
+                 str(config.get('filter_qualities') or 'all').lower(),
+                 str(config.get('filter_languages') or '').lower(),
+                 str(config.get('filter_audio_strict') or 'off').lower())
     cached = _stream_cache.get(cache_key)
     if cached is not None:
         print(f'[stream] cache hit {content_id} ({len(cached)} streams)')
@@ -572,7 +580,12 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
             stream_obj['description'] = formatted['description']
         if resolved.get('subtitles'):
             stream_obj['subtitles'] = resolved['subtitles']
-        return (file_key, url, stream_obj)
+        return (file_key, url, stream_obj, {
+            'quality': str(quality or '').strip(),
+            'languages': languages or [],
+            'provider': pname or '',
+            'size': int(meta.get('size') or 0),
+        })
 
     try:
         from app.routes.proxy import addon_base_url
@@ -584,19 +597,59 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
     with ThreadPoolExecutor(max_workers=8) as ex:
         built = list(ex.map(_build, flat))
 
-    final = []
+    # Filter and sort streams according to user configuration
+    filter_qualities_raw = str(config.get('filter_qualities') or 'all').lower()
+    allowed_qualities = set(q.strip() for q in filter_qualities_raw.split(',') if q.strip()) if filter_qualities_raw != 'all' else None
+
+    filter_languages_raw = str(config.get('filter_languages') or '')
+    preferred_langs = [l.strip().lower() for l in filter_languages_raw.split(',') if l.strip()]
+    strict_audio = (config.get('filter_audio_strict') or 'off') == 'on'
+    sort_by = str(config.get('sort_by') or 'quality_desc').lower()
+
+    Q_RANK = {'4k': 5, '2160p': 5, '1440p': 4, '1080p': 3, '720p': 2, '480p': 1, '360p': 0, '': -1}
+
+    processed = []
     seen_files = set()
     for item in built:
         if not item:
             continue
-        file_key, url, stream_obj = item
-        # One entry per real media file. Different providers/mirrors that serve
-        # the same file collapse; distinct files that happen to share a label
-        # stay separate.
+        file_key, url, stream_obj, s_meta = item
         if file_key in seen_files:
             continue
+
+        q_str = s_meta['quality'].lower()
+        if allowed_qualities is not None and q_str and q_str not in allowed_qualities:
+            continue
+
+        stream_langs = [l.lower() for l in s_meta['languages']]
+        lang_score = 0
+        if preferred_langs:
+            has_match = any(any(pl in sl for pl in preferred_langs) for sl in stream_langs)
+            if has_match:
+                lang_score = 1
+            elif stream_langs:
+                if strict_audio:
+                    continue
+                lang_score = -1
+            else:
+                lang_score = 0
+
         seen_files.add(file_key)
-        final.append(stream_obj)
+        q_rank = Q_RANK.get(q_str, 0)
+        p_name = PROVIDER_DISPLAY.get(s_meta['provider'], s_meta['provider']).lower()
+        size_val = s_meta['size']
+        processed.append((lang_score, q_rank, p_name, size_val, stream_obj))
+
+    if sort_by == 'quality_asc':
+        processed.sort(key=lambda x: (-x[0], x[1] if x[1] >= 0 else 99, -x[3]))
+    elif sort_by == 'provider':
+        processed.sort(key=lambda x: (-x[0], x[2], -x[1], -x[3]))
+    elif sort_by == 'size_desc':
+        processed.sort(key=lambda x: (-x[0], -x[3], -x[1]))
+    else:  # 'quality_desc' (default)
+        processed.sort(key=lambda x: (-x[0], -x[1], -x[3]))
+
+    final = [x[4] for x in processed]
 
     print(f'[stream] {content_id} => {len(final)} streams')
     if final:

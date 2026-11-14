@@ -355,19 +355,27 @@ def probe_direct(url, headers):
         r = requests.head(url, headers=h, timeout=6, verify=False, allow_redirects=True)
         length = r.headers.get('Content-Length')
         ctype = (r.headers.get('Content-Type') or '').lower()
+        if r.status_code in (404, 410):
+            meta['dead'] = True
+            _probe_cache[key] = dict(meta)
+            return meta
+
         if r.status_code >= 400 or not (length or '').isdigit():
             h['Range'] = 'bytes=0-0'
-            r = requests.get(url, headers=h, timeout=8, verify=False, stream=True)
-            if r.status_code >= 400:
-                meta['dead'] = True
-                _probe_cache[key] = dict(meta)
+            try:
+                r = requests.get(url, headers=h, timeout=8, verify=False, stream=True)
+                if r.status_code in (404, 410):
+                    meta['dead'] = True
+                    _probe_cache[key] = dict(meta)
+                    r.close()
+                    return meta
+                content_range = r.headers.get('Content-Range') or ''
+                total = content_range.rsplit('/', 1)[-1]
+                if total.isdigit():
+                    length = total
                 r.close()
-                return meta
-            content_range = r.headers.get('Content-Range') or ''
-            total = content_range.rsplit('/', 1)[-1]
-            if total.isdigit():
-                length = total
-            r.close()
+            except Exception:
+                pass
         if (length or '').isdigit() and int(length) > 0:
             meta['size'] = int(length)
         if not meta.get('container'):
@@ -376,7 +384,8 @@ def probe_direct(url, headers):
             elif 'mpegurl' in ctype:
                 meta['container'] = 'm3u8'
     except Exception:
-        meta['dead'] = True
+        # Network hiccups or strict CDN headers should not kill the stream
+        pass
     _probe_cache[key] = dict(meta)
     return meta
 
