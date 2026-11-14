@@ -27,6 +27,19 @@ class TorofilmAPI:
             'Accept-Encoding': 'gzip, deflate',
         })
 
+    def _live_base(self) -> str:
+        if not hasattr(self, '_resolved_base') or not self._resolved_base:
+            try:
+                r = requests.head(self.BASE_URL, timeout=8, allow_redirects=True,
+                                  headers={'User-Agent': _USER_AGENTS[0]}, verify=False)
+                if r.status_code < 400 and r.url:
+                    self._resolved_base = r.url.rstrip('/')
+                else:
+                    self._resolved_base = self.BASE_URL.rstrip('/')
+            except Exception:
+                self._resolved_base = self.BASE_URL.rstrip('/')
+        return self._resolved_base
+
     def _get(self, url, **kwargs):
         self.session.headers['User-Agent'] = random.choice(_USER_AGENTS)
         kwargs.setdefault('timeout', TIMEOUT)
@@ -46,39 +59,79 @@ class TorofilmAPI:
         ua = self.session.headers.get('User-Agent', '')
         return f"{self.SCRAPER_PROXY}/proxy/stream?d={quote(target_url,safe='')}&api_password={pw}&h_user-agent={quote(ua,safe='')}"
 
+    def _extract_dub_player(self, player_url: str, default_name: str = 'Direct') -> list:
+        """Extract multi-audio tracks from waw-dub-player."""
+        out = []
+        try:
+            full_url = urljoin(self._live_base(), player_url)
+            resp = self._get(full_url)
+            if resp.status_code != 200:
+                return out
+            import json as _json, re as _re
+            m = _re.search(r'var\s+CONFIG\s*=\s*(\{.*?\});', resp.text)
+            if not m:
+                return out
+            config = _json.loads(m.group(1))
+            prefix = config.get('prefix', 'https://player.abyssplayer.com/')
+            ready = config.get('ready', {})
+            lang_info = config.get('lang', {})
+            for lang_code, slug in ready.items():
+                lang_name = lang_info.get(lang_code, {}).get('name', lang_code)
+                abyss_url = urljoin(prefix, slug)
+                out.append({
+                    'player': 'abyss',
+                    'url': abyss_url,
+                    'name': f'{default_name} ({lang_name})',
+                    'languages': [lang_name],
+                })
+        except Exception as e:
+            print(f'[{self.NAME}] dub-player error: {e}')
+        return out
+
     @cached(search_cache)
     def search_anime(self, query: str) -> list:
-        try:
-            resp = self._get(f'{self.BASE_URL}/', params={'s': query})
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            results = []
-            for article in soup.select('article, .item, .post'):
-                link = article.select_one('a[href*="/series/"], a[href*="/movies/"], a[href*="/episode/"]')
-                img = article.find('img')
-                title = article.select_one('h2, h3, .entry-title')
-                if link:
-                    href = link.get('href', '')
-                    slug = href.rstrip('/').split('/')[-1]
-                    content_type = 'movie' if '/movies/' in href else 'series'
-                    results.append({
-                        'title': title.text.strip() if title else (img.get('alt', '') if img else slug),
-                        'slug': slug,
-                        'poster': img.get('src', '').replace('//', 'https://') if img else None,
-                        'type': content_type,
-                        'provider': self.NAME,
-                    })
-            return results
-        except Exception as e:
-            print(f'[{self.NAME}] search error: {e}')
-            return []
+        base = self._live_base()
+        def _do_search(q):
+            try:
+                resp = self._get(f'{base}/', params={'s': q})
+                soup = BeautifulSoup(resp.text, 'html.parser')
+                results = []
+                for article in soup.select('article, .item, .post'):
+                    link = article.select_one('a[href*="/series/"], a[href*="/movies/"], a[href*="/movie/"], a[href*="/episode/"]')
+                    img = article.find('img')
+                    title = article.select_one('h2, h3, .entry-title, .title')
+                    if link:
+                        href = link.get('href', '')
+                        slug = href.rstrip('/').split('/')[-1]
+                        content_type = 'movie' if ('/movies/' in href or '/movie/' in href) else 'series'
+                        results.append({
+                            'title': title.text.strip() if title else (img.get('alt', '') if img else slug.replace('-', ' ').title()),
+                            'slug': slug,
+                            'poster': img.get('src', '').replace('//', 'https://') if img else None,
+                            'type': content_type,
+                            'provider': self.NAME,
+                        })
+                return results
+            except Exception as e:
+                print(f'[{self.NAME}] search error ({q}): {e}')
+                return []
+
+        res = _do_search(query)
+        if not res:
+            # Relax search for strict WordPress themes (e.g. "Dragon Ball GT" -> "Dragon Ball")
+            words = query.strip().split()
+            if len(words) > 1:
+                res = _do_search(' '.join(words[:2]))
+        return res
 
     def get_home_catalog(self) -> list:
         results = []
         seen = set()
         pages = ('', 'series', 'movies')
+        base = self._live_base()
         for path in pages:
             try:
-                url = f'{self.BASE_URL}/{path}' if path else self.BASE_URL
+                url = f'{base}/{path}' if path else base
                 resp = self._get(url)
                 if resp.status_code != 200:
                     continue
@@ -116,9 +169,10 @@ class TorofilmAPI:
 
     @cached(details_cache)
     def get_anime_details(self, slug: str) -> dict:
+        base = self._live_base()
         for content_type in ['series', 'movies']:
             try:
-                url = f'{self.BASE_URL}/{content_type}/{slug}'
+                url = f'{base}/{content_type}/{slug}'
                 resp = self._get(url)
                 if resp.status_code == 404: continue
                 soup = BeautifulSoup(resp.text, 'html.parser')
@@ -158,7 +212,7 @@ class TorofilmAPI:
                     if not episodes:
                         for i in range(1, 13):
                             ep_slug = f'{slug}-{i}'
-                            ep_page_url = f'{self.BASE_URL}/episode/{ep_slug}/'
+                            ep_page_url = f'{base}/episode/{ep_slug}/'
                             episodes.append({
                                 'season': 1, 'episode': i,
                                 'title': f'Episode {i}',
@@ -204,11 +258,12 @@ class TorofilmAPI:
         streams = []
         data_post = ep_data.get('data_post', '')
         data_nume = ep_data.get('data_nume', str(episode))
+        base = self._live_base()
 
         if data_post:
             try:
                 resp = self._post(
-                    f'{self.BASE_URL}/wp-admin/admin-ajax.php',
+                    f'{base}/wp-admin/admin-ajax.php',
                     data={
                         'action': 'doo_player_ajax',
                         'post': data_post,
@@ -218,7 +273,7 @@ class TorofilmAPI:
                     headers={
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'X-Requested-With': 'XMLHttpRequest',
-                        'Referer': f'{self.BASE_URL}/',
+                        'Referer': f'{base}/',
                     }
                 )
                 if resp.status_code == 200:
@@ -237,8 +292,16 @@ class TorofilmAPI:
                                 })
 
                         for tab in tabs:
-                            if not tab['url']: continue
-                            streams.append(self._classify_stream(tab['url'], tab['name']))
+                            turl = tab.get('url', '')
+                            if not turl: continue
+                            turl = urljoin(base, turl)
+                            tname = tab.get('name', 'Direct')
+                            if 'dub-player' in turl:
+                                dubs = self._extract_dub_player(turl, tname)
+                                if dubs:
+                                    streams.extend(dubs)
+                                    continue
+                            streams.append(self._classify_stream(turl, tname))
                     except: pass
             except Exception as e:
                 print(f'[{self.NAME}] AJAX error: {e}')
@@ -248,18 +311,25 @@ class TorofilmAPI:
             try:
                 ep_page_url = ep_data.get('ep_page_url', '')
                 if not ep_page_url:
-                    ep_page_url = ep_data.get('url', f'{self.BASE_URL}/series/{slug}')
+                    ep_page_url = ep_data.get('url', f'{base}/series/{slug}')
                 resp = self._get(ep_page_url)
                 soup = BeautifulSoup(resp.text, 'html.parser')
                 for iframe in soup.find_all('iframe'):
                     src = iframe.get('src') or iframe.get('data-src', '')
                     if src:
+                        src = urljoin(base, src)
+                        if 'dub-player' in src:
+                            dubs = self._extract_dub_player(src, 'Direct')
+                            if dubs:
+                                streams.extend(dubs)
+                                continue
                         streams.append(self._classify_stream(src, 'Direct'))
             except: pass
 
         return {'streams': streams}
 
     def _classify_stream(self, url: str, name: str) -> dict:
+        url = urljoin(self._live_base(), url)
         url_lower = url.lower()
         if 'zephyr' in url_lower:
             return {'player': 'zephyrflick', 'url': url, 'name': f'{name} (Zephyr)', 'languages': []}

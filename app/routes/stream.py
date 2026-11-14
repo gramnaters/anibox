@@ -451,7 +451,9 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
             return None
         # Correct Referer for header-sensitive file servers, derived from
         # the provider's sub-host page instead of the file-server IP.
-        if player_key in ('rpmshare', 'rpmstream', 'streamp2p', 'upnshare', 'streamhg'):
+        if sd.get('referer'):
+            referer = sd.get('referer')
+        elif player_key in ('rpmshare', 'rpmstream', 'streamp2p', 'upnshare', 'streamhg'):
             _pp = urllib.parse.urlparse(sd.get('url') or '')
             if _pp.scheme and _pp.hostname:
                 referer = f'{_pp.scheme}://{_pp.hostname}/'
@@ -597,5 +599,6 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         final.append(stream_obj)
 
     print(f'[stream] {content_id} => {len(final)} streams')
-    _stream_cache[cache_key] = final
+    if final:
+        _stream_cache[cache_key] = final
     return respond_with({'streams': final})
