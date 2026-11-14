@@ -59,6 +59,9 @@
     font-size: 16px;
     background-color: #0a0b0e !important;
     color: #ffffff;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
   }
 
   /* ─── NekoWatch Deep Dark Obsidian Backdrop (Clean, Zero Conflict) ─── */
@@ -76,6 +79,9 @@
     -webkit-font-smoothing: antialiased;
     accent-color: #ffffff;
     position: relative;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
   }
 
   /* Tactile matte micro-grain texture matching NekoWatch & BitChord */
@@ -231,6 +237,7 @@
     width: 100%; max-width: 86rem; margin: 0 auto;
     padding: 7rem clamp(1rem, 3.5vw, 2.5rem) 9rem;
     position: relative; z-index: 10;
+    overflow-x: hidden;
   }
   .page-head { margin-bottom: var(--sp-6); }
   h1 {
@@ -265,12 +272,19 @@
     gap: var(--sp-6);
     align-items: start;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
   .col-main {
     min-width: 0;
+    max-width: 100%;
     width: 100%;
     display: grid;
     gap: var(--sp-6);
+  }
+  .col-main > div {
+    min-width: 0;
+    max-width: 100%;
   }
   .side {
     display: grid;
@@ -286,11 +300,16 @@
     display: block; background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--r-lg); padding: 0; backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
     box-shadow: 0 10px 32px rgba(0, 0, 0, 0.25);
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
   }
   .opt {
     display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4) var(--sp-5);
     border-top: 1px solid rgba(255,255,255,.05); background: transparent; cursor: pointer;
     transition: all .16s ease;
+    min-width: 0;
+    max-width: 100%;
   }
   .opt:first-child { border-top: 0; }
   .opt:hover { background: rgba(255, 255, 255, 0.03); }
@@ -304,14 +323,14 @@
   .opt:hover .ico { transform: scale(1.06); border-color: var(--border-hover); }
   .opt .ico svg.glyph-icon { width: 1.35rem; height: 1.35rem; stroke: #ffffff; color: #ffffff; }
 
-  .opt .txt { min-width: 0; flex: 1; }
+  .opt .txt { min-width: 0; flex: 1 1 0%; overflow: hidden; }
   .opt b {
     display: flex; align-items: center; gap: var(--sp-2); font-size: var(--text-md); font-weight: 700; letter-spacing: -.01em;
-    color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
   }
   .opt small {
     display: block; font-size: var(--text-sm); color: var(--ink-muted); margin-top: 2px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
   }
   .opt:has(input:focus-visible) { outline: 2px solid #ffffff; outline-offset: -2px; border-radius: var(--r-sm); }
 
@@ -838,13 +857,14 @@
       bottom: 1.5rem;
       left: 0;
       right: 0;
+      width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 100;
       pointer-events: none;
-      padding: 0 var(--sp-4);
-      margin: 0;
+      padding: 0 1rem;
+      margin: 0 auto;
     }
     .nav-inner {
       pointer-events: auto;
@@ -853,11 +873,12 @@
       align-items: center;
       justify-content: center;
       width: auto;
-      max-width: 95vw;
+      max-width: calc(100vw - 2rem);
       height: 52px;
       min-height: 52px;
       max-height: 52px;
       padding: 0 8px;
+      margin: 0 auto;
       gap: 6px;
       border-radius: 9999px;
       background: rgba(18, 19, 24, 0.88);
@@ -947,6 +968,20 @@
     .content {
       padding: 2.25rem var(--sp-4) 7rem !important;
     }
+    .opt {
+      padding: var(--sp-3) var(--sp-4);
+      gap: var(--sp-3);
+    }
+    .opt .ico {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+    .opt b {
+      font-size: var(--text-base);
+    }
+    .opt small {
+      font-size: var(--text-xs);
+    }
     .savebar {
       display: none;
     }
@@ -969,8 +1004,9 @@
     <nav class="nav-tabs" role="tablist" aria-label="Sections">
       <button class="nav-tab on" role="tab" data-tab="providers" aria-selected="true" aria-controls="panel-providers" aria-label="Providers" title="Providers">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
+          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+          <polyline points="2 17 12 22 22 17"/>
+          <polyline points="2 12 12 17 22 12"/>
         </svg>
         <span class="nav-txt">Providers</span>
         <span class="nav-count" id="nav-prov-count">4</span>
@@ -984,12 +1020,12 @@
         </svg>
         <span class="nav-txt">Playback</span>
       </button>
-      <button class="nav-tab" role="tab" data-tab="labels" aria-selected="false" aria-controls="panel-labels" aria-label="Labels" title="Labels">
+      <button class="nav-tab" role="tab" data-tab="labels" aria-selected="false" aria-controls="panel-labels" aria-label="Settings" title="Settings">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-          <line x1="7" y1="7" x2="7.01" y2="7"/>
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
-        <span class="nav-txt">Labels</span>
+        <span class="nav-txt">Settings</span>
       </button>
       <button class="nav-tab" role="tab" data-tab="install" aria-selected="false" aria-controls="panel-install" aria-label="Install" title="Install">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
