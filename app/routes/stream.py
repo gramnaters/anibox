@@ -604,7 +604,14 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
     filter_languages_raw = str(config.get('filter_languages') or '')
     preferred_langs = [l.strip().lower() for l in filter_languages_raw.split(',') if l.strip()]
     strict_audio = (config.get('filter_audio_strict') or 'off') == 'on'
-    sort_by = str(config.get('sort_by') or 'quality_desc').lower()
+
+    group_by = str(config.get('group_by') or 'quality').lower()
+    sort_by = str(config.get('sort_by') or 'default').lower()
+    hide_subtitles = str(config.get('hide_subtitles') or 'off').lower() == 'on'
+
+    raw_porder = str(config.get('provider_order') or 'multimovies,watchanimeworld,toonstream,piratexplay').lower()
+    p_order_list = [p.strip() for p in raw_porder.split(',') if p.strip()]
+    p_rank_map = {p: i for i, p in enumerate(p_order_list)}
 
     Q_RANK = {'4k': 5, '2160p': 5, '1440p': 4, '1080p': 3, '720p': 2, '480p': 1, '360p': 0, '': -1}
 
@@ -616,6 +623,9 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         file_key, url, stream_obj, s_meta = item
         if file_key in seen_files:
             continue
+
+        if hide_subtitles and isinstance(stream_obj, dict):
+            stream_obj.pop('subtitles', None)
 
         q_str = s_meta['quality'].lower()
         if allowed_qualities is not None and q_str and q_str not in allowed_qualities:
@@ -636,18 +646,27 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
 
         seen_files.add(file_key)
         q_rank = Q_RANK.get(q_str, 0)
-        p_name = PROVIDER_DISPLAY.get(s_meta['provider'], s_meta['provider']).lower()
+        p_raw = s_meta['provider'].lower()
+        p_rank = p_rank_map.get(p_raw, 99)
         size_val = s_meta['size']
-        processed.append((lang_score, q_rank, p_name, size_val, stream_obj))
+        processed.append((lang_score, q_rank, p_raw, size_val, stream_obj, p_rank))
 
-    if sort_by == 'quality_asc':
-        processed.sort(key=lambda x: (-x[0], x[1] if x[1] >= 0 else 99, -x[3]))
-    elif sort_by == 'provider':
-        processed.sort(key=lambda x: (-x[0], x[2], -x[1], -x[3]))
-    elif sort_by == 'size_desc':
-        processed.sort(key=lambda x: (-x[0], -x[3], -x[1]))
-    else:  # 'quality_desc' (default)
-        processed.sort(key=lambda x: (-x[0], -x[1], -x[3]))
+    # Sort streams according to group_by, sort_by and provider_order ranking
+    if group_by == 'provider' or sort_by == 'provider':
+        if sort_by == 'size':
+            processed.sort(key=lambda x: (-x[0], x[5], -x[3], -x[1]))
+        else:
+            processed.sort(key=lambda x: (-x[0], x[5], -x[1], -x[3]))
+    elif sort_by == 'quality_asc':
+        processed.sort(key=lambda x: (-x[0], x[1] if x[1] >= 0 else 99, x[5], -x[3]))
+    elif sort_by == 'size' or sort_by == 'size_desc':
+        if group_by == 'default':
+            processed.sort(key=lambda x: (-x[0], -x[3], -x[1], x[5]))
+        else:
+            processed.sort(key=lambda x: (-x[0], -x[1], -x[3], x[5]))
+    else:  # group_by == 'quality' or 'default'
+        # Within each resolution, providers appear in provider_order.
+        processed.sort(key=lambda x: (-x[0], -x[1], x[5], -x[3]))
 
     final = [x[4] for x in processed]
 

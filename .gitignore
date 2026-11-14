@@ -49,6 +49,7 @@ trawl_verify.py
 !static/*.png
 *.jpeg
 *.jpg
+!static/*.jpg
 *.log
 mappings.db
 *.sqlite3
