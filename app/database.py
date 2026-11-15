@@ -1,5 +1,5 @@
-# Database for slug-to-IMDB mapping (same as original)
-from sqlalchemy import create_engine, Column, String, DateTime
+# Database for slug-to-IMDB mapping and persistent provider telemetry
+from sqlalchemy import create_engine, Column, String, Integer, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from datetime import datetime, timedelta
@@ -17,6 +17,16 @@ class Mapping(Base):
 class FailedMapping(Base):
     __tablename__ = 'failed_mappings'
     imdb_id = Column(String, primary_key=True)
+    checked_at = Column(DateTime, default=datetime.utcnow)
+
+class HealthLog(Base):
+    __tablename__ = 'health_logs'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    provider = Column(String, index=True)
+    status = Column(String)  # 'up', 'degraded', 'down'
+    response_ms = Column(Integer, default=0)
+    stream_count = Column(Integer, default=0)
+    error = Column(String, nullable=True)
     checked_at = Column(DateTime, default=datetime.utcnow)
 
 class Database:
@@ -72,5 +82,28 @@ class Database:
             else: session.add(FailedMapping(imdb_id=imdb_id))
             session.commit()
         finally: session.close()
+
+    def record_health(self, provider: str, status: str, response_ms: int = 0, stream_count: int = 0, error: str = None):
+        session = self.Session()
+        try:
+            session.add(HealthLog(
+                provider=provider,
+                status=status,
+                response_ms=response_ms,
+                stream_count=stream_count,
+                error=error,
+                checked_at=datetime.utcnow()
+            ))
+            session.commit()
+        finally:
+            session.close()
+
+    def get_health_history(self, provider: str, limit: int = 24) -> list:
+        session = self.Session()
+        try:
+            logs = session.query(HealthLog).filter_by(provider=provider).order_by(HealthLog.id.desc()).limit(limit).all()
+            return [l.status for l in reversed(logs)]
+        finally:
+            session.close()
 
 db = Database()

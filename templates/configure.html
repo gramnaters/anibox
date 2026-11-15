@@ -168,27 +168,28 @@
 
     /* Primary High-Contrast Action Button */
     .btn-install-type {
-      padding: 16px 24px;
+      padding: 15px 24px;
       background: #ffffff;
-      color: #000000;
+      color: #09090b;
       font-size: 14.5px;
       font-weight: 700;
-      border: none;
-      border-radius: 8px;
+      border-radius: 9px;
+      border: 1px solid rgba(255, 255, 255, 0.85);
       cursor: pointer;
-      transition: all 0.2s;
-      text-align: center;
-      letter-spacing: -0.01em;
-      display: flex;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      touch-action: manipulation;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.14);
+      gap: 9px;
+      box-shadow: 0 4px 20px rgba(255, 255, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      letter-spacing: -0.01em;
     }
 
     .btn-install-type:hover {
-      background: #e4e4e7;
+      background: #f4f4f5;
       transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(255, 255, 255, 0.18);
     }
     .btn-install-type:active {
       transform: scale(0.97);
@@ -245,20 +246,25 @@
     }
 
     .btn-text-action {
-      background: transparent;
-      border: none;
-      color: #71717a;
-      font-size: 12.5px;
-      font-weight: 500;
-      padding: 5px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 5px 12px;
       border-radius: 6px;
       cursor: pointer;
-      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
       touch-action: manipulation;
     }
     .btn-text-action:hover {
       color: #ffffff;
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-0.5px);
     }
     .btn-text-action:active {
       transform: scale(0.96);
@@ -289,21 +295,22 @@
       width: 44px;
       height: 44px;
       border-radius: 12px;
-      background: #111116;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #131317;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #ffffff;
+      color: #f4f4f5;
       flex-shrink: 0;
       transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 6px rgba(0, 0, 0, 0.4);
     }
     .type-squircle-icon:hover {
-      border-color: rgba(255, 255, 255, 0.28);
-      background: #181822;
+      border-color: rgba(255, 255, 255, 0.24);
+      background: #1a1a22;
+      color: #ffffff;
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 14px rgba(0, 0, 0, 0.6);
     }
     .type-squircle-icon:active {
       transform: scale(0.96);
@@ -427,27 +434,29 @@
       color: var(--text-3);
     }
 
-    /* Typographic Chip Selectors */
+    /* Precision Segmented Control (Apple HIG / Linear / TypeUI) */
     .chip-selector {
       display: inline-flex;
-      gap: 3px;
-      background: #121215;
+      gap: 2px;
+      background: #0d0d11;
       padding: 3px;
-      border-radius: 8px;
+      border-radius: 9px;
       border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.6);
       align-items: center;
     }
 
     .chip-opt {
-      padding: 6px 16px;
-      font-size: 13px;
-      font-weight: 500;
+      padding: 6px 14px;
+      font-size: 12.5px;
+      font-weight: 550;
+      letter-spacing: -0.01em;
       background: transparent;
-      border: none;
-      color: #71717a;
-      border-radius: 6px;
+      border: 1px solid transparent;
+      color: rgba(255, 255, 255, 0.55);
+      border-radius: 6.5px;
       cursor: pointer;
-      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
       touch-action: manipulation;
       white-space: nowrap;
       user-select: none;
@@ -457,13 +466,15 @@
       background: rgba(255, 255, 255, 0.04);
     }
     .chip-opt:active {
-      transform: scale(0.97);
+      transform: scale(0.96);
     }
     .chip-opt.selected {
-      background: #ffffff;
-      color: #000000;
-      font-weight: 700;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      background: #27272f;
+      color: #ffffff;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      letter-spacing: -0.01em;
     }
 
     .type-text-input {
@@ -551,39 +562,44 @@
 
     .filter-pills {
       display: inline-flex;
-      gap: 3px;
+      gap: 2px;
       padding: 3px;
-      background: #121215;
+      background: #0d0d11;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
+      border-radius: 9px;
+      box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.6);
       align-items: center;
     }
 
     .filter-btn {
       background: transparent;
-      border: none;
-      color: #71717a;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 6px 16px;
-      border-radius: 6px;
+      border: 1px solid transparent;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 12.5px;
+      font-weight: 550;
+      letter-spacing: -0.01em;
+      padding: 6px 14px;
+      border-radius: 6.5px;
       cursor: pointer;
-      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
       touch-action: manipulation;
       white-space: nowrap;
+      user-select: none;
     }
     .filter-btn:hover {
       color: #ffffff;
       background: rgba(255, 255, 255, 0.04);
     }
     .filter-btn:active {
-      transform: scale(0.97);
+      transform: scale(0.96);
     }
     .filter-btn.active {
-      background: #ffffff;
-      color: #000000;
-      font-weight: 700;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      background: #27272f;
+      color: #ffffff;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      letter-spacing: -0.01em;
     }
 
     .status-meta-info {
@@ -595,25 +611,28 @@
     }
 
     .btn-refresh {
-      padding: 6px 16px;
-      background: #121215;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
       border-radius: 8px;
-      color: #a1a1aa;
-      font-size: 13px;
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 12px;
       font-weight: 600;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
       touch-action: manipulation;
     }
     .btn-refresh:hover {
       color: #ffffff;
       border-color: rgba(255, 255, 255, 0.22);
-      background: #18181c;
-      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-0.5px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
     .btn-refresh:active {
-      transform: scale(0.97);
+      transform: scale(0.96);
     }
 
     /* Provider Status Block with 60-Bar Uptime */
@@ -837,6 +856,11 @@
       padding: 5px 9px;
       margin-top: 6px;
       word-break: break-all;
+    }
+    .uptime-tag.warn {
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.28);
     }
     .uptime-tag.bad {
       color: var(--accent-red);
@@ -1134,12 +1158,10 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                  <line x1="4" y1="15" x2="4" y2="9"></line>
-                  <line x1="8" y1="18" x2="8" y2="6"></line>
-                  <line x1="12" y1="21" x2="12" y2="3"></line>
-                  <line x1="16" y1="18" x2="16" y2="6"></line>
-                  <line x1="20" y1="15" x2="20" y2="9"></line>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="3.5"></rect>
+                  <path d="M7 4v16M17 4v16M2 9.5h5M2 14.5h5M17 9.5h5M17 14.5h5"></path>
+                  <polygon points="10 9 15 12 10 15 10 9" fill="currentColor" fill-opacity="0.25"></polygon>
                 </svg>
               </div>
               <div class="type-info">
@@ -1157,8 +1179,9 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M2 13h4l3-7 4 14 3-9 2 4 2-2h2"></path>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6L12 2z"></path>
+                  <circle cx="12" cy="11" r="2.5" fill="currentColor"></circle>
                 </svg>
               </div>
               <div class="type-info">
@@ -1176,12 +1199,11 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="3" y1="12" x2="3.01" y2="12" stroke-width="3"></line>
-                  <path d="M7 8v8"></path>
-                  <path d="M11 5v14"></path>
-                  <path d="M15 8v8"></path>
-                  <path d="M19 11v2"></path>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="3"></rect>
+                  <polyline points="17 2 12 7 7 2"></polyline>
+                  <line x1="8" y1="14" x2="16" y2="14"></line>
+                  <line x1="12" y1="11" x2="12" y2="17"></line>
                 </svg>
               </div>
               <div class="type-info">
@@ -1199,10 +1221,12 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 12c2.5-4 5.5-4 8 0s5.5 4 8 0"></path>
-                  <path d="M3 16c2.5-3 5.5-3 8 0s5.5 3 8 0" opacity="0.6"></path>
-                  <path d="M3 8c2.5-3 5.5-3 8 0s5.5 3 8 0" opacity="0.6"></path>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="10" r="7"></circle>
+                  <circle cx="9.5" cy="10" r="1.5" fill="currentColor"></circle>
+                  <circle cx="14.5" cy="10" r="1.5" fill="currentColor"></circle>
+                  <path d="M10 17v2.5M14 17v2.5M8 17h8"></path>
+                  <path d="m4 19 3-3M20 19l-3-3M4 5l3 3M20 5l-3 3"></path>
                 </svg>
               </div>
               <div class="type-info">
@@ -1711,22 +1735,22 @@
       multimovies: {
         name: 'MultiMovies',
         tag: 'Movies & Series',
-        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="15" x2="4" y2="9"></line><line x1="8" y1="18" x2="8" y2="6"></line><line x1="12" y1="21" x2="12" y2="3"></line><line x1="16" y1="18" x2="16" y2="6"></line><line x1="20" y1="15" x2="20" y2="9"></line></svg>`
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3.5"></rect><path d="M7 4v16M17 4v16M2 9.5h5M2 14.5h5M17 9.5h5M17 14.5h5"></path><polygon points="10 9 15 12 10 15 10 9" fill="currentColor" fill-opacity="0.25"></polygon></svg>`
       },
       watchanimeworld: {
         name: 'AnimeWorld',
         tag: 'Anime Dub',
-        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13h4l3-7 4 14 3-9 2 4 2-2h2"></path></svg>`
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6L12 2z"></path><circle cx="12" cy="11" r="2.5" fill="currentColor"></circle></svg>`
       },
       toonstream: {
         name: 'ToonStream',
         tag: 'Cartoons & Retro',
-        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="3.01" y2="12" stroke-width="3"></line><path d="M7 8v8"></path><path d="M11 5v14"></path><path d="M15 8v8"></path><path d="M19 11v2"></path></svg>`
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="3"></rect><polyline points="17 2 12 7 7 2"></polyline><line x1="8" y1="14" x2="16" y2="14"></line><line x1="12" y1="11" x2="12" y2="17"></line></svg>`
       },
       piratexplay: {
         name: 'PirateXPlay',
         tag: 'Multi-Audio',
-        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2.5-4 5.5-4 8 0s5.5 4 8 0"></path><path d="M3 16c2.5-3 5.5-3 8 0s5.5 3 8 0" opacity="0.6"></path><path d="M3 8c2.5-3 5.5-3 8 0s5.5 3 8 0" opacity="0.6"></path></svg>`
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="7"></circle><circle cx="9.5" cy="10" r="1.5" fill="currentColor"></circle><circle cx="14.5" cy="10" r="1.5" fill="currentColor"></circle><path d="M10 17v2.5M14 17v2.5M8 17h8"></path><path d="m4 19 3-3M20 19l-3-3M4 5l3 3M20 5l-3 3"></path></svg>`
       }
     };
 
@@ -1760,9 +1784,18 @@
       for (let i = 0; i < barCount; i++) {
         const histIdx = Math.floor((i / barCount) * hist.length);
         const statusVal = hist[histIdx] || (isUp ? 'up' : 'down');
-        const color = statusVal === 'up' ? '#22c55e' : '#ef4444';
+        let color = '#22c55e';
+        let opacity = '1';
+        if (statusVal === 'degraded') {
+          color = '#f59e0b';
+        } else if (statusVal === 'down') {
+          color = '#ef4444';
+        } else if (statusVal === 'idle' || statusVal === 'none') {
+          color = 'rgba(255, 255, 255, 0.08)';
+          opacity = '0.5';
+        }
         const x = i * 10;
-        bars.push(`<rect x="${x}" y="0" width="6" height="24" rx="2" fill="${color}"></rect>`);
+        bars.push(`<rect x="${x}" y="0" width="6" height="24" rx="2" fill="${color}" opacity="${opacity}"></rect>`);
       }
       return `<svg class="timeline-svg" viewBox="0 0 596 24" preserveAspectRatio="none"><g>${bars.join('')}</g></svg>`;
     }
@@ -1842,6 +1875,9 @@
         const errorHtml = (p.status === 'down' && p.error) ? `<div class="ep-err-text">${escapeHtml(p.error)}</div>` : '';
         const timelineSvg = generateUptimeSvg(p.history, isUp);
 
+        const statLabel = p.status === 'up' ? '100% Operational' : (p.status === 'degraded' ? 'Degraded Performance' : 'Offline');
+        const statClass = p.status === 'up' ? 'ok' : (p.status === 'degraded' ? 'warn' : 'bad');
+
         row.innerHTML = `
           <div class="status-row-top">
             <div class="prov-meta-group">
@@ -1861,7 +1897,7 @@
             </div>
             <div class="prov-stats-right">
               <span class="latency-tag">${fmtMs(p.responseMs)}</span>
-              <span class="uptime-tag ${isUp ? 'ok' : 'bad'}">${isUp ? '100% Operational' : 'Offline'}</span>
+              <span class="uptime-tag ${statClass}">${statLabel}</span>
             </div>
           </div>
 

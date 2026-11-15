@@ -170,7 +170,19 @@ def resolve_movie(video_id, my_key):
         data = (r.json() or {}).get('data') or []
     except Exception:
         return []
-    fileslugs = [d.get('fileslug') for d in data if isinstance(d, dict) and d.get('fileslug')]
+    # Deduplicate release uploads that share identical filename and filesize
+    fileslugs = []
+    seen_releases = set()
+    for d in data:
+        if not isinstance(d, dict) or not d.get('fileslug'):
+            continue
+        fname = (d.get('filename') or '').strip().lower()
+        fsize = (d.get('fsize') or '').strip().lower()
+        rel_key = (fname, fsize) if fname else d.get('fileslug')
+        if rel_key in seen_releases:
+            continue
+        seen_releases.add(rel_key)
+        fileslugs.append(d.get('fileslug'))
     streams = []
     seen = set()
     for fileslug in fileslugs:
@@ -235,7 +247,19 @@ def _get_fileslugs(tmdb_id, season, episode, my_key):
         data = (r.json() or {}).get('data') or []
     except Exception:
         return []
-    return [d.get('fileslug') for d in data if isinstance(d, dict) and d.get('fileslug')]
+    fileslugs = []
+    seen_releases = set()
+    for d in data:
+        if not isinstance(d, dict) or not d.get('fileslug'):
+            continue
+        fname = (d.get('filename') or '').strip().lower()
+        fsize = (d.get('fsize') or '').strip().lower()
+        rel_key = (fname, fsize) if fname else d.get('fileslug')
+        if rel_key in seen_releases:
+            continue
+        seen_releases.add(rel_key)
+        fileslugs.append(d.get('fileslug'))
+    return fileslugs
 
 
 def _resolve_fileslug(fileslug):

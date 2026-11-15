@@ -25,6 +25,7 @@ from datetime import datetime, timezone
 
 from app.api import ALL_PROVIDERS
 from app.routes.stream import PROVIDER_DISPLAY, _search_providers_for_title
+from app.database import db
 
 # A small, stable set of titles used to exercise every provider.
 PROBE_TITLES = (
@@ -70,6 +71,15 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _get_provider_history(pname: str, limit: int = 24) -> list:
+    try:
+        hist = db.get_health_history(pname, limit=limit)
+        if len(hist) < limit:
+            return ['idle'] * (limit - len(hist)) + hist
+        return hist[-limit:]
+    except Exception:
+        return ['idle'] * limit
+
 # Initial verified baseline so metrics and status are never empty/0 on boot
 _now_iso = _now()
 _DEFAULT_BASELINE = {
@@ -82,7 +92,7 @@ _DEFAULT_BASELINE = {
         'streamCount': 9,
         'workingTitles': ['Naruto', 'The Tom and Jerry Show', 'Stranger Things'],
         'error': None,
-        'history': ['up'] * 24
+        'history': _get_provider_history('multimovies')
     },
     'watchanimeworld': {
         'id': 'watchanimeworld',
@@ -93,7 +103,7 @@ _DEFAULT_BASELINE = {
         'streamCount': 3,
         'workingTitles': ['Naruto', 'One Piece', 'Jujutsu Kaisen'],
         'error': None,
-        'history': ['up'] * 24
+        'history': _get_provider_history('watchanimeworld')
     },
     'toonstream': {
         'id': 'toonstream',
@@ -104,7 +114,7 @@ _DEFAULT_BASELINE = {
         'streamCount': 18,
         'workingTitles': ['Naruto', 'One Piece', 'The Tom and Jerry Show'],
         'error': None,
-        'history': ['up'] * 24
+        'history': _get_provider_history('toonstream')
     },
     'piratexplay': {
         'id': 'piratexplay',
@@ -115,7 +125,7 @@ _DEFAULT_BASELINE = {
         'streamCount': 46,
         'workingTitles': ['Naruto', 'One Piece', 'The Tom and Jerry Show'],
         'error': None,
-        'history': ['up'] * 24
+        'history': _get_provider_history('piratexplay')
     }
 }
 
@@ -173,10 +183,18 @@ def _check_provider_once(pname, provider):
             errors.append(f'{title}: {type(e).__name__}: {e}')
 
     entry['workingTitles'] = titles
-    entry['status'] = 'up' if titles else 'down'
+    resp_ms = round((time.time() - started) * 1000)
+    entry['responseMs'] = resp_ms
     entry['lastChecked'] = _now()
-    entry['responseMs'] = round((time.time() - started) * 1000)
-    if not titles and errors:
+
+    if not titles:
+        entry['status'] = 'down'
+    elif len(titles) < len(probes) or resp_ms > 3500:
+        entry['status'] = 'degraded'
+    else:
+        entry['status'] = 'up'
+
+    if errors and entry['status'] in ('down', 'degraded'):
         entry['error'] = '; '.join(errors)[:300]
     else:
         entry['error'] = None
@@ -207,8 +225,17 @@ def _run():
                 prev = dict(_state.get('providers') or {})
             providers = {}
             for r in results:
-                old = (prev.get(r['id']) or {}).get('history') or []
-                r['history'] = (list(old) + [r['status']])[-24:]
+                try:
+                    db.record_health(
+                        provider=r['id'],
+                        status=r['status'],
+                        response_ms=r.get('responseMs', 0),
+                        stream_count=r.get('streamCount', 0),
+                        error=r.get('error')
+                    )
+                except Exception as ex:
+                    print(f'[status] failed to record health: {ex}', flush=True)
+                r['history'] = _get_provider_history(r['id'], limit=24)
                 providers[r['id']] = r
             with _lock:
                 _state['providers'] = providers
