@@ -54,9 +54,7 @@
       padding: clamp(36px, 4.5vw, 64px) clamp(20px, 3.5vw, 64px) 120px;
     }
 
-    /* ══════════════════════════════════════════════════════════════════
-       THE ICONIC TYPEUI ASYMMETRIC TWO-COLUMN EDITORIAL LAYOUT
-       ══════════════════════════════════════════════════════════════════ */
+    /* Two-column layout */
     .layout-grid {
       display: grid;
       grid-template-columns: minmax(310px, 360px) minmax(0, 1fr);
@@ -189,9 +187,7 @@
       transform: translateY(-1px);
     }
 
-    /* ══════════════════════════════════════════════════════════════════
-       RIGHT COLUMN: RICH PANELS (PURE TYPEUI AESTHETIC)
-       ══════════════════════════════════════════════════════════════════ */
+    /* Content panels */
     .typographic-content {
       display: flex;
       flex-direction: column;
@@ -430,9 +426,7 @@
       border-color: #ffffff;
     }
 
-    /* ══════════════════════════════════════════════════════════════════
-       STATUS PAGE: FULL INCIDENT.IO / SARVAM 60-BAR UPTIME
-       ══════════════════════════════════════════════════════════════════ */
+    /* Status and uptime metrics */
     .status-summary-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -888,12 +882,9 @@
   <div class="container">
     <div class="layout-grid">
       
-      <!-- ══════════════════════════════════════════════════════════════════
-           LEFT COLUMN: ICONIC TYPEUI EDITORIAL ASIDE
-           ══════════════════════════════════════════════════════════════════ -->
+      <!-- Navigation and brand aside -->
       <aside class="editorial-aside">
         <h1 class="brand-title">AniBox.</h1>
-        <!-- Clean, simple, non-AI human slogan -->
         <p class="brand-statement">Anime, movies, and series streams for Stremio & Nuvio.</p>
 
         <!-- Typographic Navigation Menu -->
@@ -970,9 +961,7 @@
         </button>
       </aside>
 
-      <!-- ══════════════════════════════════════════════════════════════════
-           RIGHT COLUMN: TYPOGRAPHIC CONTENT PANELS
-           ══════════════════════════════════════════════════════════════════ -->
+      <!-- Content panels -->
       <main class="typographic-content">
 
         <!-- PANEL 1: SOURCES -->
@@ -1197,7 +1186,7 @@
           </div>
         </section>
 
-        <!-- PANEL 4: STATUS (CURRENT FULL SARVAM 60-BAR TIMELINE) -->
+        <!-- Panel 4: Status -->
         <section class="tab-panel" id="panel-status">
           <div class="panel-header-bar">
             <span class="panel-title">04 / Pipeline Health & Telemetry</span>
@@ -1236,7 +1225,7 @@
             </div>
           </div>
 
-          <!-- Live Status Container (Dynamically rendered from /api/status - ZERO placeholders) -->
+          <!-- Dynamic status list -->
           <div id="status-list">
             <div style="padding: 48px 20px; text-align: center; color: var(--text-3); font-size: 14px; border: 1px dashed var(--border-hairline); border-radius: 8px;">
               <span class="type-spinner"></span>
@@ -1336,9 +1325,7 @@
   </nav>
 
   <script>
-    // ══════════════════════════════════════════════════════════════════
-    // STATE & MANIFEST ENGINE
-    // ══════════════════════════════════════════════════════════════════
+    // State & Manifest Engine
     const PROVIDERS = [
       { key: 'source_multimovies', name: 'MultiMovies', def: true },
       { key: 'source_watchanimeworld', name: 'AnimeWorld', def: true },
@@ -1528,9 +1515,7 @@
       }
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // LIVE STATUS & TELEMETRY ENGINE (ZERO PLACEHOLDERS)
-    // ══════════════════════════════════════════════════════════════════
+    // Live Telemetry Engine
     const PROVIDER_METAS = {
       multimovies: {
         name: 'MultiMovies',

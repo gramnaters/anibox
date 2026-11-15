@@ -37,6 +37,9 @@ def get_video_from_multiembed_player(url):
             return m.group(1), 'auto', {'request': headers}
 
         return None, None, None
+    except Exception as e:
+        logging.error(f"[MultiEmbed] Error: {e}")
+        return None, None, None
 
 
 def get_video_from_multi_player(url):

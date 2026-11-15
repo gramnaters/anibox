@@ -1,55 +1,43 @@
 __pycache__/
 *.pyc
 *.db
-.env
 *.sqlite
+*.sqlite3
+mappings.db
+.env
 node_modules/
 *.log
 *.har
 *.zip*
-all_working_*
-indian_proxies.txt
-all traffic*
 server.err
-abyss_extractor.py
-vidmoly_extractor.py
 
-# ── Debug / probe artifacts (kept locally, never pushed) ──
+# Local test artifacts & temporary scripts
 _*.py
 _*.js
 _*.txt
 _*.html
 _*.json
 probe_*
-probe4.py
 diag_*
-traffic_analysis_full/
-cf/
-.idea/
-.playwright-mcp/
 benchmark_*
-check_url_rotation.py
-get_animelok.py
-resolve_animelok.py
-parse_traffic_*.py
-parse_mitmproxy.py
-read_traffic.py
-extract_stream_responses.py
-provider_test.py
-provider_test_output.txt
-test_allprov.py
-sample-apple-config.html
-pow_solver.js
-zxc_crypto.py
-trawl_*.py
-trawl_verify.py
-*.har
-# PNG/JPG screenshots are ignored, EXCEPT the app's static icons.
+exoplayer_benchmark_results.json
+sample_*.html
+theme_*.html
+*.ts
+*.xml
+*.err
+
+# Images & screenshots (excluding production assets in static/)
 *.png
 !static/*.png
-*.jpeg
 *.jpg
 !static/*.jpg
-*.log
-mappings.db
-*.sqlite3
+*.jpeg
+!static/*.jpeg
+
+# IDE & tool directories
+.idea/
+.vscode/
+.playwright-mcp/
+cf/
+traffic_analysis_full/

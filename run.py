@@ -52,22 +52,10 @@ def index(lang=None):
 def configure(lang=None):
     return render_template('configure.html')
 
-@app.route('/theme/<int:tid>')
-@app.route('/theme<int:tid>')
-def view_theme(tid):
-    theme_id = str(tid) if 1 <= tid <= 5 else '1'
-    return render_template('configure.html', forced_theme=theme_id)
-
-@app.route('/theme-showcase')
-@app.route('/theme-preview')
-def theme_showcase():
-    return render_template('theme_showcase.html')
-
 @app.route('/favicon.ico')
 def favicon():
     return app.send_static_file('favicon.png')
 
-@app.route('/.well-known/ai-plugin.json')
 @app.route('/health')
 def health():
     return {'status': 'ok', 'version': MANIFEST['version']}

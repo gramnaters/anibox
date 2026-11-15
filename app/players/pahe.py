@@ -51,7 +51,7 @@ def _unpack_js(packed_code):
     # Manual unpack using regex for .split('|') pattern
     try:
         match = re.search(
-            r"}\((['\"])([\s\S]*?)\1,\s*(\d+),\s*(\d+),\s*(['\"])([\s\S]*?)\5\.split\((['"])\|\7\)",
+            r'''}\((['"])([\s\S]*?)\1,\s*(\d+),\s*(\d+),\s*(['"])([\s\S]*?)\5\.split\((['"])\|\7\)''',
             packed_code
         )
         if match:
@@ -184,7 +184,7 @@ def get_video_from_pahe_player(url):
                     return result['url'], 'auto', {'request': result['headers']}
 
         # Generic m3u8 extraction
-        headers = {'User-Agent: get_random_agent(), 'Referer': 'https://pahe.host/'}
+        headers = {'User-Agent': get_random_agent(), 'Referer': 'https://pahe.host/'}
         resp = requests.get(url, headers=headers, timeout=15, verify=False)
         if resp.status_code == 200:
             m = re.search(r'(https?://[^"\'<>\s]+\.m3u8[^"\'<>\s]*)', resp.text)
