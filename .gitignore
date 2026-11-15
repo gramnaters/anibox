@@ -40,4 +40,6 @@ theme_*.html
 .vscode/
 .playwright-mcp/
 cf/
+cf_rewrite/
+cf_worker/
 traffic_analysis_full/
