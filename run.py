@@ -28,9 +28,19 @@ app.register_blueprint(status_bp)
 Compress(app)
 logging.basicConfig(format='%(asctime)s %(message)s')
 
+@app.route('/ping')
+def ping():
+    return make_response("OK", 200, {'Content-Type': 'text/plain; charset=utf-8'})
+
 @app.route('/')
 @app.route('/<lang>/')
 def index(lang=None):
+    # Prevent cron-job.org & uptime monitors from failing with 'output too large'
+    ua = request.headers.get('User-Agent', '').lower()
+    if any(b in ua for b in ('cron-job', 'cronjob', 'uptimerobot', 'betteruptime', 'pingdom', 'statuscake', 'freshping', 'render')):
+        return make_response("OK", 200, {'Content-Type': 'text/plain; charset=utf-8'})
+    if request.args.get('ping') or request.args.get('cron') or request.args.get('health') or request.args.get('keepalive'):
+        return make_response("OK", 200, {'Content-Type': 'text/plain; charset=utf-8'})
     return render_template('configure.html')
 
 @app.route('/configure')

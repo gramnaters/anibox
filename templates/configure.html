@@ -12,21 +12,21 @@
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  /* ─── TypeUI Precision Monochrome System Tokens (mkissa.to Diffused Fog & Glass) ─── */
+  /* ─── TypeUI Precision System Tokens (mkissa.to Midnight Slate & Sapphire Mesh) ─── */
   :root {
-    --bg-base: #5a5d66;
-    --app-bg: #5a5d66;
-    --surface: rgba(255, 255, 255, 0.08);
-    --surface-2: rgba(255, 255, 255, 0.12);
-    --surface-3: rgba(255, 255, 255, 0.18);
+    --bg-base: #111520;
+    --app-bg: #111520;
+    --surface: rgba(255, 255, 255, 0.05);
+    --surface-2: rgba(255, 255, 255, 0.08);
+    --surface-3: rgba(255, 255, 255, 0.14);
 
     --ink: #ffffff;
-    --ink-muted: #e2e4ed;
-    --ink-faint: #b4b6c3;
+    --ink-muted: #cbd5e1;
+    --ink-faint: #94a3b8;
 
-    --border: rgba(255, 255, 255, 0.18);
-    --border-hover: rgba(255, 255, 255, 0.35);
-    --border-active: rgba(255, 255, 255, 0.90);
+    --border: rgba(255, 255, 255, 0.10);
+    --border-hover: rgba(255, 255, 255, 0.28);
+    --border-active: rgba(255, 255, 255, 0.85);
 
     /* Single unified monochrome highlight */
     --accent: #ffffff;
@@ -38,7 +38,7 @@
     --amber: #f59e0b;
 
     /* Silver sheen line animation */
-    --gradient-sheen: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 20%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0.03) 80%, transparent 100%);
+    --gradient-sheen: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.02) 20%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.02) 80%, transparent 100%);
 
     --sp-1: .25rem; --sp-2: .5rem; --sp-3: .75rem; --sp-4: 1rem; --sp-5: 1.25rem;
     --sp-6: 1.5rem; --sp-8: 2rem; --sp-10: 2.5rem; --sp-12: 3rem;
@@ -50,32 +50,40 @@
     --text-xs: .75rem; --text-sm: .8125rem; --text-base: .875rem; --text-md: .9375rem;
     --text-lg: 1rem; --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 2.25rem;
 
-    --shadow-sm: 0 1px 2px rgba(0,0,0,.25);
-    --shadow-md: 0 4px 14px rgba(0,0,0,.35);
-    --shadow-lg: 0 12px 36px -4px rgba(0,0,0,.45);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.35);
+    --shadow-md: 0 4px 14px rgba(0,0,0,.45);
+    --shadow-lg: 0 12px 36px -4px rgba(0,0,0,.60);
   }
 
   html {
     font-size: 16px;
-    background-color: #5a5d66 !important;
+    background-color: #111520 !important;
     color: #ffffff;
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
   }
 
-  /* ─── mkissa.to Luminous Diffused Silver-Gray Misty Screen Backdrop ─── */
+  /* ─── Authentic mkissa.to Deep Midnight Slate & Sapphire Aura Backdrop ─── */
   body {
     margin: 0;
     min-height: 100vh;
-    background-color: #5a5d66 !important;
+    background-color: #111520 !important;
     background-image: 
-      radial-gradient(ellipse 1400px 750px at 50% 26%, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.12) 48%, transparent 75%),
-      radial-gradient(ellipse 950px 520px at 85% 25%, rgba(255, 255, 255, 0.14) 0%, transparent 60%),
-      radial-gradient(ellipse 900px 500px at 15% 65%, rgba(255, 255, 255, 0.10) 0%, transparent 60%),
-      linear-gradient(180deg, #6c6f78 0%, #5a5d66 38%, #4a4d56 78%, #40434b 100%) !important;
+      /* Precision 48px Blueprint Grid */
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      /* Electric Sapphire Ambient Mesh (Top-Left) */
+      radial-gradient(90% 65% at 18% 18%, rgba(37, 99, 235, 0.16) 0%, transparent 60%),
+      /* Emerald Aurora Mesh (Bottom-Right, harmonizes with active dots) */
+      radial-gradient(85% 60% at 85% 75%, rgba(34, 197, 94, 0.12) 0%, transparent 55%),
+      /* Soft Top-Center Fog Horizon */
+      radial-gradient(ellipse 1200px 500px at 50% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 70%),
+      /* Base Deep Midnight Slate Gradient */
+      linear-gradient(155deg, #131724 0%, #181e2e 45%, #0f131d 100%) !important;
+    background-size: 48px 48px, 48px 48px, auto, auto, auto, auto !important;
     background-attachment: fixed !important;
-    background-repeat: no-repeat !important;
+    background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat !important;
     color: #ffffff;
     font: var(--text-md)/1.55 var(--font);
     -webkit-font-smoothing: antialiased;
@@ -93,8 +101,8 @@
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    opacity: 0.035;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   ::selection { background: #ffffff; color: #000000; }
@@ -142,17 +150,17 @@
     border-radius: 9999px;
     isolation: isolate;
     pointer-events: auto;
-    background: rgba(18, 20, 26, 0.72);
+    background: rgba(16, 20, 30, 0.82);
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55);
     transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .nav-inner:hover {
-    background: rgba(22, 24, 32, 0.85);
-    border-color: rgba(255, 255, 255, 0.22);
-    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
+    background: rgba(20, 25, 38, 0.90);
+    border-color: rgba(255, 255, 255, 0.20);
+    box-shadow: 0 20px 52px rgba(0, 0, 0, 0.65);
   }
 
   .brand {
@@ -314,16 +322,16 @@
     display: flex;
     align-items: center;
     gap: var(--sp-4);
-    padding: 1.1rem 1.35rem;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-top: 1px solid rgba(255, 255, 255, 0.32);
+    padding: 1.15rem 1.35rem;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 16px;
     box-shadow: 
-      inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
-      0 8px 24px -4px rgba(0, 0, 0, 0.12);
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.14),
+      0 12px 32px -4px rgba(0, 0, 0, 0.35);
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     min-width: 0;
@@ -332,13 +340,13 @@
     overflow: hidden;
   }
   .opt:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.32);
-    border-top-color: rgba(255, 255, 255, 0.48);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.22);
+    border-top-color: rgba(255, 255, 255, 0.36);
     transform: translateY(-2px);
     box-shadow: 
-      inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
-      0 12px 32px -4px rgba(0, 0, 0, 0.18);
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
+      0 16px 40px -4px rgba(0, 0, 0, 0.45);
   }
   .opt:active {
     transform: translateY(0);
@@ -352,16 +360,16 @@
     display: grid;
     place-items: center;
     flex: none;
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.20);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18);
     color: #ffffff;
     transition: transform .22s cubic-bezier(0.34, 1.56, 0.64, 1), border-color .16s ease, background .16s ease;
   }
   .opt:hover .ico {
     transform: scale(1.06);
-    border-color: rgba(255, 255, 255, 0.40);
-    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.12);
   }
   .opt .ico svg.glyph-icon { width: 1.35rem; height: 1.35rem; stroke: #ffffff; color: #ffffff; }
 
@@ -431,14 +439,14 @@
 
   /* ─── Filter Boxes & Chips (MKissa Frosted Glass) ─── */
   .filter-box {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-top: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 16px;
     padding: var(--sp-5);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.14), 0 12px 32px -4px rgba(0, 0, 0, 0.35);
   }
   .filter-box-head {
     display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-3);
@@ -587,16 +595,16 @@
   .cap em { font-style: normal; margin-left: auto; letter-spacing: 0; text-transform: none; font-weight: 600; color: var(--green); font-size: var(--text-xs); }
 
   .pv {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-top: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 16px;
     padding: var(--sp-5);
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.14), 0 12px 32px -4px rgba(0, 0, 0, 0.35);
   }
 
   .pv .ph {
@@ -637,14 +645,14 @@
 
   /* ─── Install Card ─── */
   .linkcard {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-top: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 16px;
     padding: var(--sp-5);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.14), 0 12px 32px -4px rgba(0, 0, 0, 0.35);
   }
   .linkrow { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: var(--sp-2); }
   .linkrow code {
@@ -679,12 +687,12 @@
   .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-3); margin-top: var(--sp-4); }
   .step {
     display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-4); border-radius: 16px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-top: 1px solid rgba(255, 255, 255, 0.32);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.14), 0 12px 32px -4px rgba(0, 0, 0, 0.35);
   }
   .step .n {
     width: 1.75rem; height: 1.75rem; border-radius: var(--r-sm); display: grid; place-items: center; flex: none;
@@ -697,14 +705,14 @@
   /* ─── Status ─── */
   .status-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: var(--sp-3); margin-bottom: var(--sp-4); }
   .smetric {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-top: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 16px;
     padding: var(--sp-4) var(--sp-5);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.14), 0 12px 32px -4px rgba(0, 0, 0, 0.35);
   }
   .smetric-label { font-size: var(--text-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); }
   .smetric-value { font-size: 1.75rem; font-weight: 800; margin-top: var(--sp-1); font-variant-numeric: tabular-nums; line-height: 1.2; font-family: var(--font); color: #ffffff; }
@@ -725,21 +733,21 @@
   /* ─── Sarvam / incident.io Style Status Uptime Bars ─── */
   .providers { display: grid; gap: var(--sp-4); }
   .prow {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-top: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 16px;
     padding: var(--sp-5) var(--sp-6);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.14), 0 12px 32px -4px rgba(0, 0, 0, 0.35);
     transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .prow:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.32);
-    border-top-color: rgba(255, 255, 255, 0.48);
-    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.35), 0 12px 32px -4px rgba(0, 0, 0, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.22);
+    border-top-color: rgba(255, 255, 255, 0.36);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), 0 16px 40px -4px rgba(0, 0, 0, 0.45);
   }
 
   .prow-header {
@@ -863,8 +871,8 @@
   .savebar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; display: flex; align-items: center; justify-content: space-between;
     gap: var(--sp-4); padding: var(--sp-3) clamp(1.25rem, 4vw, 3.5rem);
-    background: rgba(10, 10, 12, 0.92); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
-    border-top: 1px solid var(--border);
+    background: rgba(14, 18, 28, 0.92); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
   }
   .savebar-left { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--text-sm); color: var(--ink-muted); min-width: 0; }
 
@@ -951,7 +959,7 @@
       justify-content: center !important;
       align-items: center !important;
       z-index: 9999 !important;
-      background: #000000 !important;
+      background: rgba(13, 17, 26, 0.94) !important;
       border: none !important;
       border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6) !important;
