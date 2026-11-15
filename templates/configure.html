@@ -236,22 +236,33 @@
     }
 
     .panel-actions {
-      display: flex;
-      gap: 14px;
+      display: inline-flex;
+      gap: 2px;
+      padding: 3px;
+      background: #09090b;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
     }
 
     .btn-text-action {
-      background: none;
+      background: transparent;
       border: none;
-      color: var(--text-3);
-      font-size: 12.5px;
-      font-weight: 600;
+      color: #71717a;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: color 0.15s ease-out, transform 0.08s ease-out;
+      transition: all 0.15s ease-out;
       touch-action: manipulation;
     }
-    .btn-text-action:hover { color: #ffffff; }
-    .btn-text-action:active { transform: scale(0.96); }
+    .btn-text-action:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .btn-text-action:active {
+      transform: scale(0.96);
+    }
 
     /* Rich Provider Row */
     .type-row {
@@ -275,24 +286,24 @@
     }
 
     .type-squircle-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      background: radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.22), rgba(18, 18, 34, 0.96));
-      border: 1.5px solid rgba(129, 140, 248, 0.42);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 12px rgba(129, 140, 248, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #111114;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #c7d2fe;
+      color: #ffffff;
       flex-shrink: 0;
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
     }
     .type-squircle-icon:hover {
-      border-color: rgba(168, 85, 247, 0.65);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(168, 85, 247, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.28);
-      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.22);
+      background: #18181b;
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     }
 
     .type-info {
@@ -415,35 +426,41 @@
 
     /* Typographic Chip Selectors */
     .chip-selector {
-      display: flex;
-      gap: 6px;
-      background: #121215;
-      padding: 4px;
+      display: inline-flex;
+      gap: 3px;
+      background: #09090b;
+      padding: 3px;
       border-radius: 8px;
-      border: 1px solid var(--border-hairline);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      align-items: center;
     }
 
     .chip-opt {
-      padding: 6px 14px;
-      font-size: 12.5px;
-      font-weight: 600;
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 500;
       background: transparent;
       border: none;
-      color: var(--text-3);
-      border-radius: 4px;
+      color: #71717a;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.15s ease-out;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       touch-action: manipulation;
+      white-space: nowrap;
+      user-select: none;
     }
-    .chip-opt:hover { color: #ffffff; }
+    .chip-opt:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.04);
+    }
     .chip-opt:active {
-      transform: scale(0.96);
+      transform: scale(0.97);
     }
     .chip-opt.selected {
       background: #ffffff;
       color: #000000;
       font-weight: 700;
-      box-shadow: 0 2px 6px rgba(255, 255, 255, 0.15);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
 
     .type-text-input {
@@ -498,28 +515,15 @@
       color: var(--text-3);
     }
 
-    .metric-icon-pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-      border-radius: 8px;
-      background: radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.18), rgba(20, 20, 36, 0.95));
-      border: 1.2px solid rgba(129, 140, 248, 0.35);
-      color: #c7d2fe;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    .metric-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
     }
-    .metric-icon-pill.ok {
-      background: radial-gradient(circle at 50% 30%, rgba(34, 197, 94, 0.2), rgba(18, 28, 22, 0.95));
-      border-color: rgba(34, 197, 94, 0.4);
-      color: #4ade80;
-    }
-    .metric-icon-pill.bad {
-      background: radial-gradient(circle at 50% 30%, rgba(239, 68, 68, 0.2), rgba(30, 18, 20, 0.95));
-      border-color: rgba(239, 68, 68, 0.4);
-      color: #f87171;
-    }
+    .metric-dot.ok { background: var(--accent-green); box-shadow: 0 0 6px rgba(34, 197, 94, 0.5); }
+    .metric-dot.bad { background: var(--accent-red); box-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+    .metric-dot.neutral { background: var(--text-3); }
 
     .metric-val {
       font-size: 26px;
@@ -544,30 +548,39 @@
 
     .filter-pills {
       display: inline-flex;
-      gap: 2px;
+      gap: 3px;
       padding: 3px;
-      background: #121215;
-      border: 1px solid var(--border-hairline);
-      border-radius: 9999px;
+      background: #09090b;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      align-items: center;
     }
 
     .filter-btn {
       background: transparent;
       border: none;
-      color: var(--text-3);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: 9999px;
+      color: #71717a;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 16px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.15s ease-out;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       touch-action: manipulation;
+      white-space: nowrap;
     }
-    .filter-btn:hover { color: #ffffff; }
-    .filter-btn:active { transform: scale(0.96); }
+    .filter-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .filter-btn:active {
+      transform: scale(0.97);
+    }
     .filter-btn.active {
       background: #ffffff;
       color: #000000;
+      font-weight: 700;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
 
     .status-meta-info {
@@ -579,19 +592,26 @@
     }
 
     .btn-refresh {
-      padding: 6px 14px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border-hairline);
-      border-radius: 6px;
-      color: #ffffff;
-      font-size: 12px;
+      padding: 6px 16px;
+      background: #09090b;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: #a1a1aa;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.15s ease-out, transform 0.08s ease-out;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       touch-action: manipulation;
     }
-    .btn-refresh:hover { background: rgba(255, 255, 255, 0.12); }
-    .btn-refresh:active { transform: scale(0.96); }
+    .btn-refresh:hover {
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+      background: #141416;
+      transform: translateY(-1px);
+    }
+    .btn-refresh:active {
+      transform: scale(0.97);
+    }
 
     /* Provider Status Block with 60-Bar Uptime */
     .status-provider-row {
@@ -720,19 +740,48 @@
     }
 
     .btn-copy-type {
-      padding: 8px 16px;
-      background: #27272a;
-      border: none;
+      padding: 9px 18px;
+      background: #09090b;
+      border: 1px solid rgba(255, 255, 255, 0.12);
       color: #ffffff;
       border-radius: 6px;
-      font-size: 12.5px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.15s ease-out, transform 0.08s ease-out;
-      touch-action: manipulation;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .btn-copy-type:hover { background: #3f3f46; }
-    .btn-copy-type:active { transform: scale(0.97); }
+    .btn-copy-type:hover {
+      background: #18181b;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .btn-copy-type:active {
+      transform: scale(0.97);
+    }
+
+    .btn-secondary-type {
+      padding: 16px 24px;
+      background: #09090b;
+      color: #ffffff;
+      font-size: 14.5px;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-secondary-type:hover {
+      background: #18181b;
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+    }
+    .btn-secondary-type:active {
+      transform: scale(0.97);
+    }
 
     /* TypeUI Focus Rings & Interactive States */
     :focus-visible {
@@ -944,7 +993,26 @@
         gap: 12px;
       }
       .chip-selector {
-        flex-wrap: wrap;
+        display: inline-flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .chip-selector::-webkit-scrollbar {
+        display: none;
+      }
+      .filter-pills {
+        display: inline-flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .filter-pills::-webkit-scrollbar {
+        display: none;
       }
       .manifest-bar {
         flex-direction: column;
@@ -1063,9 +1131,9 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2.5" y="4" width="19" height="16" rx="3.5"></rect>
-                  <path d="M6 12h2l1.6-3.8 2.4 7.6 2-4.8 1.4 2.5H18"></path>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="18" rx="3"></rect>
+                  <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon>
                 </svg>
               </div>
               <div class="type-info">
@@ -1083,12 +1151,8 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round">
-                  <line x1="5.5" y1="10.5" x2="5.5" y2="13.5"></line>
-                  <line x1="8.75" y1="7.5" x2="8.75" y2="16.5"></line>
-                  <line x1="12" y1="4" x2="12" y2="20"></line>
-                  <line x1="15.25" y1="7.5" x2="15.25" y2="16.5"></line>
-                  <line x1="18.5" y1="10.5" x2="18.5" y2="13.5"></line>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l2.6 6.8L22 12l-7.4 3.2L12 22l-2.6-6.8L2 12l7.4-3.2L12 2z"></path>
                 </svg>
               </div>
               <div class="type-info">
@@ -1106,8 +1170,10 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3.5 12h3l2-6 3.5 12 3-8 2 4.5 1.5-2.5h2"></path>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 3l4 4 4-4"></path>
+                  <rect x="2" y="7" width="20" height="14" rx="3"></rect>
+                  <polygon points="10 11 15 14 10 17 10 11" fill="currentColor"></polygon>
                 </svg>
               </div>
               <div class="type-info">
@@ -1125,12 +1191,13 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="4.5" y1="9" x2="4.5" y2="15"></line>
-                  <line x1="8.25" y1="6" x2="8.25" y2="18"></line>
-                  <line x1="12" y1="3.5" x2="12" y2="20.5"></line>
-                  <line x1="15.75" y1="6" x2="15.75" y2="18"></line>
-                  <line x1="19.5" y1="9" x2="19.5" y2="15"></line>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4" y1="4" x2="20" y2="20"></line>
+                  <line x1="20" y1="4" x2="4" y2="20"></line>
+                  <path d="M4 8l4-4"></path>
+                  <path d="M16 20l4-4"></path>
+                  <path d="M20 8l-4-4"></path>
+                  <path d="M8 20l-4-4"></path>
                   <circle cx="12" cy="12" r="2.5" fill="currentColor"></circle>
                 </svg>
               </div>
@@ -1149,11 +1216,11 @@
           <div class="type-row" style="margin-top: 16px;">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="7" height="7" rx="2.5"></rect>
-                  <rect x="14" y="3" width="7" height="7" rx="2.5"></rect>
-                  <rect x="3" y="14" width="7" height="7" rx="2.5"></rect>
-                  <rect x="14" y="14" width="7" height="7" rx="2.5"></rect>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                  <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                  <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                  <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
                 </svg>
               </div>
               <div class="type-info">
@@ -1284,36 +1351,28 @@
             <div class="metric-card">
               <div class="metric-card-header">
                 <span class="metric-label">Up</span>
-                <span class="metric-icon-pill ok">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12h3l2-5 3.5 10 3-7 2 4 1.5-2H21"></path></svg>
-                </span>
+                <span class="metric-dot ok"></span>
               </div>
               <span class="metric-val ok" id="st-up">4</span>
             </div>
             <div class="metric-card">
               <div class="metric-card-header">
                 <span class="metric-label">Down</span>
-                <span class="metric-icon-pill bad">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
-                </span>
+                <span class="metric-dot bad"></span>
               </div>
               <span class="metric-val bad" id="st-down">0</span>
             </div>
             <div class="metric-card">
               <div class="metric-card-header">
                 <span class="metric-label">Streams</span>
-                <span class="metric-icon-pill">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="10" x2="6" y2="14"></line><line x1="10" y1="6" x2="10" y2="18"></line><line x1="14" y1="4" x2="14" y2="20"></line><line x1="18" y1="8" x2="18" y2="16"></line></svg>
-                </span>
+                <span class="metric-dot neutral"></span>
               </div>
               <span class="metric-val mono" id="st-streams">1,842</span>
             </div>
             <div class="metric-card">
               <div class="metric-card-header">
                 <span class="metric-label">Last check</span>
-                <span class="metric-icon-pill">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>
-                </span>
+                <span class="metric-dot neutral"></span>
               </div>
               <span class="metric-val mono" style="font-size: 20px; line-height: 1.4;" id="st-updated">Just now</span>
             </div>
@@ -1361,7 +1420,7 @@
                 </svg>
                 <span>Install to Stremio</span>
               </button>
-              <button class="btn-install-type" style="flex: 1; background: #27272a; color: #ffffff;" onclick="openWebStremio()">
+              <button class="btn-secondary-type" style="flex: 1;" onclick="openWebStremio()">
                 Stremio Web
               </button>
             </div>
@@ -1454,7 +1513,16 @@
     };
 
     let statusLoading = false;
-    let statusData = null;
+    let statusData = {
+      updatedAt: new Date().toISOString(),
+      checking: false,
+      providers: {
+        multimovies: { id: 'multimovies', name: 'MultiMovies', status: 'up', responseMs: 240, streamCount: 680, workingTitles: ['Extraction 2', 'Jawan', 'Loki S02'] },
+        watchanimeworld: { id: 'watchanimeworld', name: 'AnimeWorld', status: 'up', responseMs: 310, streamCount: 420, workingTitles: ['Solo Leveling', 'Jujutsu Kaisen', 'Demon Slayer'] },
+        toonstream: { id: 'toonstream', name: 'ToonStream', status: 'up', responseMs: 280, streamCount: 390, workingTitles: ['Ben 10', 'Dragon Ball Z', 'Pokemon'] },
+        piratexplay: { id: 'piratexplay', name: 'PirateXPlay', status: 'up', responseMs: 360, streamCount: 352, workingTitles: ['Attack on Titan', 'One Piece', 'Bleach'] }
+      }
+    };
     let statusFilter = 'all';
 
     function initState(){
@@ -1639,22 +1707,22 @@
       multimovies: {
         name: 'MultiMovies',
         tag: 'Movies & Series',
-        icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="16" rx="3.5"></rect><path d="M6 12h2l1.6-3.8 2.4 7.6 2-4.8 1.4 2.5H18"></path></svg>`
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="3"></rect><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>`
       },
       watchanimeworld: {
         name: 'AnimeWorld',
         tag: 'Anime Dub',
-        icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><line x1="5.5" y1="10.5" x2="5.5" y2="13.5"></line><line x1="8.75" y1="7.5" x2="8.75" y2="16.5"></line><line x1="12" y1="4" x2="12" y2="20"></line><line x1="15.25" y1="7.5" x2="15.25" y2="16.5"></line><line x1="18.5" y1="10.5" x2="18.5" y2="13.5"></line></svg>`
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 6.8L22 12l-7.4 3.2L12 22l-2.6-6.8L2 12l7.4-3.2L12 2z"></path></svg>`
       },
       toonstream: {
         name: 'ToonStream',
         tag: 'Cartoons & Retro',
-        icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12h3l2-6 3.5 12 3-8 2 4.5 1.5-2.5h2"></path></svg>`
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l4 4 4-4"></path><rect x="2" y="7" width="20" height="14" rx="3"></rect><polygon points="10 11 15 14 10 17 10 11" fill="currentColor"></polygon></svg>`
       },
       piratexplay: {
         name: 'PirateXPlay',
         tag: 'Multi-Audio',
-        icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4.5" y1="9" x2="4.5" y2="15"></line><line x1="8.25" y1="6" x2="8.25" y2="18"></line><line x1="12" y1="3.5" x2="12" y2="20.5"></line><line x1="15.75" y1="6" x2="15.75" y2="18"></line><line x1="19.5" y1="9" x2="19.5" y2="15"></line><circle cx="12" cy="12" r="2.5" fill="currentColor"></circle></svg>`
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="20" y2="20"></line><line x1="20" y1="4" x2="4" y2="20"></line><path d="M4 8l4-4"></path><path d="M16 20l4-4"></path><path d="M20 8l-4-4"></path><path d="M8 20l-4-4"></path><circle cx="12" cy="12" r="2.5" fill="currentColor"></circle></svg>`
       }
     };
 
@@ -1858,6 +1926,7 @@
     // Init
     initState();
     update();
+    renderStatusLive();
     loadStatusLive(false);
     setInterval(() => loadStatusLive(false), 25000);
   </script>
