@@ -6,7 +6,10 @@ import aiohttp
 import sys
 import base64
 from urllib.parse import urlparse, parse_qs, urlencode
-from py_mini_racer import MiniRacer
+try:
+    from py_mini_racer import MiniRacer
+except ImportError:
+    MiniRacer = None
 
 from app.utils.common_utils import get_random_agent
 from app.utils.common_utils import fetch_resolution_from_m3u8

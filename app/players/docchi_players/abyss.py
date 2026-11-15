@@ -6,7 +6,7 @@ import logging
 import aiohttp
 from urllib.parse import urljoin
 from app.utils.common_utils import get_random_agent
-from app.players.test import run_tests
+# from app.players.test import run_tests
 
 # Domains handled by this player
 DOMAINS = ['abysscdn.com', 'abyssplayer.com', 'hydraxcdn.biz', 'playhydrax.com', 'short.icu', 'embedplayabyss.top']

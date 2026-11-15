@@ -6,7 +6,7 @@ import json
 from bs4 import BeautifulSoup
 from aiocache import cached
 from aiocache.serializers import PickleSerializer
-from app.players.rumble import get_video_from_rumble_player
+from app.players.docchi_players.rumble import get_video_from_rumble_player
 from app.utils.common_utils import get_random_agent
 from config import Config
 

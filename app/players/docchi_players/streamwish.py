@@ -15,7 +15,7 @@ from urllib.parse import urljoin
 
 from app.utils.common_utils import get_random_agent, fetch_resolution_from_m3u8
 from app.utils.proxy_utils import generate_proxy_url, proxy_get
-from app.players.filelions import _unpack_filelions  # same packed-JS format as VidHide
+from app.players.docchi_players.filelions import _unpack_filelions  # same packed-JS format as VidHide
 from config import Config
 
 # Mirrors that serve the player page (embed domains only redirect via JS or are blocked)

@@ -2,7 +2,10 @@ import re
 import logging
 import json
 import asyncio
-from async_tls_client import AsyncSession
+try:
+    from async_tls_client import AsyncSession
+except ImportError:
+    AsyncSession = None
 from app.utils.common_utils import get_random_agent
 
 # Domains handled by this player
