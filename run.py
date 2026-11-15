@@ -30,7 +30,9 @@ Compress(app)
 logging.basicConfig(format='%(asctime)s %(message)s')
 start_status_monitor()
 
-@app.route('/ping')
+@app.route('/ping', methods=['GET', 'HEAD'])
+@app.route('/cron', methods=['GET', 'HEAD'])
+@app.route('/keepalive', methods=['GET', 'HEAD'])
 def ping():
     return make_response("OK", 200, {'Content-Type': 'text/plain; charset=utf-8'})
 
