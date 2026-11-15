@@ -110,12 +110,16 @@
       border-radius: 6px;
       cursor: pointer;
       text-align: left;
-      transition: all 0.15s;
+      transition: all 0.15s ease-out;
+      touch-action: manipulation;
     }
 
     .type-nav-btn:hover {
       color: #ffffff;
       background: rgba(255, 255, 255, 0.04);
+    }
+    .type-nav-btn:active {
+      transform: scale(0.98);
     }
 
     .type-nav-btn.active {
@@ -186,6 +190,9 @@
       background: #e4e4e7;
       transform: translateY(-1px);
     }
+    .btn-install-type:active {
+      transform: scale(0.97);
+    }
 
     /* Content panels */
     .typographic-content {
@@ -238,9 +245,11 @@
       font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
-      transition: color 0.15s;
+      transition: color 0.15s ease-out, transform 0.08s ease-out;
+      touch-action: manipulation;
     }
     .btn-text-action:hover { color: #ffffff; }
+    .btn-text-action:active { transform: scale(0.96); }
 
     /* Rich Provider Row */
     .type-row {
@@ -323,9 +332,23 @@
       border-radius: 9999px;
       position: relative;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.18s ease-out, transform 0.08s ease-out;
       flex-shrink: 0;
       border: 1px solid rgba(255, 255, 255, 0.08);
+      touch-action: manipulation;
+    }
+
+    .swiss-switch::before {
+      content: '';
+      position: absolute;
+      top: -9px;
+      bottom: -9px;
+      left: -6px;
+      right: -6px;
+    }
+
+    .swiss-switch:active {
+      transform: scale(0.94);
     }
 
     .swiss-switch::after {
@@ -398,11 +421,15 @@
       background: transparent;
       border: none;
       color: var(--text-3);
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.15s ease-out;
+      touch-action: manipulation;
     }
     .chip-opt:hover { color: #ffffff; }
+    .chip-opt:active {
+      transform: scale(0.96);
+    }
     .chip-opt.selected {
       background: #ffffff;
       color: #000000;
@@ -490,9 +517,11 @@
       padding: 6px 14px;
       border-radius: 9999px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.15s ease-out;
+      touch-action: manipulation;
     }
     .filter-btn:hover { color: #ffffff; }
+    .filter-btn:active { transform: scale(0.96); }
     .filter-btn.active {
       background: #ffffff;
       color: #000000;
@@ -515,9 +544,11 @@
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: background 0.15s ease-out, transform 0.08s ease-out;
+      touch-action: manipulation;
     }
     .btn-refresh:hover { background: rgba(255, 255, 255, 0.12); }
+    .btn-refresh:active { transform: scale(0.96); }
 
     /* Provider Status Block with 60-Bar Uptime */
     .status-provider-row {
@@ -654,9 +685,11 @@
       font-size: 12.5px;
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.15s ease-out, transform 0.08s ease-out;
+      touch-action: manipulation;
     }
     .btn-copy-type:hover { background: #3f3f46; }
+    .btn-copy-type:active { transform: scale(0.97); }
 
     /* TypeUI Focus Rings & Interactive States */
     :focus-visible {
@@ -875,6 +908,15 @@
         align-items: stretch;
       }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -993,7 +1035,7 @@
                 <p class="type-desc">Cinema releases, Bollywood & Hindi series with multi-audio master playlists.</p>
               </div>
             </div>
-            <div class="swiss-switch on source-toggle" data-key="source_multimovies" onclick="toggleProvider(this)"></div>
+            <div class="swiss-switch on source-toggle" data-key="source_multimovies" role="switch" tabindex="0" aria-checked="true" aria-label="Toggle MultiMovies Provider" onclick="toggleProvider(this)"></div>
           </div>
 
           <!-- Provider 2 -->
@@ -1014,7 +1056,7 @@
                 <p class="type-desc">Dual-audio & Hindi dubbed anime episodes with direct CDN HLS streams.</p>
               </div>
             </div>
-            <div class="swiss-switch on source-toggle" data-key="source_watchanimeworld" onclick="toggleProvider(this)"></div>
+            <div class="swiss-switch on source-toggle" data-key="source_watchanimeworld" role="switch" tabindex="0" aria-checked="true" aria-label="Toggle AnimeWorld Provider" onclick="toggleProvider(this)"></div>
           </div>
 
           <!-- Provider 3 -->
@@ -1034,7 +1076,7 @@
                 <p class="type-desc">Classic cartoons, animated series & retro anime with fast mirrors.</p>
               </div>
             </div>
-            <div class="swiss-switch on source-toggle" data-key="source_toonstream" onclick="toggleProvider(this)"></div>
+            <div class="swiss-switch on source-toggle" data-key="source_toonstream" role="switch" tabindex="0" aria-checked="true" aria-label="Toggle ToonStream Provider" onclick="toggleProvider(this)"></div>
           </div>
 
           <!-- Provider 4 -->
@@ -1053,7 +1095,7 @@
                 <p class="type-desc">High-speed multi-lingual anime releases with sub & dub variants.</p>
               </div>
             </div>
-            <div class="swiss-switch on source-toggle" data-key="source_piratexplay" onclick="toggleProvider(this)"></div>
+            <div class="swiss-switch on source-toggle" data-key="source_piratexplay" role="switch" tabindex="0" aria-checked="true" aria-label="Toggle PirateXPlay Provider" onclick="toggleProvider(this)"></div>
           </div>
 
           <!-- Catalogs -->
@@ -1077,7 +1119,7 @@
                 <p class="type-desc">Display each active provider as its own catalog carousel in Stremio and Nuvio.</p>
               </div>
             </div>
-            <div class="swiss-switch on" id="swCatalogs" onclick="toggleCatalogs(this)"></div>
+            <div class="swiss-switch on" id="swCatalogs" role="switch" tabindex="0" aria-checked="true" aria-label="Toggle Provider Catalogs" onclick="toggleCatalogs(this)"></div>
           </div>
         </section>
 
@@ -1132,7 +1174,7 @@
               </div>
               <p class="type-desc">Collapse duplicate links pointing to identical upstream CDN mirrors.</p>
             </div>
-            <div class="swiss-switch on" id="swDedup" onclick="toggleDedup(this)"></div>
+            <div class="swiss-switch on" id="swDedup" role="switch" tabindex="0" aria-checked="true" aria-label="Toggle Strict Stream Deduplication" onclick="toggleDedup(this)"></div>
           </div>
         </section>
 
@@ -1182,7 +1224,7 @@
               </div>
               <p class="type-desc">Background worker pre-warms trending and airing anime catalogs daily.</p>
             </div>
-            <div class="swiss-switch on" onclick="this.classList.toggle('on')"></div>
+            <div class="swiss-switch on" role="switch" tabindex="0" aria-checked="true" aria-label="Toggle Auto-Refresh Trending Catalogs" onclick="this.classList.toggle('on'); this.setAttribute('aria-checked', this.classList.contains('on') ? 'true' : 'false');"></div>
           </div>
         </section>
 
@@ -1413,14 +1455,26 @@
       // Sync toggle elements
       PROVIDERS.forEach(p => {
         const el = document.querySelector(`.source-toggle[data-key="${p.key}"]`);
-        if (el) el.classList.toggle('on', state[p.key] === 'on');
+        if (el) {
+          const isOn = state[p.key] === 'on';
+          el.classList.toggle('on', isOn);
+          el.setAttribute('aria-checked', isOn ? 'true' : 'false');
+        }
       });
 
       const catEl = document.getElementById('swCatalogs');
-      if (catEl) catEl.classList.toggle('on', state.catalogs === 'on');
+      if (catEl) {
+        const catOn = state.catalogs === 'on';
+        catEl.classList.toggle('on', catOn);
+        catEl.setAttribute('aria-checked', catOn ? 'true' : 'false');
+      }
 
       const dedupEl = document.getElementById('swDedup');
-      if (dedupEl) dedupEl.classList.toggle('on', state.filter_audio_strict === 'on');
+      if (dedupEl) {
+        const dedupOn = state.filter_audio_strict === 'on';
+        dedupEl.classList.toggle('on', dedupOn);
+        dedupEl.setAttribute('aria-checked', dedupOn ? 'true' : 'false');
+      }
     }
 
     function toggleProvider(el) {
@@ -1737,6 +1791,14 @@
       const url = encodeURIComponent(document.getElementById('manifestUrl').value);
       window.open(`https://web.stremio.com/#/addons?addon=${url}`, '_blank');
     }
+
+    // Keyboard accessibility for switches
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === ' ' || e.key === 'Enter') && document.activeElement && document.activeElement.classList.contains('swiss-switch')) {
+        e.preventDefault();
+        document.activeElement.click();
+      }
+    });
 
     // Init
     initState();
