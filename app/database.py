@@ -98,7 +98,7 @@ class Database:
         finally:
             session.close()
 
-    def get_health_history(self, provider: str, limit: int = 24) -> list:
+    def get_health_history(self, provider: str, limit: int = 60) -> list:
         session = self.Session()
         try:
             logs = session.query(HealthLog).filter_by(provider=provider).order_by(HealthLog.id.desc()).limit(limit).all()

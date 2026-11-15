@@ -71,7 +71,7 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _get_provider_history(pname: str, limit: int = 24) -> list:
+def _get_provider_history(pname: str, limit: int = 60) -> list:
     try:
         hist = db.get_health_history(pname, limit=limit)
         if len(hist) < limit:
@@ -235,7 +235,7 @@ def _run():
                     )
                 except Exception as ex:
                     print(f'[status] failed to record health: {ex}', flush=True)
-                r['history'] = _get_provider_history(r['id'], limit=24)
+                r['history'] = _get_provider_history(r['id'], limit=60)
                 providers[r['id']] = r
             with _lock:
                 _state['providers'] = providers
