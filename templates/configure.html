@@ -1782,19 +1782,17 @@
       const hist = Array.isArray(history) && history.length > 0 ? history : [isUp ? 'up' : 'down'];
       for (let i = 0; i < barCount; i++) {
         const histIdx = Math.floor((i / barCount) * hist.length);
-        const statusVal = hist[histIdx] || (isUp ? 'up' : 'down');
-        let color = '#22c55e';
-        let opacity = '1';
-        if (statusVal === 'degraded') {
-          color = '#f59e0b';
-        } else if (statusVal === 'down') {
+        const statusVal = hist[histIdx];
+        let color = isUp ? '#22c55e' : '#ef4444';
+        if (statusVal === 'down') {
           color = '#ef4444';
-        } else if (statusVal === 'idle' || statusVal === 'none') {
-          color = 'rgba(255, 255, 255, 0.08)';
-          opacity = '0.5';
+        } else if (statusVal === 'degraded') {
+          color = '#f59e0b';
+        } else if (statusVal === 'up') {
+          color = '#22c55e';
         }
         const x = i * 10;
-        bars.push(`<rect x="${x}" y="0" width="6" height="24" rx="2" fill="${color}" opacity="${opacity}"></rect>`);
+        bars.push(`<rect x="${x}" y="0" width="6" height="24" rx="2" fill="${color}"></rect>`);
       }
       return `<svg class="timeline-svg" viewBox="0 0 596 24" preserveAspectRatio="none"><g>${bars.join('')}</g></svg>`;
     }

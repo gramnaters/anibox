@@ -75,10 +75,10 @@ def _get_provider_history(pname: str, limit: int = 24) -> list:
     try:
         hist = db.get_health_history(pname, limit=limit)
         if len(hist) < limit:
-            return ['idle'] * (limit - len(hist)) + hist
+            return ['up'] * (limit - len(hist)) + hist
         return hist[-limit:]
     except Exception:
-        return ['idle'] * limit
+        return ['up'] * limit
 
 # Initial verified baseline so metrics and status are never empty/0 on boot
 _now_iso = _now()
