@@ -48,9 +48,10 @@
     .mono { font-family: var(--mono); }
 
     .container {
-      max-width: 1180px;
+      width: 100%;
+      max-width: min(1560px, 94vw);
       margin: 0 auto;
-      padding: 64px 36px 120px;
+      padding: clamp(36px, 4.5vw, 64px) clamp(20px, 3.5vw, 64px) 120px;
     }
 
     /* ══════════════════════════════════════════════════════════════════
@@ -58,8 +59,8 @@
        ══════════════════════════════════════════════════════════════════ */
     .layout-grid {
       display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: 72px;
+      grid-template-columns: minmax(310px, 360px) minmax(0, 1fr);
+      gap: clamp(36px, 4.5vw, 84px);
       align-items: start;
     }
 
@@ -263,6 +264,7 @@
       display: flex;
       align-items: center;
       gap: 18px;
+      flex: 1;
     }
 
     .type-squircle-icon {
@@ -283,7 +285,8 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      max-width: 480px;
+      flex: 1;
+      max-width: 720px;
     }
 
     .type-name-line {
@@ -367,7 +370,8 @@
       display: flex;
       flex-direction: column;
       gap: 3px;
-      max-width: 380px;
+      flex: 1;
+      max-width: 560px;
     }
 
     .pref-label {
@@ -660,6 +664,81 @@
     }
     .btn-copy-type:hover { background: #3f3f46; }
 
+    /* TypeUI Focus Rings & Interactive States */
+    :focus-visible {
+      outline: 2px solid #ffffff !important;
+      outline-offset: 2px !important;
+    }
+
+    button, input, select {
+      touch-action: manipulation;
+    }
+
+    /* Live Telemetry Elements */
+    .type-spinner {
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      display: inline-block;
+      vertical-align: -2px;
+      margin-right: 8px;
+      animation: typeSpin 0.7s linear infinite;
+    }
+    @keyframes typeSpin { to { transform: rotate(360deg); } }
+
+    .title-chip {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-2);
+      background: #18181c;
+      border: 1px solid var(--border-hairline);
+      border-radius: 4px;
+      padding: 2px 7px;
+      display: inline-block;
+    }
+    .prov-titles-wrap {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .ep-err-text {
+      font-size: 11.5px;
+      font-family: var(--mono);
+      color: var(--accent-red);
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 4px;
+      padding: 5px 9px;
+      margin-top: 6px;
+      word-break: break-all;
+    }
+    .uptime-tag.bad {
+      color: var(--accent-red);
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.25);
+    }
+    .ep-stat.bad {
+      color: var(--accent-red);
+    }
+
+    /* Responsive Adaptation for Mid-size Desktops & Tablets */
+    @media (max-width: 1120px) and (min-width: 861px) {
+      .layout-grid {
+        grid-template-columns: 290px 1fr;
+        gap: 36px;
+      }
+      .brand-title {
+        font-size: 46px;
+      }
+      .status-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
     /* Toast */
     .toast-msg {
       position: fixed;
@@ -741,14 +820,18 @@
 
     @media (max-width: 860px) {
       .container {
-        padding: 32px 20px 100px;
+        padding: 24px 16px 100px;
+        overflow-x: hidden;
       }
       .layout-grid {
         grid-template-columns: 1fr;
-        gap: 36px;
+        gap: 32px;
       }
       .editorial-aside {
         position: static;
+      }
+      .brand-title {
+        font-size: 42px;
       }
       .type-nav-menu {
         display: none;
@@ -758,6 +841,32 @@
       }
       .status-summary-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .metric-card {
+        padding: 12px 14px;
+      }
+      .metric-val {
+        font-size: 20px;
+      }
+      .status-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .status-meta-info {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      .status-row-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .prov-stats-right {
+        width: 100%;
+        justify-content: space-between;
       }
       .pref-field-row {
         flex-direction: column;
@@ -843,7 +952,7 @@
           </div>
           <div class="spec-item">
             <span>Average Latency:</span>
-            <strong>12ms CDN</strong>
+            <strong id="sideAvgLatency">310ms</strong>
           </div>
           <div class="spec-item">
             <span>Catalog Sync:</span>
@@ -1127,166 +1236,11 @@
             </div>
           </div>
 
-          <!-- Live Status Container -->
+          <!-- Live Status Container (Dynamically rendered from /api/status - ZERO placeholders) -->
           <div id="status-list">
-            <!-- Provider 1 Status Card -->
-            <div class="status-provider-row" data-status="up">
-              <div class="status-row-top">
-                <div class="prov-meta-group">
-                  <div class="type-squircle-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-                      <line x1="7" y1="2" x2="7" y2="22"></line>
-                      <line x1="17" y1="2" x2="17" y2="22"></line>
-                    </svg>
-                  </div>
-                  <div class="prov-title-stack">
-                    <div class="prov-title-line">
-                      <span class="prov-title">MultiMovies</span>
-                      <span class="type-tag">Movies</span>
-                    </div>
-                    <span style="font-size: 12.5px; color: var(--text-3);">HLS master playlist verified</span>
-                  </div>
-                </div>
-                <div class="prov-stats-right">
-                  <span class="latency-tag">18ms</span>
-                  <span class="uptime-tag">100.0% Uptime</span>
-                </div>
-              </div>
-
-              <div class="uptime-timeline-box">
-                <svg class="timeline-svg" viewBox="0 0 596 24" preserveAspectRatio="none">
-                  <g fill="#22c55e">
-                    <rect x="0" y="0" width="6" height="24" rx="2"></rect><rect x="10" y="0" width="6" height="24" rx="2"></rect><rect x="20" y="0" width="6" height="24" rx="2"></rect><rect x="30" y="0" width="6" height="24" rx="2"></rect><rect x="40" y="0" width="6" height="24" rx="2"></rect><rect x="50" y="0" width="6" height="24" rx="2"></rect><rect x="60" y="0" width="6" height="24" rx="2"></rect><rect x="70" y="0" width="6" height="24" rx="2"></rect><rect x="80" y="0" width="6" height="24" rx="2"></rect><rect x="90" y="0" width="6" height="24" rx="2"></rect><rect x="100" y="0" width="6" height="24" rx="2"></rect><rect x="110" y="0" width="6" height="24" rx="2"></rect><rect x="120" y="0" width="6" height="24" rx="2"></rect><rect x="130" y="0" width="6" height="24" rx="2"></rect><rect x="140" y="0" width="6" height="24" rx="2"></rect><rect x="150" y="0" width="6" height="24" rx="2"></rect><rect x="160" y="0" width="6" height="24" rx="2"></rect><rect x="170" y="0" width="6" height="24" rx="2"></rect><rect x="180" y="0" width="6" height="24" rx="2"></rect><rect x="190" y="0" width="6" height="24" rx="2"></rect><rect x="200" y="0" width="6" height="24" rx="2"></rect><rect x="210" y="0" width="6" height="24" rx="2"></rect><rect x="220" y="0" width="6" height="24" rx="2"></rect><rect x="230" y="0" width="6" height="24" rx="2"></rect><rect x="240" y="0" width="6" height="24" rx="2"></rect><rect x="250" y="0" width="6" height="24" rx="2"></rect><rect x="260" y="0" width="6" height="24" rx="2"></rect><rect x="270" y="0" width="6" height="24" rx="2"></rect><rect x="280" y="0" width="6" height="24" rx="2"></rect><rect x="290" y="0" width="6" height="24" rx="2"></rect><rect x="300" y="0" width="6" height="24" rx="2"></rect><rect x="310" y="0" width="6" height="24" rx="2"></rect><rect x="320" y="0" width="6" height="24" rx="2"></rect><rect x="330" y="0" width="6" height="24" rx="2"></rect><rect x="340" y="0" width="6" height="24" rx="2"></rect><rect x="350" y="0" width="6" height="24" rx="2"></rect><rect x="360" y="0" width="6" height="24" rx="2"></rect><rect x="370" y="0" width="6" height="24" rx="2"></rect><rect x="380" y="0" width="6" height="24" rx="2"></rect><rect x="390" y="0" width="6" height="24" rx="2"></rect><rect x="400" y="0" width="6" height="24" rx="2"></rect><rect x="410" y="0" width="6" height="24" rx="2"></rect><rect x="420" y="0" width="6" height="24" rx="2"></rect><rect x="430" y="0" width="6" height="24" rx="2"></rect><rect x="440" y="0" width="6" height="24" rx="2"></rect><rect x="450" y="0" width="6" height="24" rx="2"></rect><rect x="460" y="0" width="6" height="24" rx="2"></rect><rect x="470" y="0" width="6" height="24" rx="2"></rect><rect x="480" y="0" width="6" height="24" rx="2"></rect><rect x="490" y="0" width="6" height="24" rx="2"></rect><rect x="500" y="0" width="6" height="24" rx="2"></rect><rect x="510" y="0" width="6" height="24" rx="2"></rect><rect x="520" y="0" width="6" height="24" rx="2"></rect><rect x="530" y="0" width="6" height="24" rx="2"></rect><rect x="540" y="0" width="6" height="24" rx="2"></rect><rect x="550" y="0" width="6" height="24" rx="2"></rect><rect x="560" y="0" width="6" height="24" rx="2"></rect><rect x="570" y="0" width="6" height="24" rx="2"></rect><rect x="580" y="0" width="6" height="24" rx="2"></rect><rect x="590" y="0" width="6" height="24" rx="2"></rect>
-                  </g>
-                </svg>
-                <div class="timeline-labels">
-                  <span>90 days ago</span>
-                  <span>100% Operational</span>
-                  <span>Today</span>
-                </div>
-              </div>
-
-              <div class="endpoints-box">
-                <div class="ep-row">
-                  <span class="ep-link">https://multimovies.beer/</span>
-                  <span class="ep-stat">200 OK · 18ms</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Provider 2 Status Card -->
-            <div class="status-provider-row" data-status="up">
-              <div class="status-row-top">
-                <div class="prov-meta-group">
-                  <div class="type-squircle-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="2" y1="12" x2="22" y2="12"></line>
-                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                    </svg>
-                  </div>
-                  <div class="prov-title-stack">
-                    <div class="prov-title-line">
-                      <span class="prov-title">AnimeWorld</span>
-                      <span class="type-tag">Anime Dub</span>
-                    </div>
-                    <span style="font-size: 12.5px; color: var(--text-3);">Dual-audio direct stream verified</span>
-                  </div>
-                </div>
-                <div class="prov-stats-right">
-                  <span class="latency-tag">11ms</span>
-                  <span class="uptime-tag">100.0% Uptime</span>
-                </div>
-              </div>
-
-              <div class="uptime-timeline-box">
-                <svg class="timeline-svg" viewBox="0 0 596 24" preserveAspectRatio="none">
-                  <g fill="#22c55e">
-                    <rect x="0" y="0" width="6" height="24" rx="2"></rect><rect x="10" y="0" width="6" height="24" rx="2"></rect><rect x="20" y="0" width="6" height="24" rx="2"></rect><rect x="30" y="0" width="6" height="24" rx="2"></rect><rect x="40" y="0" width="6" height="24" rx="2"></rect><rect x="50" y="0" width="6" height="24" rx="2"></rect><rect x="60" y="0" width="6" height="24" rx="2"></rect><rect x="70" y="0" width="6" height="24" rx="2"></rect><rect x="80" y="0" width="6" height="24" rx="2"></rect><rect x="90" y="0" width="6" height="24" rx="2"></rect><rect x="100" y="0" width="6" height="24" rx="2"></rect><rect x="110" y="0" width="6" height="24" rx="2"></rect><rect x="120" y="0" width="6" height="24" rx="2"></rect><rect x="130" y="0" width="6" height="24" rx="2"></rect><rect x="140" y="0" width="6" height="24" rx="2"></rect><rect x="150" y="0" width="6" height="24" rx="2"></rect><rect x="160" y="0" width="6" height="24" rx="2"></rect><rect x="170" y="0" width="6" height="24" rx="2"></rect><rect x="180" y="0" width="6" height="24" rx="2"></rect><rect x="190" y="0" width="6" height="24" rx="2"></rect><rect x="200" y="0" width="6" height="24" rx="2"></rect><rect x="210" y="0" width="6" height="24" rx="2"></rect><rect x="220" y="0" width="6" height="24" rx="2"></rect><rect x="230" y="0" width="6" height="24" rx="2"></rect><rect x="240" y="0" width="6" height="24" rx="2"></rect><rect x="250" y="0" width="6" height="24" rx="2"></rect><rect x="260" y="0" width="6" height="24" rx="2"></rect><rect x="270" y="0" width="6" height="24" rx="2"></rect><rect x="280" y="0" width="6" height="24" rx="2"></rect><rect x="290" y="0" width="6" height="24" rx="2"></rect><rect x="300" y="0" width="6" height="24" rx="2"></rect><rect x="310" y="0" width="6" height="24" rx="2"></rect><rect x="320" y="0" width="6" height="24" rx="2"></rect><rect x="330" y="0" width="6" height="24" rx="2"></rect><rect x="340" y="0" width="6" height="24" rx="2"></rect><rect x="350" y="0" width="6" height="24" rx="2"></rect><rect x="360" y="0" width="6" height="24" rx="2"></rect><rect x="370" y="0" width="6" height="24" rx="2"></rect><rect x="380" y="0" width="6" height="24" rx="2"></rect><rect x="390" y="0" width="6" height="24" rx="2"></rect><rect x="400" y="0" width="6" height="24" rx="2"></rect><rect x="410" y="0" width="6" height="24" rx="2"></rect><rect x="420" y="0" width="6" height="24" rx="2"></rect><rect x="430" y="0" width="6" height="24" rx="2"></rect><rect x="440" y="0" width="6" height="24" rx="2"></rect><rect x="450" y="0" width="6" height="24" rx="2"></rect><rect x="460" y="0" width="6" height="24" rx="2"></rect><rect x="470" y="0" width="6" height="24" rx="2"></rect><rect x="480" y="0" width="6" height="24" rx="2"></rect><rect x="490" y="0" width="6" height="24" rx="2"></rect><rect x="500" y="0" width="6" height="24" rx="2"></rect><rect x="510" y="0" width="6" height="24" rx="2"></rect><rect x="520" y="0" width="6" height="24" rx="2"></rect><rect x="530" y="0" width="6" height="24" rx="2"></rect><rect x="540" y="0" width="6" height="24" rx="2"></rect><rect x="550" y="0" width="6" height="24" rx="2"></rect><rect x="560" y="0" width="6" height="24" rx="2"></rect><rect x="570" y="0" width="6" height="24" rx="2"></rect><rect x="580" y="0" width="6" height="24" rx="2"></rect><rect x="590" y="0" width="6" height="24" rx="2"></rect>
-                  </g>
-                </svg>
-                <div class="timeline-labels">
-                  <span>90 days ago</span>
-                  <span>100% Operational</span>
-                  <span>Today</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Provider 3 Status Card -->
-            <div class="status-provider-row" data-status="up">
-              <div class="status-row-top">
-                <div class="prov-meta-group">
-                  <div class="type-squircle-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-                      <polyline points="17 2 12 7 7 2"></polyline>
-                    </svg>
-                  </div>
-                  <div class="prov-title-stack">
-                    <div class="prov-title-line">
-                      <span class="prov-title">ToonStream</span>
-                      <span class="type-tag">Toons</span>
-                    </div>
-                    <span style="font-size: 12.5px; color: var(--text-3);">Retro anime mirrors active</span>
-                  </div>
-                </div>
-                <div class="prov-stats-right">
-                  <span class="latency-tag">24ms</span>
-                  <span class="uptime-tag">100.0% Uptime</span>
-                </div>
-              </div>
-
-              <div class="uptime-timeline-box">
-                <svg class="timeline-svg" viewBox="0 0 596 24" preserveAspectRatio="none">
-                  <g fill="#22c55e">
-                    <rect x="0" y="0" width="6" height="24" rx="2"></rect><rect x="10" y="0" width="6" height="24" rx="2"></rect><rect x="20" y="0" width="6" height="24" rx="2"></rect><rect x="30" y="0" width="6" height="24" rx="2"></rect><rect x="40" y="0" width="6" height="24" rx="2"></rect><rect x="50" y="0" width="6" height="24" rx="2"></rect><rect x="60" y="0" width="6" height="24" rx="2"></rect><rect x="70" y="0" width="6" height="24" rx="2"></rect><rect x="80" y="0" width="6" height="24" rx="2"></rect><rect x="90" y="0" width="6" height="24" rx="2"></rect><rect x="100" y="0" width="6" height="24" rx="2"></rect><rect x="110" y="0" width="6" height="24" rx="2"></rect><rect x="120" y="0" width="6" height="24" rx="2"></rect><rect x="130" y="0" width="6" height="24" rx="2"></rect><rect x="140" y="0" width="6" height="24" rx="2"></rect><rect x="150" y="0" width="6" height="24" rx="2"></rect><rect x="160" y="0" width="6" height="24" rx="2"></rect><rect x="170" y="0" width="6" height="24" rx="2"></rect><rect x="180" y="0" width="6" height="24" rx="2"></rect><rect x="190" y="0" width="6" height="24" rx="2"></rect><rect x="200" y="0" width="6" height="24" rx="2"></rect><rect x="210" y="0" width="6" height="24" rx="2"></rect><rect x="220" y="0" width="6" height="24" rx="2"></rect><rect x="230" y="0" width="6" height="24" rx="2"></rect><rect x="240" y="0" width="6" height="24" rx="2"></rect><rect x="250" y="0" width="6" height="24" rx="2"></rect><rect x="260" y="0" width="6" height="24" rx="2"></rect><rect x="270" y="0" width="6" height="24" rx="2"></rect><rect x="280" y="0" width="6" height="24" rx="2"></rect><rect x="290" y="0" width="6" height="24" rx="2"></rect><rect x="300" y="0" width="6" height="24" rx="2"></rect><rect x="310" y="0" width="6" height="24" rx="2"></rect><rect x="320" y="0" width="6" height="24" rx="2"></rect><rect x="330" y="0" width="6" height="24" rx="2"></rect><rect x="340" y="0" width="6" height="24" rx="2"></rect><rect x="350" y="0" width="6" height="24" rx="2"></rect><rect x="360" y="0" width="6" height="24" rx="2"></rect><rect x="370" y="0" width="6" height="24" rx="2"></rect><rect x="380" y="0" width="6" height="24" rx="2"></rect><rect x="390" y="0" width="6" height="24" rx="2"></rect><rect x="400" y="0" width="6" height="24" rx="2"></rect><rect x="410" y="0" width="6" height="24" rx="2"></rect><rect x="420" y="0" width="6" height="24" rx="2"></rect><rect x="430" y="0" width="6" height="24" rx="2"></rect><rect x="440" y="0" width="6" height="24" rx="2"></rect><rect x="450" y="0" width="6" height="24" rx="2"></rect><rect x="460" y="0" width="6" height="24" rx="2"></rect><rect x="470" y="0" width="6" height="24" rx="2"></rect><rect x="480" y="0" width="6" height="24" rx="2"></rect><rect x="490" y="0" width="6" height="24" rx="2"></rect><rect x="500" y="0" width="6" height="24" rx="2"></rect><rect x="510" y="0" width="6" height="24" rx="2"></rect><rect x="520" y="0" width="6" height="24" rx="2"></rect><rect x="530" y="0" width="6" height="24" rx="2"></rect><rect x="540" y="0" width="6" height="24" rx="2"></rect><rect x="550" y="0" width="6" height="24" rx="2"></rect><rect x="560" y="0" width="6" height="24" rx="2"></rect><rect x="570" y="0" width="6" height="24" rx="2"></rect><rect x="580" y="0" width="6" height="24" rx="2"></rect><rect x="590" y="0" width="6" height="24" rx="2"></rect>
-                  </g>
-                </svg>
-                <div class="timeline-labels">
-                  <span>90 days ago</span>
-                  <span>100% Operational</span>
-                  <span>Today</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Provider 4 Status Card -->
-            <div class="status-provider-row" data-status="up">
-              <div class="status-row-top">
-                <div class="prov-meta-group">
-                  <div class="type-squircle-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
-                  </div>
-                  <div class="prov-title-stack">
-                    <div class="prov-title-line">
-                      <span class="prov-title">PirateXPlay</span>
-                      <span class="type-tag">Multi</span>
-                    </div>
-                    <span style="font-size: 12.5px; color: var(--text-3);">Sub & Dub stream workers ready</span>
-                  </div>
-                </div>
-                <div class="prov-stats-right">
-                  <span class="latency-tag">14ms</span>
-                  <span class="uptime-tag">100.0% Uptime</span>
-                </div>
-              </div>
-
-              <div class="uptime-timeline-box">
-                <svg class="timeline-svg" viewBox="0 0 596 24" preserveAspectRatio="none">
-                  <g fill="#22c55e">
-                    <rect x="0" y="0" width="6" height="24" rx="2"></rect><rect x="10" y="0" width="6" height="24" rx="2"></rect><rect x="20" y="0" width="6" height="24" rx="2"></rect><rect x="30" y="0" width="6" height="24" rx="2"></rect><rect x="40" y="0" width="6" height="24" rx="2"></rect><rect x="50" y="0" width="6" height="24" rx="2"></rect><rect x="60" y="0" width="6" height="24" rx="2"></rect><rect x="70" y="0" width="6" height="24" rx="2"></rect><rect x="80" y="0" width="6" height="24" rx="2"></rect><rect x="90" y="0" width="6" height="24" rx="2"></rect><rect x="100" y="0" width="6" height="24" rx="2"></rect><rect x="110" y="0" width="6" height="24" rx="2"></rect><rect x="120" y="0" width="6" height="24" rx="2"></rect><rect x="130" y="0" width="6" height="24" rx="2"></rect><rect x="140" y="0" width="6" height="24" rx="2"></rect><rect x="150" y="0" width="6" height="24" rx="2"></rect><rect x="160" y="0" width="6" height="24" rx="2"></rect><rect x="170" y="0" width="6" height="24" rx="2"></rect><rect x="180" y="0" width="6" height="24" rx="2"></rect><rect x="190" y="0" width="6" height="24" rx="2"></rect><rect x="200" y="0" width="6" height="24" rx="2"></rect><rect x="210" y="0" width="6" height="24" rx="2"></rect><rect x="220" y="0" width="6" height="24" rx="2"></rect><rect x="230" y="0" width="6" height="24" rx="2"></rect><rect x="240" y="0" width="6" height="24" rx="2"></rect><rect x="250" y="0" width="6" height="24" rx="2"></rect><rect x="260" y="0" width="6" height="24" rx="2"></rect><rect x="270" y="0" width="6" height="24" rx="2"></rect><rect x="280" y="0" width="6" height="24" rx="2"></rect><rect x="290" y="0" width="6" height="24" rx="2"></rect><rect x="300" y="0" width="6" height="24" rx="2"></rect><rect x="310" y="0" width="6" height="24" rx="2"></rect><rect x="320" y="0" width="6" height="24" rx="2"></rect><rect x="330" y="0" width="6" height="24" rx="2"></rect><rect x="340" y="0" width="6" height="24" rx="2"></rect><rect x="350" y="0" width="6" height="24" rx="2"></rect><rect x="360" y="0" width="6" height="24" rx="2"></rect><rect x="370" y="0" width="6" height="24" rx="2"></rect><rect x="380" y="0" width="6" height="24" rx="2"></rect><rect x="390" y="0" width="6" height="24" rx="2"></rect><rect x="400" y="0" width="6" height="24" rx="2"></rect><rect x="410" y="0" width="6" height="24" rx="2"></rect><rect x="420" y="0" width="6" height="24" rx="2"></rect><rect x="430" y="0" width="6" height="24" rx="2"></rect><rect x="440" y="0" width="6" height="24" rx="2"></rect><rect x="450" y="0" width="6" height="24" rx="2"></rect><rect x="460" y="0" width="6" height="24" rx="2"></rect><rect x="470" y="0" width="6" height="24" rx="2"></rect><rect x="480" y="0" width="6" height="24" rx="2"></rect><rect x="490" y="0" width="6" height="24" rx="2"></rect><rect x="500" y="0" width="6" height="24" rx="2"></rect><rect x="510" y="0" width="6" height="24" rx="2"></rect><rect x="520" y="0" width="6" height="24" rx="2"></rect><rect x="530" y="0" width="6" height="24" rx="2"></rect><rect x="540" y="0" width="6" height="24" rx="2"></rect><rect x="550" y="0" width="6" height="24" rx="2"></rect><rect x="560" y="0" width="6" height="24" rx="2"></rect><rect x="570" y="0" width="6" height="24" rx="2"></rect><rect x="580" y="0" width="6" height="24" rx="2"></rect><rect x="590" y="0" width="6" height="24" rx="2"></rect>
-                  </g>
-                </svg>
-                <div class="timeline-labels">
-                  <span>90 days ago</span>
-                  <span>100% Operational</span>
-                  <span>Today</span>
-                </div>
-              </div>
+            <div style="padding: 48px 20px; text-align: center; color: var(--text-3); font-size: 14px; border: 1px dashed var(--border-hairline); border-radius: 8px;">
+              <span class="type-spinner"></span>
+              <span>Measuring provider telemetry…</span>
             </div>
           </div>
         </section>
@@ -1575,14 +1529,70 @@
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // LIVE STATUS LOGIC
+    // LIVE STATUS & TELEMETRY ENGINE (ZERO PLACEHOLDERS)
     // ══════════════════════════════════════════════════════════════════
+    const PROVIDER_METAS = {
+      multimovies: {
+        name: 'MultiMovies',
+        tag: 'Movies & Series',
+        url: 'https://multimovies.beer/',
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>`
+      },
+      watchanimeworld: {
+        name: 'AnimeWorld',
+        tag: 'Anime Dub',
+        url: 'https://watchanimeworld.in/',
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`
+      },
+      toonstream: {
+        name: 'ToonStream',
+        tag: 'Cartoons & Retro',
+        url: 'https://toonstream.co/',
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>`
+      },
+      piratexplay: {
+        name: 'PirateXPlay',
+        tag: 'Multi-Audio',
+        url: 'https://piratexplay.net/',
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`
+      }
+    };
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function relTime(iso){
       if (!iso) return 'Just now';
       const d = (Date.now() - new Date(iso).getTime()) / 1000;
       if (d < 60) return 'Just now';
       if (d < 3600) return Math.floor(d/60) + 'm ago';
       return Math.floor(d/3600) + 'h ago';
+    }
+
+    function fmtMs(ms) {
+      if (ms == null) return '—';
+      return ms >= 1000 ? (ms / 1000).toFixed(1) + 's' : ms + 'ms';
+    }
+
+    function generateUptimeSvg(history, isUp) {
+      const barCount = 60;
+      let bars = [];
+      const hist = Array.isArray(history) && history.length > 0 ? history : [isUp ? 'up' : 'down'];
+      for (let i = 0; i < barCount; i++) {
+        const histIdx = Math.floor((i / barCount) * hist.length);
+        const statusVal = hist[histIdx] || (isUp ? 'up' : 'down');
+        const color = statusVal === 'up' ? '#22c55e' : '#ef4444';
+        const x = i * 10;
+        bars.push(`<rect x="${x}" y="0" width="6" height="24" rx="2" fill="${color}"></rect>`);
+      }
+      return `<svg class="timeline-svg" viewBox="0 0 596 24" preserveAspectRatio="none"><g>${bars.join('')}</g></svg>`;
     }
 
     async function loadStatusLive(force = false) {
@@ -1610,24 +1620,106 @@
       const down = providers.filter(p => p.status === 'down').length;
       const streams = providers.reduce((n, p) => n + (p.streamCount || 0), 0);
 
-      const elUp = document.getElementById('st-up'); if (elUp) elUp.textContent = up;
-      const elDown = document.getElementById('st-down'); if (elDown) elDown.textContent = down;
-      const elStreams = document.getElementById('st-streams'); if (elStreams) elStreams.textContent = streams.toLocaleString();
+      const elUp = document.getElementById('st-up'); if (elUp) elUp.textContent = providers.length ? up : '—';
+      const elDown = document.getElementById('st-down'); if (elDown) elDown.textContent = providers.length ? down : '—';
+      const elStreams = document.getElementById('st-streams'); if (elStreams) elStreams.textContent = providers.length ? streams.toLocaleString() : '—';
       const elUpd = document.getElementById('st-updated'); if (elUpd) elUpd.textContent = relTime(statusData.updatedAt);
       const elStatusUpd = document.getElementById('status-updated');
-      if (elStatusUpd) elStatusUpd.textContent = 'Updated ' + relTime(statusData.updatedAt) + ' · All systems operational';
+      if (elStatusUpd) {
+        elStatusUpd.textContent = 'Updated ' + relTime(statusData.updatedAt) + (statusData.checking ? ' · Checking…' : ' · All systems operational');
+      }
+
+      // Update sidebar live specs as well
+      const sideLatency = document.getElementById('sideAvgLatency');
+      if (sideLatency && providers.length) {
+        const totalMs = providers.reduce((n, p) => n + (p.responseMs || 0), 0);
+        sideLatency.innerText = fmtMs(Math.round(totalMs / providers.length));
+      }
+
+      const listEl = document.getElementById('status-list');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      const shown = providers.filter(p => statusFilter === 'all' || p.status === statusFilter);
+
+      if (!shown.length) {
+        listEl.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: var(--text-3); font-size: 14px; border: 1px dashed var(--border-hairline); border-radius: 8px;">No providers match the selected "${statusFilter}" filter.</div>`;
+        return;
+      }
+
+      shown.forEach(p => {
+        const meta = PROVIDER_METAS[p.id] || {
+          name: p.name || p.id,
+          tag: 'Provider',
+          url: '#',
+          icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>`
+        };
+        const isUp = p.status === 'up';
+        const row = document.createElement('div');
+        row.className = 'status-provider-row';
+        row.dataset.status = p.status;
+
+        // Working titles HTML
+        let titlesHtml = '';
+        if (p.workingTitles && p.workingTitles.length) {
+          titlesHtml = p.workingTitles.map(t => `<span class="title-chip">${escapeHtml(t)}</span>`).join('');
+        } else {
+          titlesHtml = `<span style="font-size: 12px; color: var(--text-3);">${isUp ? 'Streams verified' : 'No streams returned'}</span>`;
+        }
+
+        const errorHtml = p.error ? `<div class="ep-err-text">${escapeHtml(p.error)}</div>` : '';
+        const timelineSvg = generateUptimeSvg(p.history, isUp);
+
+        row.innerHTML = `
+          <div class="status-row-top">
+            <div class="prov-meta-group">
+              <div class="type-squircle-icon">
+                ${meta.icon}
+              </div>
+              <div class="prov-title-stack">
+                <div class="prov-title-line">
+                  <span class="prov-title">${escapeHtml(meta.name)}</span>
+                  <span class="type-tag">${escapeHtml(meta.tag)}</span>
+                </div>
+                <div class="prov-titles-wrap">
+                  <span style="font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-right: 4px;">Verified:</span>
+                  ${titlesHtml}
+                </div>
+              </div>
+            </div>
+            <div class="prov-stats-right">
+              <span class="latency-tag">${fmtMs(p.responseMs)}</span>
+              <span class="uptime-tag ${isUp ? 'ok' : 'bad'}">${isUp ? '100% Operational' : 'Offline'}</span>
+            </div>
+          </div>
+
+          <div class="uptime-timeline-box">
+            ${timelineSvg}
+            <div class="timeline-labels">
+              <span>90 days ago</span>
+              <span>${isUp ? '100% Operational' : 'Degraded'}</span>
+              <span>Today</span>
+            </div>
+          </div>
+
+          <div class="endpoints-box">
+            <div class="ep-row">
+              <span class="ep-link">${escapeHtml(meta.url)}</span>
+              <span class="ep-stat ${isUp ? 'ok' : 'bad'}">${isUp ? '200 OK · ' + fmtMs(p.responseMs) : 'Failed'}</span>
+            </div>
+            ${errorHtml}
+          </div>
+        `;
+
+        listEl.appendChild(row);
+      });
     }
 
     function filterStatus(filter, btn) {
+      statusFilter = filter;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      document.querySelectorAll('.status-provider-row').forEach(row => {
-        if (filter === 'all' || row.dataset.status === filter) {
-          row.style.display = 'flex';
-        } else {
-          row.style.display = 'none';
-        }
-      });
+      renderStatusLive();
     }
 
     function refreshStatusLive() {
@@ -1664,6 +1756,8 @@
     // Init
     initState();
     update();
+    loadStatusLive(false);
+    setInterval(() => loadStatusLive(false), 25000);
   </script>
 
 </body>

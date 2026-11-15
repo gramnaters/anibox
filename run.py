@@ -15,6 +15,7 @@ from app.routes.meta import meta_bp
 from app.routes.stream import stream_bp
 from app.routes.proxy import proxy_bp
 from app.routes.status import status_bp
+from app.status_monitor import start as start_status_monitor
 
 app = Flask(__name__, template_folder='./templates', static_folder='./static')
 app.config.from_object('config.Config')
@@ -27,6 +28,7 @@ app.register_blueprint(status_bp)
 
 Compress(app)
 logging.basicConfig(format='%(asctime)s %(message)s')
+start_status_monitor()
 
 @app.route('/ping')
 def ping():
