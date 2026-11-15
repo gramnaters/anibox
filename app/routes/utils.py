@@ -1,49 +1,38 @@
-import logging, random, hashlib
-from flask import make_response, request
+import hashlib, orjson, random, logging
+from fastapi.responses import Response
 
-try:
-    import orjson
-    def _dumps(data):
-        return orjson.dumps(data).decode('utf-8')
-except ImportError:
-    import json
-    def _dumps(data):
-        return json.dumps(data)
+def respond_with(data, cache_seconds=600, request=None):
+    payload_bytes = orjson.dumps(data)
+    etag = hashlib.md5(payload_bytes).hexdigest()
 
-def respond_with(data, cache_seconds=600):
-    """Respond with CORS and multi-tier edge CDN caching headers (Cloudflare, Vercel, Render)."""
-    payload_str = _dumps(data)
-    etag = hashlib.md5(payload_str.encode('utf-8')).hexdigest()
-
-    # Fast 304 Not Modified for repeat client queries
-    try:
-        inm = request.headers.get('If-None-Match', '')
+    if request:
+        inm = request.headers.get('if-none-match', '')
         if inm and (inm == f'"{etag}"' or inm == etag):
-            res = make_response('', 304)
-            res.headers['ETag'] = f'"{etag}"'
-            res.headers['Access-Control-Allow-Origin'] = '*'
+            headers = {
+                'ETag': f'"{etag}"',
+                'Access-Control-Allow-Origin': '*',
+            }
             if cache_seconds:
-                res.headers['Cache-Control'] = f'public, s-maxage={cache_seconds}, max-age={cache_seconds}, stale-while-revalidate=60'
-            return res
-    except Exception:
-        pass
+                headers['Cache-Control'] = f'public, s-maxage={cache_seconds}, max-age={cache_seconds}, stale-while-revalidate=60'
+            return Response(status_code=304, headers=headers)
 
-    response = make_response(payload_str, 200)
-    response.headers['Content-Type'] = 'application/json; charset=utf-8'
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = '*'
-    response.headers['ETag'] = f'"{etag}"'
+    headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+        'ETag': f'"{etag}"',
+    }
 
     if cache_seconds:
-        response.headers['Cache-Control'] = f'public, s-maxage={cache_seconds}, max-age={cache_seconds}, stale-while-revalidate=60'
-        response.headers['CDN-Cache-Control'] = f'public, s-maxage={cache_seconds}, stale-while-revalidate=60'
-        response.headers['Cloudflare-CDN-Cache-Control'] = f'public, max-age={cache_seconds}, stale-while-revalidate=60'
+        headers['Cache-Control'] = f'public, s-maxage={cache_seconds}, max-age={cache_seconds}, stale-while-revalidate=60'
+        headers['CDN-Cache-Control'] = f'public, s-maxage={cache_seconds}, stale-while-revalidate=60'
+        headers['Cloudflare-CDN-Cache-Control'] = f'public, max-age={cache_seconds}, stale-while-revalidate=60'
     else:
-        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
-        response.headers['CDN-Cache-Control'] = 'no-store'
-        response.headers['Cloudflare-CDN-Cache-Control'] = 'no-store'
+        headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+        headers['CDN-Cache-Control'] = 'no-store'
+        headers['Cloudflare-CDN-Cache-Control'] = 'no-store'
 
-    return response
+    return Response(content=payload_bytes, status_code=200, media_type='application/json', headers=headers)
 
 def get_random_agent():
     agents = [

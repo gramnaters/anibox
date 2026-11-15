@@ -1,24 +1,14 @@
-from flask import Blueprint, render_template, request
-
+from fastapi import APIRouter, Request
 from app.routes.utils import respond_with
-from app.status_monitor import (
-    is_checking, request_refresh, snapshot, start,
-)
+from app.status_monitor import is_checking, request_refresh, snapshot, start
 
-status_bp = Blueprint('status', __name__)
+status_router = APIRouter()
 
-
-@status_bp.route('/status')
-def status_page():
+@status_router.get('/api/status')
+async def api_status(request: Request, refresh: str = None):
     start()
-    return render_template('status.html')
-
-
-@status_bp.route('/api/status')
-def api_status():
-    start()
-    if request.args.get('refresh') == '1':
+    if refresh == '1' or request.query_params.get('refresh') == '1':
         request_refresh()
     data = snapshot()
     data['checking'] = is_checking()
-    return respond_with(data, cache_seconds=0)
+    return respond_with(data, cache_seconds=0, request=request)

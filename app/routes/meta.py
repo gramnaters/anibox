@@ -1,12 +1,12 @@
 import re
 from urllib.parse import unquote
 import requests
-from flask import Blueprint
+from fastapi import APIRouter, Request
 from cachetools import TTLCache
 from app.routes.utils import respond_with, log_error
 from app.api import ALL_PROVIDERS
 
-meta_bp = Blueprint('meta', __name__)
+meta_router = APIRouter()
 TMDB = 'https://api.themoviedb.org/3'
 meta_cache = TTLCache(maxsize=1000, ttl=86400)
 
@@ -272,11 +272,10 @@ def _provider_meta(pname, slug, meta_id, meta_type=None):
     return respond_with({'meta': meta}, 86400)
 
 
-@meta_bp.route('/meta/<meta_type>/<meta_id>.json')
-@meta_bp.route('/<lang>/meta/<meta_type>/<meta_id>.json')
-@meta_bp.route('/<config_data>/meta/<meta_type>/<meta_id>.json')
-@meta_bp.route('/<config_data>/<lang>/meta/<meta_type>/<meta_id>.json')
-def addon_meta(meta_type, meta_id, lang=None, config_data=None):
+@meta_router.get('/meta/{meta_type}/{meta_id}.json')
+@meta_router.get('/{segment}/meta/{meta_type}/{meta_id}.json')
+@meta_router.get('/{segment}/{lang}/meta/{meta_type}/{meta_id}.json')
+async def addon_meta(request: Request, meta_type: str, meta_id: str, segment: str = None, lang: str = None):
     meta_id = unquote(meta_id)
 
     # Provider-scoped meta from a per-provider catalog: hd:<provider>:<slug>

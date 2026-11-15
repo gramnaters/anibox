@@ -1,12 +1,12 @@
 import urllib.parse, requests
-from flask import Blueprint, abort
+from fastapi import APIRouter, Request, HTTPException
 from cachetools import TTLCache
 from app.routes.utils import respond_with, log_error
 from app.config_parser import parse_config, get_provider_from_config
 from app.mapper import make_custom_id
 from app.api import ALL_PROVIDERS
 
-catalog_bp = Blueprint('catalog', __name__)
+catalog_router = APIRouter()
 TMDB = 'https://api.themoviedb.org/3'
 
 tmdb_cache = TTLCache(maxsize=200, ttl=3600)
@@ -162,33 +162,29 @@ def _provider_catalog(pname, want_type, search, skip=None):
     return respond_with({'metas': metas}, 3600)
 
 
-@catalog_bp.route('/catalog/<catalog_type>/<catalog_id>.json')
-@catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/skip=<skip>.json')
-@catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
-@catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
-@catalog_bp.route('/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
-@catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>.json')
-@catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>.json')
-@catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
-@catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
-@catalog_bp.route('/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
-@catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>.json')
-@catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/skip=<skip>.json')
-@catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
-@catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
-@catalog_bp.route('/<config_data>/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
-@catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>.json')
-@catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>.json')
-@catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>.json')
-@catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/search=<search>/skip=<skip>.json')
-@catalog_bp.route('/<config_data>/<lang>/catalog/<catalog_type>/<catalog_id>/skip=<skip>/search=<search>.json')
-def addon_catalog(catalog_type, catalog_id, search=None, skip=None, lang=None, config_data=None):
+@catalog_router.get('/catalog/{catalog_type}/{catalog_id}.json')
+@catalog_router.get('/{segment}/catalog/{catalog_type}/{catalog_id}.json')
+@catalog_router.get('/{segment}/{lang}/catalog/{catalog_type}/{catalog_id}.json')
+@catalog_router.get('/catalog/{catalog_type}/{catalog_id}/{extra:path}')
+@catalog_router.get('/{segment}/catalog/{catalog_type}/{catalog_id}/{extra:path}')
+@catalog_router.get('/{segment}/{lang}/catalog/{catalog_type}/{catalog_id}/{extra:path}')
+async def addon_catalog(request: Request, catalog_type: str, catalog_id: str, segment: str = None, lang: str = None, extra: str = None):
+    search = request.query_params.get('search')
+    skip = request.query_params.get('skip')
+    if extra:
+        extra_str = extra.rstrip('.json')
+        for part in extra_str.split('/'):
+            if part.startswith('search='):
+                search = part.split('=', 1)[1]
+            elif part.startswith('skip='):
+                skip = part.split('=', 1)[1]
+
     for suffix, ctype in (('_series', 'series'), ('_movies', 'movie'), ('_movie', 'movie')):
         if catalog_id.endswith(suffix) and catalog_id[:-len(suffix)] in ALL_PROVIDERS:
             want_type = catalog_type if catalog_type in ('movie', 'series') else ctype
             return _provider_catalog(catalog_id[:-len(suffix)], want_type, search, skip=skip)
     if catalog_id not in ['hd_all', 'hd_latest']:
-        abort(404)
+        raise HTTPException(status_code=404)
 
     try:
         if search:

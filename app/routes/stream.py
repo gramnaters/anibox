@@ -1,6 +1,6 @@
-import urllib.parse, requests, re, time, inspect
+import urllib.parse, requests, re, time, inspect, asyncio
 from concurrent.futures import ThreadPoolExecutor
-from flask import Blueprint, abort, request
+from fastapi import APIRouter, Request, HTTPException
 from cachetools import TTLCache
 from app.api import ALL_PROVIDERS
 from app.routes.utils import respond_with, log_error
@@ -9,7 +9,7 @@ from app.players import resolve_stream, PLAYER_NAMES
 from app.config_parser import parse_config, get_provider_from_config
 from app.cdn import cdn_file_key
 
-stream_bp = Blueprint('stream', __name__)
+stream_router = APIRouter()
 tmdb_title_cache = TTLCache(maxsize=500, ttl=3600)
 # Fully-built stream lists. Provider scraping + embed resolution is slow on
 # Render's free CPU (1-3 min), which exceeds client timeouts; caching the
@@ -327,13 +327,12 @@ def _make_title(provider_name, player_key, extra='', label=''):
     return ' / '.join(parts)
 
 
-@stream_bp.route('/stream/<content_type>/<content_id>.json')
-@stream_bp.route('/<lang>/stream/<content_type>/<content_id>.json')
-@stream_bp.route('/<config_data>/stream/<content_type>/<content_id>.json')
-@stream_bp.route('/<config_data>/<lang>/stream/<content_type>/<content_id>.json')
-def addon_stream(content_type, content_id, lang=None, config_data=None):
+@stream_router.get('/stream/{content_type}/{content_id}.json')
+@stream_router.get('/{segment}/stream/{content_type}/{content_id}.json')
+@stream_router.get('/{segment}/{lang}/stream/{content_type}/{content_id}.json')
+async def addon_stream(request: Request, content_type: str, content_id: str, segment: str = None, lang: str = None):
     content_id = urllib.parse.unquote(content_id)
-    config = parse_config(config_data or '')
+    config = parse_config(segment or '')
     enabled_providers = get_provider_from_config(config)
 
     # Provider-scoped stream from a per-provider catalog: hd:<provider>:<slug>[:s:e]

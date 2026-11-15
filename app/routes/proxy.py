@@ -32,11 +32,12 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from cachetools import TTLCache
-from flask import Blueprint, Response, abort, request, stream_with_context
+from fastapi import APIRouter, Request, HTTPException
+from fastapi.responses import Response, StreamingResponse, RedirectResponse
 
 warnings.filterwarnings('ignore', category=requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
-proxy_bp = Blueprint('proxy', __name__)
+proxy_router = APIRouter()
 
 # id -> {'url': ..., 'headers': {...}, 'type': 'm3u8'|'segment'}
 playlist_mappings = TTLCache(maxsize=50000, ttl=43200)
@@ -263,15 +264,22 @@ def _segment_ext(u):
     return '.ts'
 
 
-def _addon_base():
-    """Base URL of this addon as seen by the client (honours Render's TLS proxy)."""
-    scheme = (request.headers.get('X-Forwarded-Proto') or request.scheme).split(',')[0].strip()
-    return f'{scheme}://{request.host}'.rstrip('/')
+_last_base_url = 'https://anibox-4l4u.onrender.com'
 
+def set_addon_base(url: str):
+    global _last_base_url
+    if url:
+        _last_base_url = str(url).rstrip('/')
 
-def addon_base_url():
-    """Return this addon's public base URL for the current request."""
-    return _addon_base()
+def addon_base_url(req: Request = None):
+    """Return this addon's public base URL (honours Render's TLS proxy)."""
+    if req:
+        scheme = (req.headers.get('x-forwarded-proto') or req.url.scheme).split(',')[0].strip()
+        host = req.headers.get('host') or req.url.netloc
+        base = f'{scheme}://{host}'.rstrip('/')
+        set_addon_base(base)
+        return base
+    return _last_base_url
 
 
 def register_proxy_url(url, headers, base_url=None, kind=None, ext=None):
@@ -371,8 +379,8 @@ def _rewrite_m3u8_urls(content, base_url, headers):
     return '\n'.join(out)
 
 
-@proxy_bp.route('/m3u8/<playlist_id>')
-def proxy_m3u8(playlist_id):
+@proxy_router.get('/m3u8/{playlist_id}')
+async def proxy_m3u8(request: Request, playlist_id: str):
     """Proxy an m3u8 playlist from the CDN, rewriting all internal URLs."""
     raw_id = playlist_id.split('.', 1)[0]
     mapping = None
@@ -390,28 +398,31 @@ def proxy_m3u8(playlist_id):
         mapping = _db_lookup(raw_id) or _db_lookup(playlist_id)
 
     if not mapping:
-        abort(404, description='Playlist mapping expired or not found')
+        raise HTTPException(status_code=404, detail='Playlist mapping expired or not found')
 
     try:
         r = _fetch_upstream(mapping['url'], mapping.get('headers') or {})
         if r.status_code != 200:
-            abort(502, description=f'Upstream returned {r.status_code}')
+            raise HTTPException(status_code=502, detail=f'Upstream returned {r.status_code}')
 
         content = _rewrite_m3u8_urls(r.text, mapping['url'], mapping.get('headers') or {})
 
-        response = Response(content, mimetype='application/vnd.apple.mpegurl')
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = '*'
-        response.headers['Cache-Control'] = 'no-cache'
-        return response
+        headers = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+            'Access-Control-Allow-Headers': '*',
+            'Cache-Control': 'no-cache',
+        }
+        return Response(content=content, media_type='application/vnd.apple.mpegurl', headers=headers)
+    except HTTPException:
+        raise
     except Exception as e:
         print(f'[proxy] error proxying m3u8 {playlist_id}: {e}')
-        abort(502)
+        raise HTTPException(status_code=502)
 
 
-@proxy_bp.route('/seg/<segment_id>')
-def proxy_segment(segment_id):
+@proxy_router.get('/seg/{segment_id}')
+async def proxy_segment(request: Request, segment_id: str):
     """Proxy a segment or direct media file from the CDN with the correct headers."""
     raw_id = segment_id.split('.', 1)[0]
     mapping = None
@@ -429,33 +440,26 @@ def proxy_segment(segment_id):
         mapping = _db_lookup(raw_id) or _db_lookup(segment_id)
 
     if not mapping:
-        abort(404, description='Segment mapping expired or not found')
+        raise HTTPException(status_code=404, detail='Segment mapping expired or not found')
 
     # Bandwidth optimization: If this segment does not require proxying, redirect directly to CDN
     if not _needs_proxy_segment(mapping.get('url', '')):
-        from flask import redirect
-        return redirect(mapping['url'], code=302)
+        return RedirectResponse(mapping['url'], status_code=302)
 
     upstream_headers = dict(mapping.get('headers') or {})
-    # Request raw uncompressed bytes from upstream CDN so video/audio segments are never double-compressed
     upstream_headers['Accept-Encoding'] = 'identity'
-    # Forward the client's Range header so seeking works for direct files.
-    client_range = request.headers.get('Range')
+    client_range = request.headers.get('range')
     if client_range:
         upstream_headers['Range'] = client_range
 
     try:
         r = _fetch_upstream(mapping['url'], upstream_headers, stream=True)
         if r.status_code not in (200, 206):
-            abort(502, description=f'CDN returned {r.status_code}')
+            raise HTTPException(status_code=502, detail=f'CDN returned {r.status_code}')
 
-        # Determine the real media content-type:
-        # Pirate CDNs (Zephyr, etc.) disguise TS segments as .js, .css, .woff to abuse CF caching.
-        # We must ALWAYS force the proper binary media Content-Type so players (ExoPlayer, mpv, VLC)
-        # demux the segments correctly and upstream proxies do not corrupt them with Brotli/Gzip text compression!
         raw_ctype = (r.headers.get('Content-Type') or '').split(';')[0].strip().lower()
         path = urlparse(mapping['url']).path.lower()
-        req_path = request.path.lower()
+        req_path = request.url.path.lower()
 
         if req_path.endswith('.ts') or path.endswith('.ts') or path.endswith(('.js', '.css', '.woff', '.png', '.jpg')):
             ctype = 'video/MP2T'
@@ -474,15 +478,27 @@ def proxy_segment(segment_id):
         else:
             ctype = 'video/MP2T'
 
+        headers = {
+            'Content-Type': ctype,
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Expose-Headers': 'Content-Length, Content-Range, Accept-Ranges',
+            'Cache-Control': 'public, max-age=86400, no-transform',
+        }
+        for header in ('Content-Range', 'Accept-Ranges', 'ETag', 'Last-Modified'):
+            if header in r.headers:
+                headers[header] = r.headers[header]
+
         length = r.headers.get('Content-Length')
         is_large = length and length.isdigit() and int(length) > 10_000_000 and not client_range
         needs_patch = _needs_byte_patching(mapping.get('url', ''))
         if is_large or (not needs_patch and not client_range):
-            # For non-patching segments (e.g. Byse/SprintCDN/Zephyr), stream directly in chunks
-            response = Response(
-                stream_with_context(r.iter_content(chunk_size=65536)),
-                status=r.status_code,
-                content_type=ctype,
+            return StreamingResponse(
+                r.iter_content(chunk_size=65536),
+                status_code=r.status_code,
+                media_type=ctype,
+                headers=headers
             )
         else:
             content = r.content
@@ -491,55 +507,42 @@ def proxy_segment(segment_id):
                 if offset > 0:
                     content = content[offset:]
                     ctype = 'video/MP2T'
-            response = Response(content, status=r.status_code, content_type=ctype)
-            response.headers['Content-Length'] = str(len(content))
-
-        for header in ('Content-Range', 'Accept-Ranges', 'ETag', 'Last-Modified'):
-            if header in r.headers and header not in response.headers:
-                response.headers[header] = r.headers[header]
-        response.headers['Content-Type'] = ctype
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = '*'
-        response.headers['Access-Control-Expose-Headers'] = 'Content-Length, Content-Range, Accept-Ranges'
-        response.headers['Cache-Control'] = 'public, max-age=86400, no-transform'
-        return response
+                    headers['Content-Type'] = ctype
+            headers['Content-Length'] = str(len(content))
+            return Response(content=content, status_code=r.status_code, media_type=ctype, headers=headers)
+    except HTTPException:
+        raise
     except Exception as e:
         print(f'[proxy] error proxying segment {segment_id}: {e}')
-        abort(502)
+        raise HTTPException(status_code=502)
 
 
-@proxy_bp.route('/subtitles/<subtitle_id>')
-def proxy_subtitle(subtitle_id):
+@proxy_router.get('/subtitles/{subtitle_id}')
+async def proxy_subtitle(request: Request, subtitle_id: str):
     """Proxy subtitle files with the correct content-type."""
     raw_id = subtitle_id.split('.', 1)[0]
     mapping = None
 
-    # 1. Stateless token lookup
     if raw_id.startswith('sub_z_'):
         mapping = decode_proxy_token(raw_id[6:])
-
-    # 2. In-memory cache lookup
     if not mapping:
         mapping = subtitle_mappings.get(subtitle_id) or subtitle_mappings.get(raw_id)
-
-    # 3. Persistent SQLite disk lookup
     if not mapping:
         mapping = _db_lookup(raw_id) or _db_lookup(subtitle_id)
 
     if not mapping:
-        abort(404, description='Subtitle mapping expired or not found')
+        raise HTTPException(status_code=404, detail='Subtitle mapping expired or not found')
 
     try:
         r = _fetch_upstream(mapping['url'], mapping.get('headers') or {})
         if r.status_code != 200:
-            abort(502, description=f'Upstream returned {r.status_code}')
+            raise HTTPException(status_code=502, detail=f'Upstream returned {r.status_code}')
 
         body = r.text or ''
+        headers = {'Access-Control-Allow-Origin': '*'}
         if '#EXTM3U' in body[:1024]:
-            content = _rewrite_m3u8_urls(body, mapping['url'],
-                                         mapping.get('headers') or {})
-            response = Response(content, mimetype='application/vnd.apple.mpegurl')
+            content = _rewrite_m3u8_urls(body, mapping['url'], mapping.get('headers') or {})
+            return Response(content=content, media_type='application/vnd.apple.mpegurl', headers=headers)
         else:
             if subtitle_id.endswith('.srt') or mapping['url'].lower().endswith('.srt'):
                 content_type = 'application/x-subrip'
@@ -547,9 +550,12 @@ def proxy_subtitle(subtitle_id):
                 content_type = 'text/x-ssa'
             else:
                 content_type = 'text/vtt'
-            response = Response(r.content, mimetype=content_type)
-
-        response.headers['Access-Control-Allow-Origin'] = '*'
+            return Response(content=r.content, media_type=content_type, headers=headers)
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f'[proxy] error proxying subtitle {subtitle_id}: {e}')
+        raise HTTPException(status_code=502)
         response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = '*'
         return response

@@ -1,11 +1,10 @@
-from flask import Blueprint, request
+from fastapi import APIRouter, Request
 from .utils import respond_with
 from app.config_parser import parse_config, get_provider_from_config
 from app.api import ALL_PROVIDERS
 
-manifest_bp = Blueprint('manifest', __name__)
+manifest_router = APIRouter()
 
-# provider key -> display name (kept local to avoid importing the stream module here)
 _PROVIDER_NAMES = {
     'multimovies': 'MultiMovies',
     'watchanimeworld': 'AnimeWorld',
@@ -14,8 +13,8 @@ _PROVIDER_NAMES = {
 }
 
 BASE_MANIFEST = {
-    'id': 'com.multianima.addon',
-    'version': '2.0.0',
+    'id': 'com.anibox.addon',
+    'version': '2.4.0',
     'name': 'AniBox',
     'description': 'AniBox — stream movies and (Hindi dub) anime from multiple providers with quality and language filters.',
     'logo': '/static/anibox-icon-512.png',
@@ -29,7 +28,6 @@ BASE_MANIFEST = {
         {'name': 'stream', 'types': ['series', 'movie']},
     ],
     'config': [
-        # Provider sources
         {'key': 'source_multimovies', 'type': 'checkbox', 'title': 'MultiMovies (movies + Hindi series)', 'default': 'checked'},
         {'key': 'source_watchanimeworld', 'type': 'checkbox', 'title': 'AnimeWorld (Hindi dub series)', 'default': 'checked'},
         {'key': 'source_toonstream', 'type': 'checkbox', 'title': 'ToonStream (anime + cartoon)', 'default': 'checked'},
@@ -40,10 +38,7 @@ BASE_MANIFEST = {
     ],
 }
 
-
 def _catalogs_for(cfg):
-    """Series + movie catalogs per enabled provider, so each site lists
-    separately and both content types are browsable."""
     cats = []
     for pname in get_provider_from_config(cfg):
         if pname not in ALL_PROVIDERS:
@@ -62,7 +57,6 @@ def _catalogs_for(cfg):
             })
     return cats
 
-
 def _apply_catalogs(m, cfg):
     catalogs_on = cfg.get('catalogs', 'on') != 'off'
     if catalogs_on:
@@ -80,30 +74,22 @@ def _apply_catalogs(m, cfg):
         ]
     return m
 
-
 def make_manifest(config_segment=''):
-    """Build manifest with config baked in"""
     m = dict(BASE_MANIFEST)
     cfg = parse_config(config_segment or '')
     _apply_catalogs(m, cfg)
     if config_segment:
-        m['id'] = f'com.multianima.{hash(config_segment) % 10000}'
+        m['id'] = f'com.anibox.{hash(config_segment) % 10000}'
     return m
 
-
-def _abs_logo(manifest):
-    """Make the logo URL absolute against the request host so Stremio and
-    Nuvio fetch the icon from whichever domain serves the addon."""
-    manifest['logo'] = request.url_root.rstrip('/') + '/static/anibox-icon-512.png'
+def _abs_logo(manifest, request: Request):
+    base_url = str(request.base_url).rstrip('/')
+    manifest['logo'] = f"{base_url}/static/anibox-icon-512.png"
     return manifest
-
 
 MANIFEST = BASE_MANIFEST
 
-
 def _strict_config(segment):
-    """Decode a base64url config segment; None if the segment is not a
-    valid encoded config (e.g. a language prefix like /en/)."""
     import base64
     import json as _json
     import urllib.parse as _up
@@ -115,15 +101,12 @@ def _strict_config(segment):
     except Exception:
         return None
 
-
-@manifest_bp.route('/manifest.json')
-@manifest_bp.route('/<segment>/manifest.json')
-def addon_manifest(segment=None):
-    """Single manifest route. The segment may be an encoded config (from the
-    configure page) or a language tag — auto-detected by strict decode."""
+@manifest_router.get('/manifest.json')
+@manifest_router.get('/{segment}/manifest.json')
+async def addon_manifest(request: Request, segment: str = None):
     cfg = parse_config(segment or '')
     m = dict(BASE_MANIFEST)
     _apply_catalogs(m, cfg)
     if segment and _strict_config(segment) is not None:
-        m['id'] = f'com.multianima.{hash(segment) % 10000}'
-    return respond_with(_abs_logo(m), 7200)
+        m['id'] = f'com.anibox.{hash(segment) % 10000}'
+    return respond_with(_abs_logo(m, request), 7200, request=request)

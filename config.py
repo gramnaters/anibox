@@ -16,3 +16,7 @@ class Config:
     # with a read-only filesystem (Render free tier) don't crash on import.
     DB_PATH = os.getenv('DB_PATH', '/tmp/mappings.db')
     DATABASE_URL = os.getenv('DATABASE_URL', '')
+    PROXIFY_STREAMS = os.getenv('PROXIFY_STREAMS', 'false').lower() in ('true', '1', 'yes')
+    STREAM_PROXY_URL = os.getenv('STREAM_PROXY_URL', '')
+    STREAM_PROXY_PASSWORD = os.getenv('STREAM_PROXY_PASSWORD', '')
+    FORCE_VIP_PLAYERS = os.getenv('FORCE_VIP_PLAYERS', 'true').lower() in ('true', '1', 'yes')
