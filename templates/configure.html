@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark" data-theme="{{ forced_theme or request.args.get('theme', '1') }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
@@ -57,33 +57,16 @@
 
   html {
     font-size: 16px;
-    background-color: #111520 !important;
+    background-color: var(--bg-base, #08090e) !important;
     color: #ffffff;
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
   }
 
-  /* ─── Authentic mkissa.to Deep Midnight Slate & Sapphire Aura Backdrop ─── */
   body {
     margin: 0;
     min-height: 100vh;
-    background-color: #111520 !important;
-    background-image: 
-      /* Precision 48px Blueprint Grid */
-      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-      /* Electric Sapphire Ambient Mesh (Top-Left) */
-      radial-gradient(90% 65% at 18% 18%, rgba(37, 99, 235, 0.16) 0%, transparent 60%),
-      /* Emerald Aurora Mesh (Bottom-Right, harmonizes with active dots) */
-      radial-gradient(85% 60% at 85% 75%, rgba(34, 197, 94, 0.12) 0%, transparent 55%),
-      /* Soft Top-Center Fog Horizon */
-      radial-gradient(ellipse 1200px 500px at 50% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 70%),
-      /* Base Deep Midnight Slate Gradient */
-      linear-gradient(155deg, #131724 0%, #181e2e 45%, #0f131d 100%) !important;
-    background-size: 48px 48px, 48px 48px, auto, auto, auto, auto !important;
-    background-attachment: fixed !important;
-    background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat !important;
     color: #ffffff;
     font: var(--text-md)/1.55 var(--font);
     -webkit-font-smoothing: antialiased;
@@ -92,6 +75,7 @@
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
+    transition: background-color 0.3s ease;
   }
 
   /* Tactile matte micro-grain texture matching mkissa & BitChord */
@@ -103,6 +87,162 @@
     pointer-events: none;
     opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     5 Progressive Background Themes
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* ─── Theme 1: AniBox Cyber Neon (Signature Logo Magenta & Violet) ─── */
+  html[data-theme="1"], html[data-theme="anibox-cyber"], html:not([data-theme]) {
+    --bg-base: #08090e;
+    --app-bg: #08090e;
+    --surface: rgba(255, 255, 255, 0.045);
+    --surface-2: rgba(255, 255, 255, 0.075);
+    --surface-3: rgba(255, 255, 255, 0.13);
+    --border: rgba(255, 255, 255, 0.09);
+    --border-hover: rgba(244, 63, 94, 0.38);
+    --card-top-border: rgba(244, 63, 94, 0.38);
+    --accent-glow: rgba(244, 63, 94, 0.25);
+    background-color: #08090e !important;
+  }
+  html[data-theme="1"] body, html[data-theme="anibox-cyber"] body, html:not([data-theme]) body {
+    background-color: #08090e !important;
+    background-image: 
+      /* Precision 48px Cyber Grid */
+      linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+      /* Neon Crimson / Magenta Blob (Top-Left) */
+      radial-gradient(85% 60% at 15% 15%, rgba(244, 63, 94, 0.22) 0%, transparent 60%),
+      /* Electric Violet Mesh (Top-Right) */
+      radial-gradient(80% 60% at 85% 20%, rgba(147, 51, 234, 0.18) 0%, transparent 65%),
+      /* Cyber Amethyst Underglow (Bottom-Center) */
+      radial-gradient(90% 50% at 50% 90%, rgba(139, 92, 246, 0.14) 0%, transparent 60%),
+      /* Base Obsidian Cyber Gradient */
+      linear-gradient(160deg, #090a10 0%, #110e1c 50%, #06070a 100%) !important;
+    background-size: 48px 48px, 48px 48px, auto, auto, auto, auto !important;
+    background-attachment: fixed !important;
+    background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat !important;
+  }
+
+  /* ─── Theme 2: Apple Music Liquid Glass (Chromatic Multi-Bloom) ─── */
+  html[data-theme="2"], html[data-theme="apple-liquid"] {
+    --bg-base: #07090e;
+    --app-bg: #07090e;
+    --surface: rgba(255, 255, 255, 0.065);
+    --surface-2: rgba(255, 255, 255, 0.10);
+    --surface-3: rgba(255, 255, 255, 0.16);
+    --border: rgba(255, 255, 255, 0.12);
+    --border-hover: rgba(255, 255, 255, 0.35);
+    --card-top-border: rgba(255, 255, 255, 0.38);
+    background-color: #07090e !important;
+  }
+  html[data-theme="2"] body, html[data-theme="apple-liquid"] body {
+    background-color: #07090e !important;
+    background-image: 
+      /* Fluid Bloom 1: Sunset Rose (Top Left) */
+      radial-gradient(ellipse 900px 650px at 12% 10%, rgba(236, 72, 153, 0.22) 0%, transparent 65%),
+      /* Fluid Bloom 2: Royal Indigo (Top Right) */
+      radial-gradient(ellipse 850px 600px at 88% 18%, rgba(99, 102, 241, 0.22) 0%, transparent 60%),
+      /* Fluid Bloom 3: Cyan Turquoise (Center Left) */
+      radial-gradient(ellipse 750px 500px at 25% 65%, rgba(6, 182, 212, 0.16) 0%, transparent 55%),
+      /* Fluid Bloom 4: Emerald Aurora (Bottom Right) */
+      radial-gradient(ellipse 800px 550px at 80% 80%, rgba(16, 185, 129, 0.14) 0%, transparent 55%),
+      /* Liquid Sheen Fog */
+      radial-gradient(ellipse 1200px 450px at 50% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 70%),
+      /* Base Deep Chromatic Canvas */
+      linear-gradient(165deg, #090c14 0%, #111422 45%, #080a10 100%) !important;
+    background-size: auto !important;
+    background-attachment: fixed !important;
+    background-repeat: no-repeat !important;
+  }
+
+  /* ─── Theme 3: Discord & BitTorrent Void (Bitchord / Slate Tech) ─── */
+  html[data-theme="3"], html[data-theme="bitchord-slate"] {
+    --bg-base: #0b0e14;
+    --app-bg: #0b0e14;
+    --surface: rgba(20, 26, 40, 0.72);
+    --surface-2: rgba(28, 36, 54, 0.82);
+    --surface-3: rgba(38, 48, 72, 0.90);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(88, 101, 242, 0.40);
+    --card-top-border: rgba(88, 101, 242, 0.45);
+    background-color: #0b0e14 !important;
+  }
+  html[data-theme="3"] body, html[data-theme="bitchord-slate"] body {
+    background-color: #0b0e14 !important;
+    background-image: 
+      /* Engineering 36px Tech Grid */
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      /* Discord Blurple Beacon (Center Top) */
+      radial-gradient(ellipse 1000px 500px at 50% 12%, rgba(88, 101, 242, 0.20) 0%, transparent 65%),
+      /* Azure Blue Reactor (Bottom Left) */
+      radial-gradient(ellipse 800px 500px at 15% 80%, rgba(37, 99, 235, 0.16) 0%, transparent 60%),
+      /* Deep Void Slate Gradient */
+      linear-gradient(175deg, #0e121a 0%, #141926 40%, #090c12 100%) !important;
+    background-size: 36px 36px, 36px 36px, auto, auto, auto !important;
+    background-attachment: fixed !important;
+    background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat !important;
+  }
+
+  /* ─── Theme 4: Cinematic Anime Noir (Stealth Velvet & Ember) ─── */
+  html[data-theme="4"], html[data-theme="cinema-noir"] {
+    --bg-base: #040507;
+    --app-bg: #040507;
+    --surface: rgba(18, 18, 24, 0.75);
+    --surface-2: rgba(26, 26, 34, 0.85);
+    --surface-3: rgba(36, 36, 48, 0.92);
+    --border: rgba(255, 255, 255, 0.07);
+    --border-hover: rgba(225, 29, 72, 0.45);
+    --card-top-border: rgba(255, 255, 255, 0.20);
+    background-color: #040507 !important;
+  }
+  html[data-theme="4"] body, html[data-theme="cinema-noir"] body {
+    background-color: #040507 !important;
+    background-image: 
+      /* Cinema Top Center Spotlight */
+      radial-gradient(ellipse 1100px 500px at 50% 0%, rgba(255, 255, 255, 0.045) 0%, transparent 70%),
+      /* Akatsuki Ember Crimson (Bottom Left) */
+      radial-gradient(ellipse 700px 450px at 10% 85%, rgba(225, 29, 72, 0.15) 0%, transparent 60%),
+      /* Deep Violet Shadow (Top Right) */
+      radial-gradient(ellipse 650px 450px at 90% 15%, rgba(124, 58, 237, 0.12) 0%, transparent 60%),
+      /* Pure Pitch OLED Base */
+      linear-gradient(180deg, #07080b 0%, #040507 50%, #020304 100%) !important;
+    background-size: auto !important;
+    background-attachment: fixed !important;
+    background-repeat: no-repeat !important;
+  }
+
+  /* ─── Theme 5: MKissa Minimalist Fog & Specular Glass ─── */
+  html[data-theme="5"], html[data-theme="mkissa-silver"] {
+    --bg-base: #111520;
+    --app-bg: #111520;
+    --surface: rgba(255, 255, 255, 0.05);
+    --surface-2: rgba(255, 255, 255, 0.08);
+    --surface-3: rgba(255, 255, 255, 0.14);
+    --border: rgba(255, 255, 255, 0.10);
+    --border-hover: rgba(255, 255, 255, 0.28);
+    --card-top-border: rgba(255, 255, 255, 0.28);
+    background-color: #111520 !important;
+  }
+  html[data-theme="5"] body, html[data-theme="mkissa-silver"] body {
+    background-color: #111520 !important;
+    background-image: 
+      /* Precision 48px Blueprint Grid */
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      /* Electric Sapphire Ambient Mesh (Top-Left) */
+      radial-gradient(90% 65% at 18% 18%, rgba(37, 99, 235, 0.16) 0%, transparent 60%),
+      /* Emerald Aurora Mesh (Bottom-Right) */
+      radial-gradient(85% 60% at 85% 75%, rgba(34, 197, 94, 0.12) 0%, transparent 55%),
+      /* Soft Top-Center Fog Horizon */
+      radial-gradient(ellipse 1200px 500px at 50% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 70%),
+      /* Base Deep Midnight Slate Gradient */
+      linear-gradient(155deg, #131724 0%, #181e2e 45%, #0f131d 100%) !important;
+    background-size: 48px 48px, 48px 48px, auto, auto, auto, auto !important;
+    background-attachment: fixed !important;
+    background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat !important;
   }
 
   ::selection { background: #ffffff; color: #000000; }
@@ -323,11 +463,11 @@
     align-items: center;
     gap: var(--sp-4);
     padding: 1.15rem 1.35rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--surface, rgba(255, 255, 255, 0.05));
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.10));
+    border-top: 1px solid var(--card-top-border, rgba(255, 255, 255, 0.22));
     border-radius: 16px;
     box-shadow: 
       inset 0 1px 1px 0 rgba(255, 255, 255, 0.14),
@@ -439,9 +579,9 @@
 
   /* ─── Filter Boxes & Chips (MKissa Frosted Glass) ─── */
   .filter-box {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    background: var(--surface, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.10));
+    border-top: 1px solid var(--card-top-border, rgba(255, 255, 255, 0.22));
     border-radius: 16px;
     padding: var(--sp-5);
     backdrop-filter: blur(20px) saturate(140%);
@@ -595,9 +735,9 @@
   .cap em { font-style: normal; margin-left: auto; letter-spacing: 0; text-transform: none; font-weight: 600; color: var(--green); font-size: var(--text-xs); }
 
   .pv {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    background: var(--surface, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.10));
+    border-top: 1px solid var(--card-top-border, rgba(255, 255, 255, 0.22));
     border-radius: 16px;
     padding: var(--sp-5);
     position: relative;
@@ -645,9 +785,9 @@
 
   /* ─── Install Card ─── */
   .linkcard {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    background: var(--surface, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.10));
+    border-top: 1px solid var(--card-top-border, rgba(255, 255, 255, 0.22));
     border-radius: 16px;
     padding: var(--sp-5);
     backdrop-filter: blur(20px) saturate(140%);
@@ -687,9 +827,9 @@
   .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-3); margin-top: var(--sp-4); }
   .step {
     display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-4); border-radius: 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    background: var(--surface, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.10));
+    border-top: 1px solid var(--card-top-border, rgba(255, 255, 255, 0.22));
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
     box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.14), 0 12px 32px -4px rgba(0, 0, 0, 0.35);
@@ -705,9 +845,9 @@
   /* ─── Status ─── */
   .status-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: var(--sp-3); margin-bottom: var(--sp-4); }
   .smetric {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    background: var(--surface, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.10));
+    border-top: 1px solid var(--card-top-border, rgba(255, 255, 255, 0.22));
     border-radius: 16px;
     padding: var(--sp-4) var(--sp-5);
     backdrop-filter: blur(20px) saturate(140%);
@@ -733,9 +873,9 @@
   /* ─── Sarvam / incident.io Style Status Uptime Bars ─── */
   .providers { display: grid; gap: var(--sp-4); }
   .prow {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    background: var(--surface, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.10));
+    border-top: 1px solid var(--card-top-border, rgba(255, 255, 255, 0.22));
     border-radius: 16px;
     padding: var(--sp-5) var(--sp-6);
     backdrop-filter: blur(20px) saturate(140%);
@@ -1118,6 +1258,92 @@
     .status-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
     .linkrow { grid-template-columns: minmax(0,1fr); }
     .steps { grid-template-columns: 1fr; }
+  }
+  /* ─── Floating Theme Studio Switcher HUD ─── */
+  .theme-hud {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(13, 17, 26, 0.88);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-top: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 9999px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+    user-select: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .theme-hud-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-right: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    border-right: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .theme-hud-title svg { stroke: #ffffff; width: 14px; height: 14px; }
+  .theme-hud-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 9999px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--ink-muted);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.16s ease;
+    white-space: nowrap;
+  }
+  .theme-hud-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .theme-hud-btn.active {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+  }
+  .theme-hud-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .theme-hud-btn[data-tid="1"] .theme-hud-dot { background: linear-gradient(135deg, #f43f5e, #9333ea); }
+  .theme-hud-btn[data-tid="2"] .theme-hud-dot { background: linear-gradient(135deg, #ec4899, #06b6d4); }
+  .theme-hud-btn[data-tid="3"] .theme-hud-dot { background: linear-gradient(135deg, #5865f2, #3b82f6); }
+  .theme-hud-btn[data-tid="4"] .theme-hud-dot { background: linear-gradient(135deg, #e11d48, #3b0764); }
+  .theme-hud-btn[data-tid="5"] .theme-hud-dot { background: linear-gradient(135deg, #94a3b8, #334155); }
+
+  @media (max-width: 760px) {
+    .theme-hud {
+      bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+      right: 50%;
+      transform: translateX(50%);
+      width: calc(100% - 24px);
+      max-width: 390px;
+      justify-content: flex-start;
+      padding: 4px 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .theme-hud::-webkit-scrollbar { display: none; }
+    .theme-hud-title { display: none; }
+    .theme-hud-btn { padding: 4px 8px; font-size: 10px; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
@@ -1602,7 +1828,7 @@ function initState(){
 
   try {
     const parts = window.location.pathname.split('/').filter(Boolean);
-    if (parts.length > 0 && parts[0] !== 'configure' && parts[0] !== 'api') {
+    if (parts.length > 0 && parts[0] !== 'configure' && parts[0] !== 'api' && parts[0] !== 'theme' && !parts[0].startsWith('theme')) {
       let b64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
       while (b64.length % 4) b64 += '=';
       const jsonStr = decodeURIComponent(escape(atob(b64)));
@@ -2191,6 +2417,62 @@ renderFilters();
 renderStyles();
 update();
 setTab((location.hash || '').replace('#', '') || 'providers');
+</script>
+
+<!-- Floating Theme Studio Switcher HUD -->
+<aside class="theme-hud" id="themeHud" role="toolbar" aria-label="Theme Studio">
+  <div class="theme-hud-title">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span>Theme</span>
+  </div>
+  <button type="button" class="theme-hud-btn" data-tid="1" title="AniBox Cyber Neon (Signature Logo Magenta & Violet)">
+    <span class="theme-hud-dot"></span>1. AniBox Neon
+  </button>
+  <button type="button" class="theme-hud-btn" data-tid="2" title="Apple Music Liquid Glass (Chromatic Multi-Bloom)">
+    <span class="theme-hud-dot"></span>2. Apple Liquid
+  </button>
+  <button type="button" class="theme-hud-btn" data-tid="3" title="Discord & BitTorrent Void (Bitchord Slate)">
+    <span class="theme-hud-dot"></span>3. Discord Slate
+  </button>
+  <button type="button" class="theme-hud-btn" data-tid="4" title="Cinematic Anime Noir (Stealth Velvet & Ember)">
+    <span class="theme-hud-dot"></span>4. Cinema Noir
+  </button>
+  <button type="button" class="theme-hud-btn" data-tid="5" title="MKissa Minimalist Fog & Specular Glass">
+    <span class="theme-hud-dot"></span>5. Silver Fog
+  </button>
+</aside>
+
+<script>
+// ─── Theme Studio Switcher Logic ───
+function initThemeStudio() {
+  const p = new URLSearchParams(window.location.search);
+  const fromUrl = p.get('theme');
+  const pathMatch = window.location.pathname.match(/\/theme\/?(\d+)/);
+  const fromPath = pathMatch ? pathMatch[1] : null;
+  const forced = document.documentElement.getAttribute('data-theme');
+  const saved = localStorage.getItem('anibox_preview_theme');
+  const t = fromUrl || fromPath || forced || saved || '1';
+  applyTheme(t, false);
+}
+
+function applyTheme(tid, updateUrl = true) {
+  const tStr = String(tid);
+  document.documentElement.setAttribute('data-theme', tStr);
+  localStorage.setItem('anibox_preview_theme', tStr);
+  document.querySelectorAll('.theme-hud-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-tid') === tStr);
+  });
+  if (updateUrl && history.replaceState) {
+    const u = new URL(window.location.href);
+    u.searchParams.set('theme', tStr);
+    history.replaceState(null, '', u.toString());
+  }
+}
+
+initThemeStudio();
+document.querySelectorAll('.theme-hud-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyTheme(btn.getAttribute('data-tid'), true));
+});
 </script>
 </body>
 </html>
