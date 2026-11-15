@@ -239,7 +239,7 @@
       display: inline-flex;
       gap: 2px;
       padding: 3px;
-      background: #09090b;
+      background: #121215;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 8px;
     }
@@ -248,12 +248,12 @@
       background: transparent;
       border: none;
       color: #71717a;
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 500;
-      padding: 5px 12px;
+      padding: 5px 14px;
       border-radius: 6px;
       cursor: pointer;
-      transition: all 0.15s ease-out;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       touch-action: manipulation;
     }
     .btn-text-action:hover {
@@ -288,22 +288,25 @@
     .type-squircle-icon {
       width: 44px;
       height: 44px;
-      border-radius: 10px;
-      background: #111114;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      background: #111116;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #ffffff;
       flex-shrink: 0;
-      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     }
     .type-squircle-icon:hover {
-      border-color: rgba(255, 255, 255, 0.22);
-      background: #18181b;
+      border-color: rgba(255, 255, 255, 0.28);
+      background: #181822;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+    }
+    .type-squircle-icon:active {
+      transform: scale(0.96);
     }
 
     .type-info {
@@ -428,7 +431,7 @@
     .chip-selector {
       display: inline-flex;
       gap: 3px;
-      background: #09090b;
+      background: #121215;
       padding: 3px;
       border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -550,7 +553,7 @@
       display: inline-flex;
       gap: 3px;
       padding: 3px;
-      background: #09090b;
+      background: #121215;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 8px;
       align-items: center;
@@ -593,7 +596,7 @@
 
     .btn-refresh {
       padding: 6px 16px;
-      background: #09090b;
+      background: #121215;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 8px;
       color: #a1a1aa;
@@ -605,8 +608,8 @@
     }
     .btn-refresh:hover {
       color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.2);
-      background: #141416;
+      border-color: rgba(255, 255, 255, 0.22);
+      background: #18181c;
       transform: translateY(-1px);
     }
     .btn-refresh:active {
@@ -741,7 +744,7 @@
 
     .btn-copy-type {
       padding: 9px 18px;
-      background: #09090b;
+      background: #121215;
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: #ffffff;
       border-radius: 6px;
@@ -751,8 +754,8 @@
       transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .btn-copy-type:hover {
-      background: #18181b;
-      border-color: rgba(255, 255, 255, 0.25);
+      background: #18181c;
+      border-color: rgba(255, 255, 255, 0.28);
     }
     .btn-copy-type:active {
       transform: scale(0.97);
@@ -760,7 +763,7 @@
 
     .btn-secondary-type {
       padding: 16px 24px;
-      background: #09090b;
+      background: #121215;
       color: #ffffff;
       font-size: 14.5px;
       font-weight: 600;
@@ -1131,9 +1134,12 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2" y="3" width="20" height="18" rx="3"></rect>
-                  <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <line x1="4" y1="15" x2="4" y2="9"></line>
+                  <line x1="8" y1="18" x2="8" y2="6"></line>
+                  <line x1="12" y1="21" x2="12" y2="3"></line>
+                  <line x1="16" y1="18" x2="16" y2="6"></line>
+                  <line x1="20" y1="15" x2="20" y2="9"></line>
                 </svg>
               </div>
               <div class="type-info">
@@ -1151,8 +1157,8 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2l2.6 6.8L22 12l-7.4 3.2L12 22l-2.6-6.8L2 12l7.4-3.2L12 2z"></path>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 13h4l3-7 4 14 3-9 2 4 2-2h2"></path>
                 </svg>
               </div>
               <div class="type-info">
@@ -1170,10 +1176,12 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M8 3l4 4 4-4"></path>
-                  <rect x="2" y="7" width="20" height="14" rx="3"></rect>
-                  <polygon points="10 11 15 14 10 17 10 11" fill="currentColor"></polygon>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="3" y1="12" x2="3.01" y2="12" stroke-width="3"></line>
+                  <path d="M7 8v8"></path>
+                  <path d="M11 5v14"></path>
+                  <path d="M15 8v8"></path>
+                  <path d="M19 11v2"></path>
                 </svg>
               </div>
               <div class="type-info">
@@ -1191,14 +1199,10 @@
           <div class="type-row">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="4" y1="4" x2="20" y2="20"></line>
-                  <line x1="20" y1="4" x2="4" y2="20"></line>
-                  <path d="M4 8l4-4"></path>
-                  <path d="M16 20l4-4"></path>
-                  <path d="M20 8l-4-4"></path>
-                  <path d="M8 20l-4-4"></path>
-                  <circle cx="12" cy="12" r="2.5" fill="currentColor"></circle>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12c2.5-4 5.5-4 8 0s5.5 4 8 0"></path>
+                  <path d="M3 16c2.5-3 5.5-3 8 0s5.5 3 8 0" opacity="0.6"></path>
+                  <path d="M3 8c2.5-3 5.5-3 8 0s5.5 3 8 0" opacity="0.6"></path>
                 </svg>
               </div>
               <div class="type-info">
@@ -1216,11 +1220,11 @@
           <div class="type-row" style="margin-top: 16px;">
             <div class="type-left">
               <div class="type-squircle-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-                  <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-                  <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-                  <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="2"></rect>
+                  <rect x="14" y="3" width="7" height="7" rx="2"></rect>
+                  <rect x="3" y="14" width="7" height="7" rx="2"></rect>
+                  <rect x="14" y="14" width="7" height="7" rx="2"></rect>
                 </svg>
               </div>
               <div class="type-info">
@@ -1707,22 +1711,22 @@
       multimovies: {
         name: 'MultiMovies',
         tag: 'Movies & Series',
-        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="3"></rect><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon></svg>`
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="15" x2="4" y2="9"></line><line x1="8" y1="18" x2="8" y2="6"></line><line x1="12" y1="21" x2="12" y2="3"></line><line x1="16" y1="18" x2="16" y2="6"></line><line x1="20" y1="15" x2="20" y2="9"></line></svg>`
       },
       watchanimeworld: {
         name: 'AnimeWorld',
         tag: 'Anime Dub',
-        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 6.8L22 12l-7.4 3.2L12 22l-2.6-6.8L2 12l7.4-3.2L12 2z"></path></svg>`
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13h4l3-7 4 14 3-9 2 4 2-2h2"></path></svg>`
       },
       toonstream: {
         name: 'ToonStream',
         tag: 'Cartoons & Retro',
-        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l4 4 4-4"></path><rect x="2" y="7" width="20" height="14" rx="3"></rect><polygon points="10 11 15 14 10 17 10 11" fill="currentColor"></polygon></svg>`
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="3.01" y2="12" stroke-width="3"></line><path d="M7 8v8"></path><path d="M11 5v14"></path><path d="M15 8v8"></path><path d="M19 11v2"></path></svg>`
       },
       piratexplay: {
         name: 'PirateXPlay',
         tag: 'Multi-Audio',
-        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="20" y2="20"></line><line x1="20" y1="4" x2="4" y2="20"></line><path d="M4 8l4-4"></path><path d="M16 20l4-4"></path><path d="M20 8l-4-4"></path><path d="M8 20l-4-4"></path><circle cx="12" cy="12" r="2.5" fill="currentColor"></circle></svg>`
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2.5-4 5.5-4 8 0s5.5 4 8 0"></path><path d="M3 16c2.5-3 5.5-3 8 0s5.5 3 8 0" opacity="0.6"></path><path d="M3 8c2.5-3 5.5-3 8 0s5.5 3 8 0" opacity="0.6"></path></svg>`
       }
     };
 
@@ -1835,7 +1839,7 @@
           titlesHtml = `<span style="font-size: 12px; color: var(--text-3);">${isUp ? 'Streams verified' : 'No streams returned'}</span>`;
         }
 
-        const errorHtml = p.error ? `<div class="ep-err-text">${escapeHtml(p.error)}</div>` : '';
+        const errorHtml = (p.status === 'down' && p.error) ? `<div class="ep-err-text">${escapeHtml(p.error)}</div>` : '';
         const timelineSvg = generateUptimeSvg(p.history, isUp);
 
         row.innerHTML = `

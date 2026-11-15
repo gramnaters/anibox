@@ -229,7 +229,12 @@ class PirateXPlayProvider:
         # has no episode for it - don't fabricate a URL.
         slug_season = re.search(r'season-(\d+)-', slug)
         if slug_season and int(slug_season.group(1)) != season:
-            return {'streams': []}
+            alt_slug = re.sub(r'season-\d+-', f'season-{season}-', slug)
+            alt_details = self.get_anime_details(alt_slug)
+            if alt_details and alt_details.get('episodes'):
+                slug = alt_slug
+            else:
+                return {'streams': []}
         details = self.get_anime_details(slug)
         ep_url = None
         if details:

@@ -39,6 +39,7 @@ theme_*.html
 .idea/
 .vscode/
 .playwright-mcp/
+scratch/
 cf/
 cf_rewrite/
 cf_worker/

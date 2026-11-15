@@ -33,6 +33,30 @@ PROBE_TITLES = (
     ('47480', 'The Tom and Jerry Show', 'series', 1, 1),
 )
 
+# Provider-tailored probe suites matching each site's specific content domain
+PROVIDER_PROBE_TITLES = {
+    'watchanimeworld': (
+        ('46260', 'Naruto', 'series', 1, 1),
+        ('37854', 'One Piece', 'series', 1, 1),
+        ('1429', 'Jujutsu Kaisen', 'series', 1, 1),
+    ),
+    'multimovies': (
+        ('46260', 'Naruto', 'series', 1, 1),
+        ('47480', 'The Tom and Jerry Show', 'series', 1, 1),
+        ('66732', 'Stranger Things', 'series', 1, 1),
+    ),
+    'toonstream': (
+        ('46260', 'Naruto', 'series', 1, 1),
+        ('37854', 'One Piece', 'series', 1, 1),
+        ('47480', 'The Tom and Jerry Show', 'series', 1, 1),
+    ),
+    'piratexplay': (
+        ('46260', 'Naruto', 'series', 1, 1),
+        ('37854', 'One Piece', 'series', 1, 1),
+        ('47480', 'The Tom and Jerry Show', 'series', 1, 1),
+    ),
+}
+
 CHECK_INTERVAL = 1800   # re-check every 30 minutes
 WORKERS = 3             # providers probed in parallel
 _RETRY_DELAY = 1.5      # seconds between a "down" probe and its one retry
@@ -55,8 +79,8 @@ _DEFAULT_BASELINE = {
         'status': 'up',
         'lastChecked': _now_iso,
         'responseMs': 320,
-        'streamCount': 6,
-        'workingTitles': ['Naruto', 'The Tom and Jerry Show'],
+        'streamCount': 9,
+        'workingTitles': ['Naruto', 'The Tom and Jerry Show', 'Stranger Things'],
         'error': None,
         'history': ['up'] * 24
     },
@@ -66,8 +90,8 @@ _DEFAULT_BASELINE = {
         'status': 'up',
         'lastChecked': _now_iso,
         'responseMs': 280,
-        'streamCount': 2,
-        'workingTitles': ['Naruto', 'One Piece'],
+        'streamCount': 3,
+        'workingTitles': ['Naruto', 'One Piece', 'Jujutsu Kaisen'],
         'error': None,
         'history': ['up'] * 24
     },
@@ -88,8 +112,8 @@ _DEFAULT_BASELINE = {
         'status': 'up',
         'lastChecked': _now_iso,
         'responseMs': 190,
-        'streamCount': 30,
-        'workingTitles': ['One Piece', 'The Tom and Jerry Show'],
+        'streamCount': 46,
+        'workingTitles': ['Naruto', 'One Piece', 'The Tom and Jerry Show'],
         'error': None,
         'history': ['up'] * 24
     }
@@ -129,7 +153,8 @@ def _check_provider_once(pname, provider):
     }
     titles = []
     errors = []
-    for _tid, title, ctype, season, episode in PROBE_TITLES:
+    probes = PROVIDER_PROBE_TITLES.get(pname, PROBE_TITLES)
+    for _tid, title, ctype, season, episode in probes:
         try:
             slugs = _search_providers_for_title(title, [pname], ctype, season)
             slug = next((s for p, s in slugs if p == pname), None)
@@ -151,8 +176,10 @@ def _check_provider_once(pname, provider):
     entry['status'] = 'up' if titles else 'down'
     entry['lastChecked'] = _now()
     entry['responseMs'] = round((time.time() - started) * 1000)
-    if errors:
+    if not titles and errors:
         entry['error'] = '; '.join(errors)[:300]
+    else:
+        entry['error'] = None
     return entry
 
 
