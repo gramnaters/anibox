@@ -574,9 +574,23 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
         # Other hosts are served directly: Stremio forwards proxyHeaders, and
         # play/seek go straight to the file server.
 
+        # Stremio protocol standards (docchi-style clean filename + auto-binge grouping)
+        clean_title_str = re.sub(r'[^a-zA-Z0-9]+', '_', (title or 'video')).strip('_')
+        ext = 'm3u8' if (is_hls or (meta.get('container') == 'm3u8')) else 'mp4'
+        if content_type == 'series' and season and episode:
+            try:
+                filename = f"{clean_title_str}.S{int(season):02d}E{int(episode):02d}.{quality or 'HD'}.{pname}.{ext}"
+            except Exception:
+                filename = f"{clean_title_str}.{quality or 'HD'}.{pname}.{ext}"
+            binge_group = f"anibox-{clean_title_str}.{quality or 'HD'}.{pname}"
+        else:
+            filename = f"{clean_title_str}.{quality or 'HD'}.{pname}.{ext}"
+            binge_group = f"anibox-{clean_title_str}.{quality or 'HD'}.{pname}"
+
         hints = dict(formatted.get('behaviorHints') or {})
         hints['notWebReady'] = False
-        hints['bingeGroup'] = f'multianima-{pname}-{player_key}'
+        hints['filename'] = filename
+        hints['bingeGroup'] = binge_group
         hints['proxyHeaders'] = {
             'request': {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
@@ -687,4 +701,5 @@ def addon_stream(content_type, content_id, lang=None, config_data=None):
     print(f'[stream] {content_id} => {len(final)} streams')
     if final:
         _stream_cache[cache_key] = final
-    return respond_with({'streams': final})
+    cache_ttl = 900 if final else 60
+    return respond_with({'streams': final}, cache_seconds=cache_ttl)
