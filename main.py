@@ -56,9 +56,17 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Static and Templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Pre-cache static HTML in memory for 10x throughput
-with open("templates/configure.html", "r", encoding="utf-8") as _f:
-    _CACHED_CONFIGURE_HTML = _f.read()
+# Pre-cache static HTML in memory with dynamic read support
+_CACHED_CONFIGURE_HTML = ""
+def get_cached_configure_html():
+    global _CACHED_CONFIGURE_HTML
+    if not _CACHED_CONFIGURE_HTML:
+        try:
+            with open("templates/configure.html", "r", encoding="utf-8") as _f:
+                _CACHED_CONFIGURE_HTML = _f.read()
+        except Exception:
+            pass
+    return _CACHED_CONFIGURE_HTML
 
 # Register API Routers
 app.include_router(manifest_router)
@@ -94,7 +102,7 @@ async def configure_page(request: Request, lang: str = None):
         return PlainTextResponse("OK", status_code=200)
     if any(k in request.query_params for k in ('ping', 'cron', 'health', 'keepalive')):
         return PlainTextResponse("OK", status_code=200)
-    return HTMLResponse(content=_CACHED_CONFIGURE_HTML, status_code=200)
+    return HTMLResponse(content=get_cached_configure_html(), status_code=200)
 
 @app.get('/favicon.ico')
 async def favicon():
