@@ -58,7 +58,7 @@ PROVIDER_PROBE_TITLES = {
     ),
 }
 
-CHECK_INTERVAL = 60     # re-check every minute (keeps the uptime strip meaningful)
+CHECK_INTERVAL = 1800   # re-check every 30 minutes (avoid rate-limiting providers)
 WORKERS = 3             # providers probed in parallel
 _RETRY_DELAY = 1.5      # seconds between a "down" probe and its one retry
 

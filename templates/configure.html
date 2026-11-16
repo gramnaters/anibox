@@ -1722,28 +1722,6 @@
             </div>
           </div>
 
-          <div class="pref-field-row">
-            <div class="pref-meta">
-              <span class="pref-label">Preferred Audio Language</span>
-              <p class="pref-subtext">Prioritize Hindi dubs, original Japanese audio, or dual tracks</p>
-            </div>
-            <div class="chip-selector" data-group="audio">
-              <button class="chip-opt selected" data-lang="" onclick="selectLanguage(this)">All Audio</button>
-              <button class="chip-opt" data-lang="Hindi" onclick="selectLanguage(this)">Hindi</button>
-              <button class="chip-opt" data-lang="Japanese" onclick="selectLanguage(this)">Japanese</button>
-              <button class="chip-opt" data-lang="English" onclick="selectLanguage(this)">English</button>
-            </div>
-          </div>
-
-          <div class="type-row">
-            <div class="type-info">
-              <div class="type-name-line">
-                <span class="type-name" style="font-size: 16.5px;">Strict Stream Deduplication</span>
-              </div>
-              <p class="type-desc">Collapse duplicate links pointing to identical upstream CDN mirrors.</p>
-            </div>
-            <div class="swiss-switch on" id="swDedup" role="switch" tabindex="0" aria-checked="true" aria-label="Toggle Strict Stream Deduplication" onclick="toggleDedup(this)"></div>
-          </div>
         </section>
 
         <!-- PANEL 3: SETTINGS -->
@@ -1912,8 +1890,6 @@
       catalogs: 'on',
       sort_by: 'quality',
       filter_qualities: 'all',
-      filter_languages: '',
-      filter_audio_strict: 'on',
       formatter_style: 'rich'
     };
 
@@ -1952,8 +1928,6 @@
       c.catalogs = state.catalogs || 'on';
       if (state.sort_by) c.sort_by = state.sort_by;
       if (state.filter_qualities && state.filter_qualities !== 'all') c.filter_qualities = state.filter_qualities;
-      if (state.filter_languages) c.filter_languages = state.filter_languages;
-      if (state.filter_audio_strict === 'on') c.filter_audio_strict = 'on';
       return c;
     }
 

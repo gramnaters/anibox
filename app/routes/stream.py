@@ -638,9 +638,11 @@ def addon_stream(request: Request, content_type: str, content_id: str, segment: 
     filter_qualities_raw = str(config.get('filter_qualities') or 'all').lower()
     allowed_qualities = set(q.strip() for q in filter_qualities_raw.split(',') if q.strip()) if filter_qualities_raw != 'all' else None
 
-    filter_languages_raw = str(config.get('filter_languages') or '')
-    preferred_langs = [l.strip().lower() for l in filter_languages_raw.split(',') if l.strip()]
-    strict_audio = (config.get('filter_audio_strict') or 'off') == 'on'
+    # Language filtering removed: always show every resolved stream. Old
+    # manifest URLs may still carry filter_languages/filter_audio_strict —
+    # deliberately ignored so nothing is hidden from the player.
+    preferred_langs = []
+    strict_audio = False
 
     group_by = str(config.get('group_by') or 'quality').lower()
     sort_by = str(config.get('sort_by') or 'default').lower()
