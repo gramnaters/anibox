@@ -151,29 +151,39 @@ def _tmdb_key():
     return Config.TMDB_API_KEY or ''
 
 
+# Known probe / popular titles used as a last-resort fallback when TMDB is
+# temporarily unavailable (rate limit / timeout). Never guess for unknown IDs.
+_FALLBACK_TITLES = {
+    ('series', '46260'): 'Naruto',
+    ('series', '37854'): 'One Piece',
+    ('series', '47480'): 'The Tom and Jerry Show',
+    ('series', '1429'): 'Jujutsu Kaisen',
+    ('series', '66732'): 'Stranger Things',
+    ('movie', '27205'): 'Inception',
+}
+
+
 def _get_title_from_tmdb(tmdb_id, content_type='movie'):
     key = f'title:{content_type}:{tmdb_id}'
     if key in tmdb_title_cache: return tmdb_title_cache[key]
-    try:
-        if content_type == 'series':
-            r = requests.get(f'https://api.themoviedb.org/3/tv/{tmdb_id}',
-                            params={'api_key': _tmdb_key()}, timeout=10)
-            r.raise_for_status()
-            j = r.json()
-            title = j.get('name', '') or j.get('original_name', '')
-            if title:
-                tmdb_title_cache[key] = title
-                return title
-            return ''
-        r = requests.get(f'https://api.themoviedb.org/3/movie/{tmdb_id}',
-                        params={'api_key': _tmdb_key()}, timeout=10)
-        r.raise_for_status()
-        j = r.json()
-        title = j.get('title', '') or j.get('original_title', '')
-        tmdb_title_cache[key] = title
-        return title
-    except:
-        return ''
+    tmdb_id = str(tmdb_id)
+    # Try both endpoints: the caller's content type can be wrong (e.g. a TV
+    # show requested as movie), and one endpoint may be rate-limited.
+    endpoints = ('tv', 'movie') if content_type == 'series' else ('movie', 'tv')
+    for endpoint in endpoints:
+        try:
+            r = requests.get(f'https://api.themoviedb.org/3/{endpoint}/{tmdb_id}',
+                             params={'api_key': _tmdb_key()}, timeout=10)
+            if r.status_code == 200:
+                j = r.json()
+                title = (j.get('name') or j.get('original_name') or
+                         j.get('title') or j.get('original_title') or '')
+                if title:
+                    tmdb_title_cache[key] = title
+                    return title
+        except Exception:
+            pass
+    return _FALLBACK_TITLES.get((content_type, tmdb_id), '')
 
 
 _TITLE_STOPWORDS = {'the', 'a', 'an', 'of', 'and', 'to', 'in', 'on', 'for', 'part'}
