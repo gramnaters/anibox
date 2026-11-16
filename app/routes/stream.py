@@ -650,6 +650,11 @@ async def addon_stream(request: Request, content_type: str, content_id: str, seg
         file_key, url, stream_obj, s_meta = item
         if file_key in seen_files:
             continue
+        # Mark this CDN file as seen immediately — before any filter that may
+        # `continue` early. This prevents a filtered duplicate from later being
+        # admitted because the first copy was silently dropped by a quality/lang
+        # filter without ever registering the key.
+        seen_files.add(file_key)
 
         if hide_subtitles and isinstance(stream_obj, dict):
             stream_obj.pop('subtitles', None)
@@ -670,8 +675,6 @@ async def addon_stream(request: Request, content_type: str, content_id: str, seg
                 lang_score = -1
             else:
                 lang_score = 0
-
-        seen_files.add(file_key)
         q_rank = Q_RANK.get(q_str, 0)
         p_raw = s_meta['provider'].lower()
         p_rank = p_rank_map.get(p_raw, 99)

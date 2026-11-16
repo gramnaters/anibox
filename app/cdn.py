@@ -70,7 +70,9 @@ def cdn_file_key(url: str):
     if m:
         return ('abyss', m.group(1), _abyss_token_id(m.group(2)))
 
-    # Hanerix / StreamHG: /stream/<a>/<b>/<expiry>/<file_id>/master.m3u8
+    # Hanerix / StreamHG / Vibuxer (all mirror the same CDN):
+    # /stream/<token>/<constant>/<expiry>/<file_id>/master.m3u8
+    # vibuxer.com is a rotating front for the same Hanerix infrastructure.
     m = re.search(r'/stream/[^/]+/[^/]+/\d+/(\d+)/', path)
     if m:
         return ('hanerix', m.group(1))
