@@ -310,6 +310,12 @@
 
     .tab-panel {
       display: none;
+      /* Keep the stage header edge-to-edge, but constrain panel content to a
+         readable measure and centre it inside the wide right-hand stage. */
+      width: 100%;
+      max-width: 1080px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .tab-panel.active {
