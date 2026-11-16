@@ -642,44 +642,53 @@ def addon_stream(request: Request, content_type: str, content_id: str, segment: 
 
     Q_RANK = {'4k': 5, '2160p': 5, '1440p': 4, '1080p': 3, '720p': 2, '480p': 1, '360p': 0, '': -1}
 
-    processed = []
-    seen_files = set()
-    for item in built:
-        if not item:
-            continue
-        file_key, url, stream_obj, s_meta = item
-        if file_key in seen_files:
-            continue
-        # Mark this CDN file as seen immediately — before any filter that may
-        # `continue` early. This prevents a filtered duplicate from later being
-        # admitted because the first copy was silently dropped by a quality/lang
-        # filter without ever registering the key.
-        seen_files.add(file_key)
+    def _filter_streams(enforce_strict):
+        out = []
+        seen = set()
+        for item in built:
+            if not item:
+                continue
+            file_key, url, stream_obj, s_meta = item
+            if file_key in seen:
+                continue
+            # Mark this CDN file as seen immediately — before any filter that
+            # may `continue` early. Prevents a filtered duplicate from later
+            # being admitted because the first copy was dropped silently.
+            seen.add(file_key)
 
-        if hide_subtitles and isinstance(stream_obj, dict):
-            stream_obj.pop('subtitles', None)
+            if hide_subtitles and isinstance(stream_obj, dict):
+                stream_obj.pop('subtitles', None)
 
-        q_str = s_meta['quality'].lower()
-        if allowed_qualities is not None and q_str and q_str not in allowed_qualities:
-            continue
+            q_str = s_meta['quality'].lower()
+            if allowed_qualities is not None and q_str and q_str not in allowed_qualities:
+                continue
 
-        stream_langs = [l.lower() for l in s_meta['languages']]
-        lang_score = 0
-        if preferred_langs:
-            has_match = any(any(pl in sl for pl in preferred_langs) for sl in stream_langs)
-            if has_match:
-                lang_score = 1
-            elif stream_langs:
-                if strict_audio:
-                    continue
-                lang_score = -1
-            else:
-                lang_score = 0
-        q_rank = Q_RANK.get(q_str, 0)
-        p_raw = s_meta['provider'].lower()
-        p_rank = p_rank_map.get(p_raw, 99)
-        size_val = s_meta['size']
-        processed.append((lang_score, q_rank, p_raw, size_val, stream_obj, p_rank))
+            stream_langs = [l.lower() for l in s_meta['languages']]
+            lang_score = 0
+            if preferred_langs:
+                has_match = any(any(pl in sl for pl in preferred_langs) for sl in stream_langs)
+                if has_match:
+                    lang_score = 1
+                elif stream_langs:
+                    if enforce_strict:
+                        continue
+                    lang_score = -1
+                else:
+                    lang_score = 0
+            q_rank = Q_RANK.get(q_str, 0)
+            p_raw = s_meta['provider'].lower()
+            p_rank = p_rank_map.get(p_raw, 99)
+            size_val = s_meta['size']
+            out.append((lang_score, q_rank, p_raw, size_val, stream_obj, p_rank))
+        return out
+
+    processed = _filter_streams(strict_audio)
+    # Strict language matching can legitimately produce zero results when a
+    # provider only reports other audio tracks in its HLS renditions. Never
+    # show an empty stream list in that case: retry without the hard filter
+    # and rank non-matching streams last instead.
+    if not processed and strict_audio and preferred_langs:
+        processed = _filter_streams(False)
 
     # Sort streams according to group_by, sort_by and provider_order ranking
     if group_by == 'provider' or sort_by == 'provider':
