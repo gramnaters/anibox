@@ -21,9 +21,20 @@
       --accent-green: #22c55e;
       --accent-red: #ef4444;
       --accent-blue: #38bdf8;
+      --rail-bg: #0c0c0f;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
       --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       --mono: 'JetBrains Mono', monospace;
     }
+
+    /* Built surfaces: selection, caret and scrollbars carry the palette. */
+    ::selection { background: #ffffff; color: #09090b; }
+    input, textarea { caret-color: #ffffff; }
+    * { scrollbar-width: thin; scrollbar-color: #2e2e34 transparent; }
+    *::-webkit-scrollbar { width: 8px; height: 8px; }
+    *::-webkit-scrollbar-track { background: transparent; }
+    *::-webkit-scrollbar-thumb { background: #2e2e34; border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+    *::-webkit-scrollbar-thumb:hover { background: #46464e; background-clip: content-box; }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -47,62 +58,81 @@
 
     .mono { font-family: var(--mono); }
 
+    /* Desktop control deck — the page itself never scrolls. */
     .container {
       width: 100%;
-      max-width: min(1440px, 96vw);
-      margin: 0 auto;
-      padding: clamp(28px, 3vw, 48px) clamp(20px, 2.5vw, 48px) 96px;
+      max-width: none;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
     }
 
-    /* Two-column layout — tighter gutter so the content fits the viewport */
     .layout-grid {
       display: grid;
-      grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
-      gap: clamp(28px, 3vw, 48px);
-      align-items: start;
+      grid-template-columns: 252px minmax(0, 1fr);
+      gap: 0;
+      height: 100%;
+      align-items: stretch;
     }
     .layout-grid > * { min-width: 0; }
 
-    /* Left Column: Sticky Editorial Statement & Controls */
+    /* Left rail: identity, navigation and a pinned system readout. */
     .editorial-aside {
-      position: sticky;
-      top: 64px;
+      position: relative;
+      height: 100%;
+      min-height: 0;
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 22px;
+      padding: clamp(22px, 2.2vw, 32px) 20px 24px;
+      background: var(--rail-bg);
+      border-right: 1px solid var(--border-hairline);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .rail-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: var(--text-3);
+      text-transform: uppercase;
+      margin-bottom: -8px;
     }
 
     .brand-title {
-      font-size: 58px;
+      font-size: 34px;
       font-weight: 800;
-      letter-spacing: -0.055em;
-      line-height: 0.92;
+      letter-spacing: -0.05em;
+      line-height: 1;
       color: #ffffff;
     }
 
     .brand-statement {
-      font-size: 15px;
-      color: var(--text-2);
+      font-size: 12.5px;
+      color: var(--text-3);
       font-weight: 400;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     /* Typographic Navigation Menu */
     .type-nav-menu {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
       border-top: 1px solid var(--border-hairline);
       border-bottom: 1px solid var(--border-hairline);
-      padding: 16px 0;
-      margin: 4px 0;
+      padding: 12px 0;
+      margin: 0;
     }
 
     .type-nav-btn {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 12px;
+      padding: 9px 10px;
       background: transparent;
       border: none;
       color: var(--text-3);
@@ -125,8 +155,9 @@
 
     .type-nav-btn.active {
       color: #ffffff;
-      background: #18181b;
+      background: #1b1b20;
       font-weight: 700;
+      box-shadow: inset 2px 0 0 #ffffff;
     }
 
     .nav-num {
@@ -148,23 +179,30 @@
       font-weight: 600;
     }
 
-    /* Live Meta Specs Block */
+    /* Live Meta Specs Block — pinned to the foot of the rail on desktop. */
     .meta-specs {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      font-size: 13px;
+      gap: 9px;
+      font-size: 11.5px;
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-hairline);
     }
 
     .spec-item {
       display: flex;
       justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
       color: var(--text-3);
     }
 
     .spec-item strong {
       color: #ffffff;
       font-weight: 600;
+      text-align: right;
+      flex: none;
     }
 
     /* Primary High-Contrast Action Button */
@@ -196,10 +234,78 @@
       transform: scale(0.97);
     }
 
-    /* Content panels */
+    /* The primary CTA lives in the deck header on desktop; the rail keeps it on mobile. */
+    .editorial-aside > .btn-install-type { display: none; }
+
+    /* Desktop deck header — global context plus the persistent install action. */
+    .stage-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      margin: 0 calc(-1 * clamp(24px, 3vw, 52px)) 24px;
+      padding: 14px clamp(24px, 3vw, 52px);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border-hairline);
+    }
+    .stage-crumb {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--text-3);
+      text-transform: uppercase;
+    }
+    .stage-crumb span { color: #4b4b53; margin: 0 6px; }
+    .stage-actions { display: inline-flex; align-items: center; gap: 16px; }
+    .live-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #6ee7a0;
+    }
+    .live-chip i {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.13);
+    }
+    .btn-head-install {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 16px;
+      background: #ffffff;
+      color: #09090b;
+      border: 1px solid rgba(255,255,255,0.85);
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 4px 16px rgba(255,255,255,0.1);
+      transition: transform 0.16s var(--ease), background 0.16s var(--ease);
+    }
+    .btn-head-install:hover { background: #f4f4f5; transform: translateY(-1px); }
+    .btn-head-install:active { transform: scale(0.97); }
+    .btn-head-install svg { width: 15px; height: 15px; }
+
+    /* Stage: the only scrolling surface on desktop. */
     .typographic-content {
       display: flex;
       flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: clamp(24px, 2.4vw, 40px) clamp(24px, 3vw, 52px) 36px;
     }
 
     .tab-panel {
@@ -212,9 +318,11 @@
       animation: fadeIn 0.18s ease-out;
     }
 
+    /* The panel is visible by default; motion is a subtle positional cue only,
+       so it can never leave the active view blank when animations are paused. */
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { transform: translateY(6px); }
+      to { transform: translateY(0); }
     }
 
     /* Section Bar */
@@ -222,9 +330,9 @@
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      padding-bottom: 18px;
+      padding-bottom: 14px;
       border-bottom: 1px solid var(--border-hairline-strong);
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       flex-wrap: wrap;
       gap: 12px;
     }
@@ -276,7 +384,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 24px 0;
+      padding: 18px 0;
       border-bottom: 1px solid var(--border-hairline);
       transition: border-color 0.2s;
     }
@@ -407,7 +515,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 22px 0;
+      gap: 16px;
+      padding: 18px 0;
       border-bottom: 1px solid var(--border-hairline);
     }
 
@@ -919,18 +1028,56 @@
       color: var(--accent-red);
     }
 
-    /* Responsive Adaptation for Mid-size Desktops & Tablets */
-    @media (max-width: 1120px) and (min-width: 861px) {
-      .layout-grid {
-        grid-template-columns: 290px 1fr;
-        gap: 36px;
-      }
-      .brand-title {
-        font-size: 46px;
-      }
-      .status-summary-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    /* Desktop deck: lock the viewport and let the stage own the scroll. */
+    @media (min-width: 861px) {
+      html, body { height: 100%; overflow: hidden; }
+    }
+
+    /* Narrow desktop: keep the deck, tighten the rail and prefer wrapped controls. */
+    @media (max-width: 1180px) and (min-width: 861px) {
+      .layout-grid { grid-template-columns: 220px minmax(0, 1fr); }
+      .editorial-aside { padding-left: 16px; padding-right: 16px; }
+      .brand-title { font-size: 30px; }
+      .pref-field-row { flex-wrap: wrap; row-gap: 10px; }
+      .status-summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Short desktop windows: compress the deck so every tab fits without scrolling. */
+    @media (min-width: 861px) and (max-height: 820px) {
+      .editorial-aside { padding-top: 20px; padding-bottom: 18px; gap: 14px; }
+      .brand-title { font-size: 29px; }
+      .brand-statement { font-size: 11.5px; }
+      .type-nav-menu { padding: 9px 0; }
+      .type-nav-btn { padding: 7px 10px; }
+      .rail-label { margin-bottom: -4px; }
+      .meta-specs { gap: 6px; padding-top: 12px; }
+      .typographic-content { padding-top: 18px; padding-bottom: 22px; }
+      .stage-head { margin-bottom: 18px; padding-top: 10px; padding-bottom: 10px; }
+      .type-row, .pref-field-row { padding: 12px 0; }
+      .type-squircle-icon { width: 38px; height: 38px; border-radius: 10px; }
+      .status-overview { padding: 10px 14px; }
+      .status-stats-row { padding: 8px 2px 9px; }
+      .status-section-head { padding: 11px 0 8px; }
+      .status-toolbar { margin-bottom: 12px; padding-bottom: 10px; }
+      .status-provider-row { padding: 9px 0; gap: 6px; }
+      .timeline-since { font-size: 9.5px; margin-top: 1px; }
+    }
+
+    /* Very short desktop windows: keep all five tabs fully in frame. */
+    @media (min-width: 861px) and (max-height: 740px) {
+      .typographic-content { padding-top: 12px; padding-bottom: 16px; }
+      .stage-head { margin-bottom: 12px; padding-top: 8px; padding-bottom: 8px; }
+      .type-nav-btn { font-size: 13px; }
+      .type-nav-btn > div { white-space: nowrap; min-width: 0; }
+      .nav-badge-pill { font-size: 10px; padding: 2px 5px; }
+      .status-overview { padding: 8px 14px; margin-top: 10px; }
+      .status-stats-row { padding: 6px 2px 7px; }
+      .status-section-head { padding: 8px 0 6px; }
+      .status-toolbar { margin-bottom: 8px; padding-bottom: 8px; }
+      .status-provider-row { padding: 2px 0; gap: 4px; }
+      .uptime-track, .up-seg, .uptime-rest { height: 8px; }
+      .timeline-labels { font-size: 9px; }
+      .timeline-since { display: none; }
     }
 
     /* Toast */
@@ -1017,18 +1164,48 @@
         /* 94vw + centred margins pushed content 5px past a 320px viewport. */
         max-width: 100%;
         width: 100%;
+        height: auto;
+        display: block;
         padding: 24px 16px calc(104px + env(safe-area-inset-bottom));
+        overflow: visible;
         overflow-x: hidden;
       }
       .layout-grid {
         grid-template-columns: 1fr;
         gap: 32px;
+        height: auto;
       }
       .editorial-aside {
         position: static;
+        height: auto;
+        min-height: 0;
+        gap: 20px;
+        padding: 0 0 8px;
+        background: transparent;
+        border-right: none;
+        overflow: visible;
       }
       .brand-title {
         font-size: 42px;
+      }
+      .brand-statement {
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--text-2);
+      }
+      .rail-label, .stage-head { display: none; }
+      .editorial-aside > .btn-install-type { display: inline-flex; width: 100%; }
+      .meta-specs {
+        margin-top: 0;
+        gap: 12px;
+        font-size: 13px;
+        padding-top: 16px;
+      }
+      .spec-item strong { text-align: right; }
+      .typographic-content {
+        height: auto;
+        overflow: visible;
+        padding: 0;
       }
       .type-nav-menu {
         display: none;
@@ -1135,7 +1312,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 14px 16px;
+      padding: 12px 16px;
       border: 1px solid var(--border-hairline);
       border-radius: 10px;
       background: rgba(34, 197, 94, 0.05);
@@ -1161,7 +1338,7 @@
     }
     .status-stats-row {
       display: flex; flex-wrap: wrap; gap: 8px 24px;
-      padding: 14px 2px 18px; font-size: 12px; color: var(--text-3);
+      padding: 11px 2px 13px; font-size: 12px; color: var(--text-3);
       border-bottom: 1px solid var(--border-hairline);
     }
     .status-stats-row b { color: var(--text-1); font-weight: 700; margin-left: 4px; font-variant-numeric: tabular-nums; }
@@ -1170,14 +1347,14 @@
     .status-stats-row b.bad { color: var(--accent-red); }
     .status-section-head {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 20px 0 12px; font-size: 13px; font-weight: 700; color: var(--text-1);
+      padding: 16px 0 10px; font-size: 13px; font-weight: 700; color: var(--text-1);
     }
     .status-section-head .mono { font-size: 11px; font-weight: 500; color: var(--text-3); }
     .status-loading {
       padding: 40px 20px; text-align: center; color: var(--text-3);
       font-size: 13px; border: 1px dashed var(--border-hairline); border-radius: 8px;
     }
-    .status-provider-row { padding: 16px 0; gap: 10px; }
+    .status-provider-row { padding: 13px 0; gap: 8px; }
     .status-provider-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
     .status-provider-head .status-check { width: 18px; height: 18px; font-size: 10px; }
     .prov-title { font-size: 14px; font-weight: 700; white-space: nowrap; }
@@ -1256,6 +1433,7 @@
         </nav>
 
         <!-- Live Meta Specs -->
+        <div class="rail-label">System readout</div>
         <div class="meta-specs">
           <div class="spec-item">
             <span>Engine Build:</span>
@@ -1291,6 +1469,22 @@
 
       <!-- Content panels -->
       <main class="typographic-content">
+
+        <!-- Desktop deck header -->
+        <header class="stage-head">
+          <div class="stage-crumb">Anibox <span>/</span> Configuration</div>
+          <div class="stage-actions">
+            <span class="live-chip"><i></i> LIVE</span>
+            <button class="btn-head-install" type="button" onclick="installDirect()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Install to Stremio</span>
+            </button>
+          </div>
+        </header>
 
         <!-- PANEL 1: SOURCES -->
         <section class="tab-panel active" id="panel-sources">
