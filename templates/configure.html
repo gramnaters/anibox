@@ -725,7 +725,7 @@
       font-family: var(--mono);
     }
 
-    /* Sarvam 60-Bar SVG Timeline */
+    /* Per-check uptime strip */
     .uptime-timeline-box {
       display: flex;
       flex-direction: column;
@@ -737,6 +737,17 @@
       width: 100%;
       height: 24px;
       display: block;
+    }
+    .timeline-empty {
+      height: 24px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text-3);
+      letter-spacing: 0.02em;
     }
 
     .timeline-labels {
@@ -1091,6 +1102,21 @@
         max-width: calc(100% - 32px);
         text-align: center;
       }
+      /* The odd final metric should not leave a half-empty row. */
+      .status-summary-grid > .metric-card:last-child {
+        grid-column: 1 / -1;
+      }
+      /* Comfortable touch targets for every mobile control. */
+      .btn-text-action, .filter-btn, .btn-refresh {
+        min-height: 40px;
+        padding: 9px 14px;
+      }
+      .manifest-url-text {
+        white-space: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .manifest-url-text::-webkit-scrollbar { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1840,25 +1866,19 @@
     }
 
     function generateUptimeSvg(history) {
-      // One bar per ACTUAL recorded check. Future/unrecorded slots are drawn
-      // hollow instead of being invented as green, so the timeline never
-      // claims 90 days of uptime on a box that has been up for an hour.
-      const barCount = 60;
+      // One segment per ACTUAL recorded check, stretched to the full width.
+      // No invented or hollow slots: a fresh instance shows a short honest
+      // strip, not 60 circles implying months of history.
       const hist = Array.isArray(history) ? history : [];
-      const startAt = barCount - hist.length;
-      const colors = { up: '#22c55e', degraded: '#f59e0b', down: '#ef4444' };
-      let bars = [];
-      for (let i = 0; i < barCount; i++) {
-        const histIdx = i - startAt;
-        const x = i * 10;
-        if (histIdx < 0) {
-          bars.push(`<rect x="${x}" y="9" width="6" height="6" rx="2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1"></rect>`);
-        } else {
-          const color = colors[hist[histIdx]] || '#8a8a94';
-          bars.push(`<rect x="${x}" y="0" width="6" height="24" rx="2" fill="${color}"></rect>`);
-        }
+      if (!hist.length) {
+        return '<div class="timeline-empty">Collecting first check…</div>';
       }
-      return `<svg class="timeline-svg" viewBox="0 0 596 24" preserveAspectRatio="none"><g>${bars.join('')}</g></svg>`;
+      const colors = { up: '#22c55e', degraded: '#f59e0b', down: '#ef4444' };
+      const unit = 10;
+      const bars = hist.map((s, i) =>
+        `<rect x="${i * unit}" y="0" width="${unit - 1.5}" height="24" rx="2" fill="${colors[s] || '#8a8a94'}"></rect>`
+      ).join('');
+      return `<svg class="timeline-svg" viewBox="0 0 ${hist.length * unit} 24" preserveAspectRatio="none"><g>${bars}</g></svg>`;
     }
 
     async function loadStatusLive(force = false) {
