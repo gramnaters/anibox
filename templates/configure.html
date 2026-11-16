@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
   <title>AniBox • Stream Configuration</title>
@@ -17,7 +17,7 @@
       --border-focus: rgba(255, 255, 255, 0.4);
       --text-1: #ffffff;
       --text-2: #cbd5e1;
-      --text-3: #71717a;
+      --text-3: #8a8a94;
       --accent-green: #22c55e;
       --accent-red: #ef4444;
       --accent-blue: #38bdf8;
@@ -61,6 +61,7 @@
       gap: clamp(36px, 4.5vw, 84px);
       align-items: start;
     }
+    .layout-grid > * { min-width: 0; }
 
     /* Left Column: Sticky Editorial Statement & Controls */
     .editorial-aside {
@@ -337,7 +338,7 @@
     }
 
     .type-tag {
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 700;
       padding: 2px 7px;
       border-radius: 4px;
@@ -387,7 +388,7 @@
       left: 3px;
       width: 20px;
       height: 20px;
-      background: #71717a;
+      background: #8a8a94;
       border-radius: 50%;
       transition: transform 0.2s, background 0.2s;
     }
@@ -493,9 +494,38 @@
     }
 
     /* Status and uptime metrics */
+    .overall-status-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border: 1px solid var(--border-hairline);
+      border-radius: 10px;
+      background: rgba(34, 197, 94, 0.06);
+      margin-top: 16px;
+    }
+    .overall-status-banner.degraded { background: rgba(245, 158, 11, 0.07); }
+    .overall-status-banner.down { background: rgba(239, 68, 68, 0.07); }
+    .overall-status-icon {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: #09090b;
+      background: var(--accent-green);
+    }
+    .overall-status-banner.degraded .overall-status-icon { background: #f59e0b; }
+    .overall-status-banner.down .overall-status-icon { background: var(--accent-red); }
+    .overall-status-banner strong { font-size: 15px; display: block; }
+    .overall-status-banner p { font-size: 12.5px; color: var(--text-3); margin-top: 2px; }
+
     .status-summary-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 16px;
       margin: 16px 0 24px;
     }
@@ -534,8 +564,9 @@
       height: 6px;
       border-radius: 50%;
     }
-    .metric-dot.ok { background: var(--accent-green); box-shadow: 0 0 6px rgba(34, 197, 94, 0.5); }
-    .metric-dot.bad { background: var(--accent-red); box-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+    .metric-dot.ok { background: var(--accent-green); }
+    .metric-dot.warn { background: #f59e0b; }
+    .metric-dot.bad { background: var(--accent-red); }
     .metric-dot.neutral { background: var(--text-3); }
 
     .metric-val {
@@ -546,6 +577,7 @@
       font-variant-numeric: tabular-nums;
     }
     .metric-val.ok { color: var(--accent-green); }
+    .metric-val.warn { color: #f59e0b; }
     .metric-val.bad { color: var(--accent-red); }
 
     .status-toolbar {
@@ -713,6 +745,12 @@
       font-size: 11px;
       color: var(--text-3);
       font-family: var(--mono);
+    }
+    .timeline-since {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-3);
+      text-align: center;
     }
 
     /* Endpoints Diagnostics */
@@ -923,7 +961,7 @@
       right: 0;
       background: #0d0d10;
       border-top: 1px solid var(--border-hairline);
-      padding: 12px 16px 24px;
+      padding: 12px 16px calc(20px + env(safe-area-inset-bottom));
       z-index: 100;
       justify-content: space-around;
       align-items: center;
@@ -965,7 +1003,10 @@
 
     @media (max-width: 860px) {
       .container {
-        padding: 24px 16px 100px;
+        /* 94vw + centred margins pushed content 5px past a 320px viewport. */
+        max-width: 100%;
+        width: 100%;
+        padding: 24px 16px calc(104px + env(safe-area-inset-bottom));
         overflow-x: hidden;
       }
       .layout-grid {
@@ -1043,6 +1084,12 @@
       .manifest-bar {
         flex-direction: column;
         align-items: stretch;
+      }
+      /* Keep confirmations clear of the fixed bottom dock. */
+      .toast-msg {
+        bottom: calc(88px + env(safe-area-inset-bottom));
+        max-width: calc(100% - 32px);
+        text-align: center;
       }
     }
 
@@ -1146,7 +1193,7 @@
         <!-- PANEL 1: SOURCES -->
         <section class="tab-panel active" id="panel-sources">
           <div class="panel-header-bar">
-            <span class="panel-title">01 / Streaming Sources</span>
+            <span class="panel-title">Streaming Sources</span>
             <div class="panel-actions">
               <button class="btn-text-action" onclick="setAllProviders(true)">Enable All</button>
               <button class="btn-text-action" onclick="setAllProviders(false)">Disable All</button>
@@ -1265,7 +1312,7 @@
         <!-- PANEL 2: PLAYBACK -->
         <section class="tab-panel" id="panel-playback">
           <div class="panel-header-bar">
-            <span class="panel-title">02 / Playback Rules</span>
+            <span class="panel-title">Playback Rules</span>
           </div>
 
           <div class="pref-field-row">
@@ -1320,7 +1367,7 @@
         <!-- PANEL 3: SETTINGS -->
         <section class="tab-panel" id="panel-settings">
           <div class="panel-header-bar">
-            <span class="panel-title">03 / Engine Configuration</span>
+            <span class="panel-title">Engine Configuration</span>
           </div>
 
           <div class="pref-field-row">
@@ -1370,10 +1417,18 @@
         <!-- Panel 4: Status -->
         <section class="tab-panel" id="panel-status">
           <div class="panel-header-bar">
-            <span class="panel-title">04 / Pipeline Health & Telemetry</span>
+            <span class="panel-title">Pipeline Health &amp; Telemetry</span>
           </div>
 
-          <!-- 4-Card Summary Grid -->
+          <div class="overall-status-banner" id="overall-status-banner">
+            <span class="overall-status-icon" id="overall-status-icon">✓</span>
+            <div>
+              <strong id="overall-status-title">Checking providers…</strong>
+              <p id="overall-status-detail">Live health across all configured sources.</p>
+            </div>
+          </div>
+
+          <!-- Summary Grid -->
           <div class="status-summary-grid">
             <div class="metric-card">
               <div class="metric-card-header">
@@ -1381,6 +1436,13 @@
                 <span class="metric-dot ok"></span>
               </div>
               <span class="metric-val ok" id="st-up">4</span>
+            </div>
+            <div class="metric-card">
+              <div class="metric-card-header">
+                <span class="metric-label">Degraded</span>
+                <span class="metric-dot warn"></span>
+              </div>
+              <span class="metric-val warn" id="st-degraded">0</span>
             </div>
             <div class="metric-card">
               <div class="metric-card-header">
@@ -1410,6 +1472,7 @@
             <div class="filter-pills">
               <button class="filter-btn active sfilter" data-f="all" onclick="filterStatus('all', this)">All</button>
               <button class="filter-btn sfilter" data-f="up" onclick="filterStatus('up', this)">Up</button>
+              <button class="filter-btn sfilter" data-f="degraded" onclick="filterStatus('degraded', this)">Degraded</button>
               <button class="filter-btn sfilter" data-f="down" onclick="filterStatus('down', this)">Down</button>
             </div>
             <div class="status-meta-info">
@@ -1430,7 +1493,7 @@
         <!-- PANEL 5: INSTALL -->
         <section class="tab-panel" id="panel-install">
           <div class="panel-header-bar">
-            <span class="panel-title">05 / Deploy Addon</span>
+            <span class="panel-title">Deploy Addon</span>
           </div>
 
           <div class="install-box">
@@ -1776,23 +1839,24 @@
       return ms >= 1000 ? (ms / 1000).toFixed(1) + 's' : ms + 'ms';
     }
 
-    function generateUptimeSvg(history, isUp) {
+    function generateUptimeSvg(history) {
+      // One bar per ACTUAL recorded check. Future/unrecorded slots are drawn
+      // hollow instead of being invented as green, so the timeline never
+      // claims 90 days of uptime on a box that has been up for an hour.
       const barCount = 60;
+      const hist = Array.isArray(history) ? history : [];
+      const startAt = barCount - hist.length;
+      const colors = { up: '#22c55e', degraded: '#f59e0b', down: '#ef4444' };
       let bars = [];
-      const hist = Array.isArray(history) && history.length > 0 ? history : [isUp ? 'up' : 'down'];
       for (let i = 0; i < barCount; i++) {
-        const histIdx = Math.floor((i / barCount) * hist.length);
-        const statusVal = hist[histIdx];
-        let color = isUp ? '#22c55e' : '#ef4444';
-        if (statusVal === 'down') {
-          color = '#ef4444';
-        } else if (statusVal === 'degraded') {
-          color = '#f59e0b';
-        } else if (statusVal === 'up') {
-          color = '#22c55e';
-        }
+        const histIdx = i - startAt;
         const x = i * 10;
-        bars.push(`<rect x="${x}" y="0" width="6" height="24" rx="2" fill="${color}"></rect>`);
+        if (histIdx < 0) {
+          bars.push(`<rect x="${x}" y="9" width="6" height="6" rx="2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1"></rect>`);
+        } else {
+          const color = colors[hist[histIdx]] || '#8a8a94';
+          bars.push(`<rect x="${x}" y="0" width="6" height="24" rx="2" fill="${color}"></rect>`);
+        }
       }
       return `<svg class="timeline-svg" viewBox="0 0 596 24" preserveAspectRatio="none"><g>${bars.join('')}</g></svg>`;
     }
@@ -1838,16 +1902,39 @@
       if (!statusData || !statusData.providers) return;
       const providers = Object.values(statusData.providers);
       const up = providers.filter(p => p.status === 'up').length;
+      const degraded = providers.filter(p => p.status === 'degraded').length;
       const down = providers.filter(p => p.status === 'down').length;
       const streams = providers.reduce((n, p) => n + (p.streamCount || 0), 0);
 
+      const banner = document.getElementById('overall-status-banner');
+      if (banner) {
+        const bannerClass = down ? 'down' : degraded ? 'degraded' : '';
+        banner.className = 'overall-status-banner' + (bannerClass ? ' ' + bannerClass : '');
+        const icon = document.getElementById('overall-status-icon');
+        const title = document.getElementById('overall-status-title');
+        const detail = document.getElementById('overall-status-detail');
+        if (icon) icon.textContent = down ? '!' : degraded ? '!' : '✓';
+        if (title) title.textContent = !providers.length ? 'No providers configured'
+          : down ? `${down} source${down === 1 ? '' : 's'} offline`
+          : degraded ? `${degraded} source${degraded === 1 ? '' : 's'} degraded`
+          : 'All systems operational';
+        if (detail) detail.textContent = !providers.length
+          ? 'Enable at least one source to see live health.'
+          : `${up} operational | ${degraded} degraded | ${down} offline across ${providers.length} sources.`;
+      }
+
       const elUp = document.getElementById('st-up'); if (elUp) elUp.textContent = providers.length ? up : '—';
+      const elDeg = document.getElementById('st-degraded'); if (elDeg) elDeg.textContent = providers.length ? degraded : '—';
       const elDown = document.getElementById('st-down'); if (elDown) elDown.textContent = providers.length ? down : '—';
       const elStreams = document.getElementById('st-streams'); if (elStreams) elStreams.textContent = providers.length ? streams.toLocaleString() : '—';
       const elUpd = document.getElementById('st-updated'); if (elUpd) elUpd.textContent = relTime(statusData.updatedAt);
       const elStatusUpd = document.getElementById('status-updated');
       if (elStatusUpd) {
-        elStatusUpd.textContent = 'Updated ' + relTime(statusData.updatedAt) + (statusData.checking ? ' · Checking…' : ' · All systems operational');
+        const verdict = statusData.checking ? ' | Checking…'
+          : down ? ` | ${down} provider${down === 1 ? '' : 's'} offline`
+          : degraded ? ` | ${degraded} provider${degraded === 1 ? '' : 's'} degraded`
+          : ' | All systems operational';
+        elStatusUpd.textContent = 'Updated ' + relTime(statusData.updatedAt) + verdict;
       }
 
       // Update sidebar live specs as well
@@ -1888,11 +1975,17 @@
           titlesHtml = `<span style="font-size: 12px; color: var(--text-3);">${isUp ? 'Streams verified' : 'No streams returned'}</span>`;
         }
 
-        const errorHtml = (p.status === 'down' && p.error) ? `<div class="ep-err-text">${escapeHtml(p.error)}</div>` : '';
-        const timelineSvg = generateUptimeSvg(p.history, isUp);
+        const errorHtml = (p.error && p.status !== 'up') ? `<div class="ep-err-text">${escapeHtml(p.error)}</div>` : '';
+        const timelineSvg = generateUptimeSvg(p.history);
 
-        const statLabel = p.status === 'up' ? '100% Operational' : (p.status === 'degraded' ? 'Degraded Performance' : 'Offline');
+        const uptimeLabel = typeof p.uptimePct === 'number'
+          ? p.uptimePct.toFixed(1) + '% uptime' : 'No history yet';
+        const statLabel = p.status === 'up' ? 'Operational'
+          : (p.status === 'degraded' ? 'Degraded Performance' : 'Offline');
         const statClass = p.status === 'up' ? 'ok' : (p.status === 'degraded' ? 'warn' : 'bad');
+        const since = p.samples
+          ? `${p.samples} check${p.samples === 1 ? '' : 's'} since ${new Date(p.historySince).toLocaleString()}`
+          : 'No checks recorded yet';
 
         row.innerHTML = `
           <div class="status-row-top">
@@ -1920,10 +2013,11 @@
           <div class="uptime-timeline-box">
             ${timelineSvg}
             <div class="timeline-labels">
-              <span>90 days ago</span>
-              <span>${isUp ? '100% Operational' : 'Degraded'}</span>
+              <span>First check</span>
+              <span>${escapeHtml(uptimeLabel)}</span>
               <span>Today</span>
             </div>
+            <div class="timeline-since">${escapeHtml(since)}</div>
           </div>
 
           ${errorHtml ? `<div class="endpoints-box">${errorHtml}</div>` : ''}

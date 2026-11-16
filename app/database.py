@@ -106,4 +106,28 @@ class Database:
         finally:
             session.close()
 
+    def get_health_history_info(self, provider: str, limit: int = 60) -> dict:
+        """Return ONLY real recorded checks, with the window start and uptime.
+
+        Callers must not pad this with invented 'up' samples: a fresh VM has only
+        a handful of checks, and fabricating a full 90-day history is misleading.
+        """
+        session = self.Session()
+        try:
+            logs = session.query(HealthLog).filter_by(provider=provider).order_by(HealthLog.id.desc()).limit(limit).all()
+            logs = list(reversed(logs))
+            history = [l.status for l in logs]
+            uptime = None
+            healthy = sum(1 for s in history if s in ('up', 'degraded'))
+            if history:
+                uptime = round(100.0 * healthy / len(history), 1)
+            return {
+                'history': history,
+                'samples': len(history),
+                'since': logs[0].checked_at.isoformat() if logs else None,
+                'uptimePct': uptime,
+            }
+        finally:
+            session.close()
+
 db = Database()

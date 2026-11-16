@@ -72,13 +72,11 @@ def _now() -> str:
 
 
 def _get_provider_history(pname: str, limit: int = 60) -> list:
+    """Real checks only (no invented 'up' padding)."""
     try:
-        hist = db.get_health_history(pname, limit=limit)
-        if len(hist) < limit:
-            return ['up'] * (limit - len(hist)) + hist
-        return hist[-limit:]
+        return db.get_health_history(pname, limit=limit)
     except Exception:
-        return ['up'] * limit
+        return []
 
 # Initial verified baseline so metrics and status are never empty/0 on boot
 _now_iso = _now()
@@ -128,6 +126,16 @@ _DEFAULT_BASELINE = {
         'history': _get_provider_history('piratexplay')
     }
 }
+
+for _pname, _entry in _DEFAULT_BASELINE.items():
+    try:
+        _info = db.get_health_history_info(_pname, limit=60)
+    except Exception:
+        _info = {'history': [], 'samples': 0, 'since': None, 'uptimePct': None}
+    _entry['history'] = _info['history']
+    _entry['samples'] = _info['samples']
+    _entry['historySince'] = _info['since']
+    _entry['uptimePct'] = _info['uptimePct']
 
 _state = {'updatedAt': _now_iso, 'providers': _DEFAULT_BASELINE}
 _lock = threading.Lock()
@@ -187,13 +195,19 @@ def _check_provider_once(pname, provider):
     entry['responseMs'] = resp_ms
     entry['lastChecked'] = _now()
 
+    # Health reflects whether the provider returned streams, NOT wall-clock time.
+    # A sequential 3-title scrape legitimately takes 6-10s over the public
+    # internet; treating that as "degraded" made every healthy provider look
+    # broken. Latency stays in responseMs as informational data.
     if not titles:
         entry['status'] = 'down'
-    elif len(titles) < len(probes) or resp_ms > 3500:
+    elif len(titles) < len(probes):
         entry['status'] = 'degraded'
     else:
         entry['status'] = 'up'
 
+    entry['probeTotal'] = len(probes)
+    entry['probeOk'] = len(titles)
     if errors and entry['status'] in ('down', 'degraded'):
         entry['error'] = '; '.join(errors)[:300]
     else:
@@ -235,7 +249,14 @@ def _run():
                     )
                 except Exception as ex:
                     print(f'[status] failed to record health: {ex}', flush=True)
-                r['history'] = _get_provider_history(r['id'], limit=60)
+                try:
+                    info = db.get_health_history_info(r['id'], limit=60)
+                except Exception:
+                    info = {'history': [], 'samples': 0, 'since': None, 'uptimePct': None}
+                r['history'] = info['history']
+                r['samples'] = info['samples']
+                r['historySince'] = info['since']
+                r['uptimePct'] = info['uptimePct']
                 providers[r['id']] = r
             with _lock:
                 _state['providers'] = providers
