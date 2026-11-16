@@ -1981,12 +1981,6 @@
         catEl.setAttribute('aria-checked', catOn ? 'true' : 'false');
       }
 
-      const dedupEl = document.getElementById('swDedup');
-      if (dedupEl) {
-        const dedupOn = state.filter_audio_strict === 'on';
-        dedupEl.classList.toggle('on', dedupOn);
-        dedupEl.setAttribute('aria-checked', dedupOn ? 'true' : 'false');
-      }
     }
 
     function toggleProvider(el) {
@@ -2007,12 +2001,6 @@
       update();
     }
 
-    function toggleDedup(el) {
-      state.filter_audio_strict = state.filter_audio_strict === 'on' ? 'off' : 'on';
-      el.classList.toggle('on', state.filter_audio_strict === 'on');
-      update();
-    }
-
     function selectSort(btn) {
       const group = btn.closest('.chip-selector');
       group.querySelectorAll('.chip-opt').forEach(b => b.classList.remove('selected'));
@@ -2026,14 +2014,6 @@
       group.querySelectorAll('.chip-opt').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       state.filter_qualities = btn.dataset.res;
-      update();
-    }
-
-    function selectLanguage(btn) {
-      const group = btn.closest('.chip-selector');
-      group.querySelectorAll('.chip-opt').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      state.filter_languages = btn.dataset.lang;
       update();
     }
 
