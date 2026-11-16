@@ -25,6 +25,7 @@ import re
 import secrets
 import sqlite3
 import tempfile
+import threading
 import time
 import warnings
 import zlib
@@ -45,7 +46,23 @@ playlist_mappings = TTLCache(maxsize=50000, ttl=43200)
 # id -> {'url': ..., 'headers': {...}}
 subtitle_mappings = TTLCache(maxsize=8000, ttl=3600)
 
-_cookie_jar = requests.cookies.RequestsCookieJar()
+# Short-lived response caches. Players (and ffprobe) re-request the same master
+# playlist many times while probing audio renditions / video variants, and often
+# re-fetch the same first segments. Serving those from memory avoids a synchronous
+# upstream round trip per request, which was the dominant startup cost.
+_playlist_response_cache = TTLCache(maxsize=4000, ttl=600)
+_segment_response_cache = TTLCache(maxsize=256, ttl=600)
+_response_cache_lock = threading.Lock()
+# Bound worst-case cache memory (~1.5 GB) on small free-tier VMs.
+_SEGMENT_CACHE_MAX_BYTES = 6_000_000
+_PLAYLIST_RESPONSE_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+    'Access-Control-Allow-Headers': '*',
+    # Let the player cache rewritten playlists too; VOD playlists are immutable.
+    'Cache-Control': 'public, max-age=300',
+}
+
 _proxy_session = requests.Session()
 from requests.adapters import HTTPAdapter
 _proxy_session.mount('https://', HTTPAdapter(pool_connections=64, pool_maxsize=128, max_retries=1))
@@ -102,9 +119,34 @@ def _init_db():
 
 _init_db()
 
+# The persistent mapping DB grows without bound otherwise (every playlist and
+# segment registers a row). Keep it capped so long-running free-tier VMs do not
+# accumulate tens of thousands of stale rows / tens of MB of disk.
+_PROXY_DB_MAX_ROWS = 20000
+_PROXY_DB_MAX_AGE = 24 * 3600
+_db_prune_counter = 0
+
+
+def _db_prune():
+    try:
+        with sqlite3.connect(_DB_PATH, timeout=5) as conn:
+            conn.execute('DELETE FROM proxy_mappings WHERE created_at < ?',
+                         (time.time() - _PROXY_DB_MAX_AGE,))
+            conn.execute(
+                'DELETE FROM proxy_mappings WHERE id NOT IN '
+                '(SELECT id FROM proxy_mappings ORDER BY created_at DESC LIMIT ?)',
+                (_PROXY_DB_MAX_ROWS,))
+            conn.commit()
+    except Exception:
+        pass
+
+
+_db_prune()  # trim any accumulated rows on startup
+
 
 def _db_save(mapping_id: str, url: str, referer: str, kind: str):
-    """Persist mapping into local SQLite cache."""
+    """Persist mapping into local SQLite cache (with periodic pruning)."""
+    global _db_prune_counter
     try:
         with sqlite3.connect(_DB_PATH, timeout=3) as conn:
             conn.execute(
@@ -114,6 +156,9 @@ def _db_save(mapping_id: str, url: str, referer: str, kind: str):
             conn.commit()
     except Exception:
         pass
+    _db_prune_counter += 1
+    if _db_prune_counter % 200 == 0:
+        _db_prune()
 
 
 def _db_lookup(mapping_id: str):
@@ -213,9 +258,6 @@ def _fetch_upstream(url, headers, max_retries=3, stream=False, timeout=18):
     for attempt in range(max_retries):
         try:
             r = _proxy_session.get(url, headers=headers, timeout=timeout, stream=stream, verify=False)
-            if r.cookies:
-                for c in r.cookies:
-                    _cookie_jar.set_cookie(c)
             if r.status_code == 200:
                 return r
             if r.status_code in (403, 429, 500, 502, 503, 504, 522, 524):
@@ -402,20 +444,24 @@ def proxy_m3u8(request: Request, playlist_id: str):
     if not mapping:
         raise HTTPException(status_code=404, detail='Playlist mapping expired or not found')
 
+    cache_key = raw_id or playlist_id
+    with _response_cache_lock:
+        cached = _playlist_response_cache.get(cache_key)
+    if cached is not None:
+        return Response(content=cached, media_type='application/vnd.apple.mpegurl',
+                        headers=_PLAYLIST_RESPONSE_HEADERS)
+
     try:
         r = _fetch_upstream(mapping['url'], mapping.get('headers') or {})
         if r.status_code != 200:
             raise HTTPException(status_code=502, detail=f'Upstream returned {r.status_code}')
 
         content = _rewrite_m3u8_urls(r.text, mapping['url'], mapping.get('headers') or {})
+        with _response_cache_lock:
+            _playlist_response_cache[cache_key] = content
 
-        headers = {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-            'Access-Control-Allow-Headers': '*',
-            'Cache-Control': 'no-cache',
-        }
-        return Response(content=content, media_type='application/vnd.apple.mpegurl', headers=headers)
+        return Response(content=content, media_type='application/vnd.apple.mpegurl',
+                        headers=_PLAYLIST_RESPONSE_HEADERS)
     except HTTPException:
         raise
     except Exception as e:
@@ -453,6 +499,15 @@ def proxy_segment(request: Request, segment_id: str):
     client_range = request.headers.get('range')
     if client_range:
         upstream_headers['Range'] = client_range
+
+    cache_key = raw_id or segment_id
+    if not client_range:
+        with _response_cache_lock:
+            cached = _segment_response_cache.get(cache_key)
+        if cached is not None:
+            content, ctype, cached_headers = cached
+            return Response(content=content, status_code=200,
+                            media_type=ctype, headers=cached_headers)
 
     try:
         r = _fetch_upstream(mapping['url'], upstream_headers, stream=True)
@@ -511,6 +566,9 @@ def proxy_segment(request: Request, segment_id: str):
                     ctype = 'video/MP2T'
                     headers['Content-Type'] = ctype
             headers['Content-Length'] = str(len(content))
+            if not client_range and len(content) <= _SEGMENT_CACHE_MAX_BYTES:
+                with _response_cache_lock:
+                    _segment_response_cache[cache_key] = (content, ctype, dict(headers))
             return Response(content=content, status_code=r.status_code, media_type=ctype, headers=headers)
     except HTTPException:
         raise
