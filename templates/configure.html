@@ -190,17 +190,6 @@
       border-top: 1px solid var(--border-hairline);
     }
 
-    /* Immersive, artwork-style ambient wash at the foot of the rail. */
-    .rail-ambient {
-      margin-top: auto;
-      height: 130px;
-      border-radius: 20px;
-      background:
-        radial-gradient(120% 90% at 20% 100%, rgba(56, 189, 248, 0.13), transparent 70%),
-        radial-gradient(100% 80% at 90% 10%, rgba(167, 139, 250, 0.11), transparent 70%);
-      opacity: 0.9;
-    }
-
     .spec-item {
       display: flex;
       justify-content: space-between;
@@ -1311,7 +1300,6 @@
         scrollbar-width: none;
       }
       .manifest-url-text::-webkit-scrollbar { display: none; }
-      .rail-ambient { display: none; }
       .install-strip { flex-wrap: wrap; }
       .install-strip-copy { flex: 1 1 100%; order: 1; }
       .install-strip .btn-copy-type { flex: 1 1 0; order: 2; }
@@ -1386,7 +1374,6 @@
     .provider-group .type-row:last-child { border-bottom: none; }
 
     @media (max-width: 860px) {
-      .rail-ambient { display: none; }
       .install-strip { flex-wrap: wrap; }
       .install-strip-copy { flex: 1 1 100%; order: 1; }
       .install-strip .btn-copy-type { flex: 1 1 0; order: 2; }
