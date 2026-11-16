@@ -1117,6 +1117,17 @@
         scrollbar-width: none;
       }
       .manifest-url-text::-webkit-scrollbar { display: none; }
+      .status-section-head { gap: 8px; align-items: baseline; }
+      .status-section-head .mono {
+        max-width: 62%; text-align: right;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .status-provider-head { flex-wrap: wrap; row-gap: 6px; }
+      .prov-title { flex: 1 1 auto; min-width: 0; }
+      .prov-uptime { order: 2; margin-left: auto; }
+      .prov-meta { order: 3; flex: 1 1 auto; min-width: 0; }
+      .prov-latency { order: 4; }
+      .prov-state { order: 5; }
     }
 
     /* System status — compact Sarvam-style uptime rows */
