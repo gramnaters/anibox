@@ -400,27 +400,44 @@ def addon_stream(request: Request, content_type: str, content_id: str, segment: 
         base_id = ':'.join(base_id_parts)
 
         tmdb_id = None
+        direct_title = None
         if base_id.startswith('tmdb:'):
             tmdb_id = base_id.replace('tmdb:', '')
         elif base_id.startswith('hd:tmdb:'):
             tmdb_id = base_id.replace('hd:tmdb:', '')
         elif base_id.startswith('tt'):
+            # Nuvio/Cinemeta use IMDb IDs. TMDB's find endpoint is often
+            # unreachable from this host, so resolve through Cinemeta first —
+            # the same public metadata source the player already trusts.
             try:
-                r = requests.get('https://api.themoviedb.org/3/find/' + base_id,
-                                params={'api_key': _tmdb_key(), 'external_source': 'imdb_id'}, timeout=10)
-                data = r.json()
-                results = data.get('tv_results', []) or data.get('movie_results', [])
-                if results:
-                    tmdb_id = str(results[0]['id'])
-            except: pass
+                r = requests.get(
+                    f'https://v3-cinemeta.strem.io/meta/{content_type}/{base_id}.json',
+                    timeout=10)
+                if r.status_code == 200:
+                    meta = (r.json() or {}).get('meta') or {}
+                    name = meta.get('name') or meta.get('original_title') or ''
+                    if name:
+                        direct_title = name
+            except Exception:
+                pass
+            if not direct_title:
+                try:
+                    r = requests.get('https://api.themoviedb.org/3/find/' + base_id,
+                                    params={'api_key': _tmdb_key(), 'external_source': 'imdb_id'}, timeout=10)
+                    data = r.json()
+                    results = data.get('tv_results', []) or data.get('movie_results', [])
+                    if results:
+                        tmdb_id = str(results[0]['id'])
+                except Exception:
+                    pass
         elif base_id.isdigit():
             # Bare numeric TMDB id (some clients strip the catalog prefix).
             tmdb_id = base_id
 
-        if not tmdb_id:
+        if not tmdb_id and not direct_title:
             return respond_with({'streams': []})
 
-        title = _get_title_from_tmdb(tmdb_id, content_type)
+        title = direct_title or _get_title_from_tmdb(tmdb_id, content_type)
         if not title:
             return respond_with({'streams': []})
 
