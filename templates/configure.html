@@ -735,11 +735,11 @@
 
     .timeline-svg {
       width: 100%;
-      height: 24px;
+      height: 16px;
       display: block;
     }
     .timeline-empty {
-      height: 24px;
+      height: 16px;
       border-radius: 4px;
       background: rgba(255, 255, 255, 0.04);
       display: flex;
@@ -1876,9 +1876,9 @@
       const colors = { up: '#22c55e', degraded: '#f59e0b', down: '#ef4444' };
       const unit = 10;
       const bars = hist.map((s, i) =>
-        `<rect x="${i * unit}" y="0" width="${unit - 1.5}" height="24" rx="2" fill="${colors[s] || '#8a8a94'}"></rect>`
+        `<rect x="${i * unit}" y="0" width="${unit - 1.5}" height="16" rx="2" fill="${colors[s] || '#8a8a94'}"></rect>`
       ).join('');
-      return `<svg class="timeline-svg" viewBox="0 0 ${hist.length * unit} 24" preserveAspectRatio="none"><g>${bars}</g></svg>`;
+      return `<svg class="timeline-svg" viewBox="0 0 ${hist.length * unit} 16" preserveAspectRatio="none"><g>${bars}</g></svg>`;
     }
 
     async function loadStatusLive(force = false) {
