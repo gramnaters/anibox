@@ -281,6 +281,8 @@ def addon_base_url(req: Request = None):
         return base
     return _last_base_url
 
+_addon_base = addon_base_url
+
 
 def register_proxy_url(url, headers, base_url=None, kind=None, ext=None):
     """Register an upstream media URL and return a stateless, durable proxy URL.
@@ -380,7 +382,7 @@ def _rewrite_m3u8_urls(content, base_url, headers):
 
 
 @proxy_router.get('/m3u8/{playlist_id}')
-async def proxy_m3u8(request: Request, playlist_id: str):
+def proxy_m3u8(request: Request, playlist_id: str):
     """Proxy an m3u8 playlist from the CDN, rewriting all internal URLs."""
     raw_id = playlist_id.split('.', 1)[0]
     mapping = None
@@ -422,7 +424,7 @@ async def proxy_m3u8(request: Request, playlist_id: str):
 
 
 @proxy_router.get('/seg/{segment_id}')
-async def proxy_segment(request: Request, segment_id: str):
+def proxy_segment(request: Request, segment_id: str):
     """Proxy a segment or direct media file from the CDN with the correct headers."""
     raw_id = segment_id.split('.', 1)[0]
     mapping = None
@@ -518,7 +520,7 @@ async def proxy_segment(request: Request, segment_id: str):
 
 
 @proxy_router.get('/subtitles/{subtitle_id}')
-async def proxy_subtitle(request: Request, subtitle_id: str):
+def proxy_subtitle(request: Request, subtitle_id: str):
     """Proxy subtitle files with the correct content-type."""
     raw_id = subtitle_id.split('.', 1)[0]
     mapping = None

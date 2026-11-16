@@ -330,7 +330,7 @@ def _make_title(provider_name, player_key, extra='', label=''):
 @stream_router.get('/stream/{content_type}/{content_id}.json')
 @stream_router.get('/{segment}/stream/{content_type}/{content_id}.json')
 @stream_router.get('/{segment}/{lang}/stream/{content_type}/{content_id}.json')
-async def addon_stream(request: Request, content_type: str, content_id: str, segment: str = None, lang: str = None):
+def addon_stream(request: Request, content_type: str, content_id: str, segment: str = None, lang: str = None):
     content_id = urllib.parse.unquote(content_id)
     config = parse_config(segment or '')
     enabled_providers = get_provider_from_config(config)
