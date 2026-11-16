@@ -49,16 +49,16 @@
 
     .container {
       width: 100%;
-      max-width: min(1560px, 94vw);
+      max-width: min(1440px, 96vw);
       margin: 0 auto;
-      padding: clamp(36px, 4.5vw, 64px) clamp(20px, 3.5vw, 64px) 120px;
+      padding: clamp(28px, 3vw, 48px) clamp(20px, 2.5vw, 48px) 96px;
     }
 
-    /* Two-column layout */
+    /* Two-column layout — tighter gutter so the content fits the viewport */
     .layout-grid {
       display: grid;
-      grid-template-columns: minmax(310px, 360px) minmax(0, 1fr);
-      gap: clamp(36px, 4.5vw, 84px);
+      grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+      gap: clamp(28px, 3vw, 48px);
       align-items: start;
     }
     .layout-grid > * { min-width: 0; }
@@ -1119,6 +1119,71 @@
       .manifest-url-text::-webkit-scrollbar { display: none; }
     }
 
+    /* System status — compact Sarvam-style uptime rows */
+    .status-overview {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border-hairline);
+      border-radius: 10px;
+      background: rgba(34, 197, 94, 0.05);
+      margin-top: 16px;
+    }
+    .status-overview.degraded { background: rgba(245, 158, 11, 0.06); }
+    .status-overview.down { background: rgba(239, 68, 68, 0.06); }
+    .status-check {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--accent-green); color: #09090b;
+      display: grid; place-items: center;
+      font-size: 14px; font-weight: 800; flex: none;
+    }
+    .status-overview.degraded .status-check { background: #f59e0b; }
+    .status-overview.down .status-check { background: var(--accent-red); }
+    .status-overview-copy { flex: 1; min-width: 0; }
+    .status-overview-copy strong { font-size: 14px; display: block; }
+    .status-overview-copy p { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+    .status-window {
+      font-size: 11px; color: var(--text-3); font-family: var(--mono);
+      border: 1px solid var(--border-hairline); border-radius: 6px;
+      padding: 4px 8px; white-space: nowrap;
+    }
+    .status-stats-row {
+      display: flex; flex-wrap: wrap; gap: 8px 24px;
+      padding: 14px 2px 18px; font-size: 12px; color: var(--text-3);
+      border-bottom: 1px solid var(--border-hairline);
+    }
+    .status-stats-row b { color: var(--text-1); font-weight: 700; margin-left: 4px; font-variant-numeric: tabular-nums; }
+    .status-stats-row b.ok { color: var(--accent-green); }
+    .status-stats-row b.warn { color: #f59e0b; }
+    .status-stats-row b.bad { color: var(--accent-red); }
+    .status-section-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 0 12px; font-size: 13px; font-weight: 700; color: var(--text-1);
+    }
+    .status-section-head .mono { font-size: 11px; font-weight: 500; color: var(--text-3); }
+    .status-loading {
+      padding: 40px 20px; text-align: center; color: var(--text-3);
+      font-size: 13px; border: 1px dashed var(--border-hairline); border-radius: 8px;
+    }
+    .status-provider-row { padding: 16px 0; gap: 10px; }
+    .status-provider-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .status-provider-head .status-check { width: 18px; height: 18px; font-size: 10px; }
+    .prov-title { font-size: 14px; font-weight: 700; white-space: nowrap; }
+    .prov-meta { font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .prov-latency { font-size: 11px; color: var(--text-3); font-family: var(--mono); white-space: nowrap; }
+    .prov-state { font-size: 10.5px; font-weight: 700; padding: 3px 7px; border-radius: 4px; white-space: nowrap; }
+    .prov-state.ok { color: var(--accent-green); background: rgba(34, 197, 94, 0.12); }
+    .prov-state.warn { color: #f59e0b; background: rgba(245, 158, 11, 0.12); }
+    .prov-state.bad { color: var(--accent-red); background: rgba(239, 68, 68, 0.12); }
+    .prov-uptime { margin-left: auto; font-size: 12px; color: var(--text-3); font-family: var(--mono); white-space: nowrap; }
+    .uptime-timeline-box { padding: 0; gap: 4px; }
+    .uptime-track { display: flex; gap: 2px; height: 10px; width: 100%; }
+    .up-seg { flex: 1 1 6px; max-width: 14px; height: 10px; border-radius: 1px; }
+    .uptime-rest { flex: 1; height: 10px; border-radius: 1px; background: rgba(255, 255, 255, 0.05); }
+    .timeline-labels { font-size: 10px; }
+    .timeline-since { font-size: 10px; text-align: right; margin-top: 0; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -1444,56 +1509,31 @@
         <section class="tab-panel" id="panel-status">
           <div class="panel-header-bar">
             <span class="panel-title">Pipeline Health &amp; Telemetry</span>
+            <button class="btn-refresh" id="status-refresh" onclick="refreshStatusLive()">Refresh</button>
           </div>
 
-          <div class="overall-status-banner" id="overall-status-banner">
-            <span class="overall-status-icon" id="overall-status-icon">✓</span>
-            <div>
+          <div class="status-overview" id="overall-status-banner">
+            <span class="status-check" id="overall-status-icon">✓</span>
+            <div class="status-overview-copy">
               <strong id="overall-status-title">Checking providers…</strong>
               <p id="overall-status-detail">Live health across all configured sources.</p>
             </div>
+            <div class="status-window" id="status-window">Live</div>
           </div>
 
-          <!-- Summary Grid -->
-          <div class="status-summary-grid">
-            <div class="metric-card">
-              <div class="metric-card-header">
-                <span class="metric-label">Up</span>
-                <span class="metric-dot ok"></span>
-              </div>
-              <span class="metric-val ok" id="st-up">4</span>
-            </div>
-            <div class="metric-card">
-              <div class="metric-card-header">
-                <span class="metric-label">Degraded</span>
-                <span class="metric-dot warn"></span>
-              </div>
-              <span class="metric-val warn" id="st-degraded">0</span>
-            </div>
-            <div class="metric-card">
-              <div class="metric-card-header">
-                <span class="metric-label">Down</span>
-                <span class="metric-dot bad"></span>
-              </div>
-              <span class="metric-val bad" id="st-down">0</span>
-            </div>
-            <div class="metric-card">
-              <div class="metric-card-header">
-                <span class="metric-label">Streams</span>
-                <span class="metric-dot neutral"></span>
-              </div>
-              <span class="metric-val mono" id="st-streams">1,842</span>
-            </div>
-            <div class="metric-card">
-              <div class="metric-card-header">
-                <span class="metric-label">Last check</span>
-                <span class="metric-dot neutral"></span>
-              </div>
-              <span class="metric-val mono" style="font-size: 20px; line-height: 1.4;" id="st-updated">Just now</span>
-            </div>
+          <div class="status-stats-row">
+            <span>Up <b class="ok" id="st-up">4</b></span>
+            <span>Degraded <b class="warn" id="st-degraded">0</b></span>
+            <span>Down <b class="bad" id="st-down">0</b></span>
+            <span>Streams <b id="st-streams">76</b></span>
+            <span>Last check <b id="st-updated">Just now</b></span>
           </div>
 
-          <!-- Status Toolbar -->
+          <div class="status-section-head">
+            <span>System status</span>
+            <span class="mono" id="status-updated">Checking providers…</span>
+          </div>
+
           <div class="status-toolbar">
             <div class="filter-pills">
               <button class="filter-btn active sfilter" data-f="all" onclick="filterStatus('all', this)">All</button>
@@ -1501,18 +1541,10 @@
               <button class="filter-btn sfilter" data-f="degraded" onclick="filterStatus('degraded', this)">Degraded</button>
               <button class="filter-btn sfilter" data-f="down" onclick="filterStatus('down', this)">Down</button>
             </div>
-            <div class="status-meta-info">
-              <button class="btn-refresh" id="status-refresh" onclick="refreshStatusLive()">Refresh</button>
-              <span class="mono" id="status-updated">Checking providers…</span>
-            </div>
           </div>
 
-          <!-- Dynamic status list -->
           <div id="status-list">
-            <div style="padding: 48px 20px; text-align: center; color: var(--text-3); font-size: 14px; border: 1px dashed var(--border-hairline); border-radius: 8px;">
-              <span class="type-spinner"></span>
-              <span>Measuring provider telemetry…</span>
-            </div>
+            <div class="status-loading"><span class="type-spinner"></span> Measuring provider telemetry…</div>
           </div>
         </section>
 
@@ -1866,19 +1898,15 @@
     }
 
     function generateUptimeSvg(history) {
-      // One segment per ACTUAL recorded check, stretched to the full width.
-      // No invented or hollow slots: a fresh instance shows a short honest
-      // strip, not 60 circles implying months of history.
+      // One thin segment per ACTUAL recorded check. The remaining track is a
+      // flat muted bar (not hollow circles), so a fresh instance reads as a
+      // timeline still filling rather than a broken chart.
       const hist = Array.isArray(history) ? history : [];
-      if (!hist.length) {
-        return '<div class="timeline-empty">Collecting first check…</div>';
-      }
       const colors = { up: '#22c55e', degraded: '#f59e0b', down: '#ef4444' };
-      const unit = 10;
-      const bars = hist.map((s, i) =>
-        `<rect x="${i * unit}" y="0" width="${unit - 1.5}" height="16" rx="2" fill="${colors[s] || '#8a8a94'}"></rect>`
+      const segs = hist.map(s =>
+        `<span class="up-seg" style="background:${colors[s] || '#8a8a94'}"></span>`
       ).join('');
-      return `<svg class="timeline-svg" viewBox="0 0 ${hist.length * unit} 16" preserveAspectRatio="none"><g>${bars}</g></svg>`;
+      return `<div class="uptime-track">${segs}<span class="uptime-rest"></span></div>`;
     }
 
     async function loadStatusLive(force = false) {
@@ -1929,10 +1957,15 @@
       const banner = document.getElementById('overall-status-banner');
       if (banner) {
         const bannerClass = down ? 'down' : degraded ? 'degraded' : '';
-        banner.className = 'overall-status-banner' + (bannerClass ? ' ' + bannerClass : '');
+        banner.className = 'status-overview' + (bannerClass ? ' ' + bannerClass : '');
         const icon = document.getElementById('overall-status-icon');
         const title = document.getElementById('overall-status-title');
         const detail = document.getElementById('overall-status-detail');
+        const windowEl = document.getElementById('status-window');
+        if (windowEl) {
+          const first = providers.map(p => p.historySince).filter(Boolean).sort()[0];
+          windowEl.textContent = first ? new Date(first).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) + ' – Now' : 'Live';
+        }
         if (icon) icon.textContent = down ? '!' : degraded ? '!' : '✓';
         if (title) title.textContent = !providers.length ? 'No providers configured'
           : down ? `${down} source${down === 1 ? '' : 's'} offline`
@@ -1987,14 +2020,6 @@
         row.className = 'status-provider-row';
         row.dataset.status = p.status;
 
-        // Working titles HTML
-        let titlesHtml = '';
-        if (p.workingTitles && p.workingTitles.length) {
-          titlesHtml = p.workingTitles.map(t => `<span class="title-chip">${escapeHtml(t)}</span>`).join('');
-        } else {
-          titlesHtml = `<span style="font-size: 12px; color: var(--text-3);">${isUp ? 'Streams verified' : 'No streams returned'}</span>`;
-        }
-
         const errorHtml = (p.error && p.status !== 'up') ? `<div class="ep-err-text">${escapeHtml(p.error)}</div>` : '';
         const timelineSvg = generateUptimeSvg(p.history);
 
@@ -2008,33 +2033,19 @@
           : 'No checks recorded yet';
 
         row.innerHTML = `
-          <div class="status-row-top">
-            <div class="prov-meta-group">
-              <div class="type-squircle-icon">
-                ${meta.icon}
-              </div>
-              <div class="prov-title-stack">
-                <div class="prov-title-line">
-                  <span class="prov-title">${escapeHtml(meta.name)}</span>
-                  <span class="type-tag">${escapeHtml(meta.tag)}</span>
-                </div>
-                <div class="prov-titles-wrap">
-                  <span style="font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-right: 4px;">Verified:</span>
-                  ${titlesHtml}
-                </div>
-              </div>
-            </div>
-            <div class="prov-stats-right">
-              <span class="latency-tag">${fmtMs(p.responseMs)}</span>
-              <span class="uptime-tag ${statClass}">${statLabel}</span>
-            </div>
+          <div class="status-provider-head">
+            <span class="status-check">${isUp ? '✓' : '!'}</span>
+            <span class="prov-title">${escapeHtml(meta.name)}</span>
+            <span class="prov-meta">${p.probeOk || 0}/${p.probeTotal || 3} probes &middot; ${p.streamCount || 0} streams</span>
+            <span class="prov-latency">${fmtMs(p.responseMs)}</span>
+            <span class="prov-state ${statClass}">${statLabel}</span>
+            <span class="prov-uptime">${escapeHtml(uptimeLabel)}</span>
           </div>
 
           <div class="uptime-timeline-box">
             ${timelineSvg}
             <div class="timeline-labels">
               <span>First check</span>
-              <span>${escapeHtml(uptimeLabel)}</span>
               <span>Today</span>
             </div>
             <div class="timeline-since">${escapeHtml(since)}</div>
